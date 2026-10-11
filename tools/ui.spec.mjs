@@ -207,3 +207,107 @@ test("chapter 3: the surprise cost arrives, every funding path is offered, the B
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).checkpoint.totals.costSpending)).toBeGreaterThan(0);
   expect(errors, errors.join("\n")).toEqual([]);
 });
+
+/* ---- M4 journeys: chapters 4, 5 and 6, and the time machine ---- */
+async function playThrough(page, onCost, onTown) {
+  const seen = [];
+  for (let i = 0; i < 14; i++) {
+    if (await page.locator(".screen.results").count()) break;
+    if (onTown) await onTown(page, seen);
+    await advanceOnce(page);
+    const where = await settle(page, onCost || (async p => { await p.getByRole("button", { name: /^Pay from my (Buffer|wallet|Saved)/ }).first().click(); }));
+    if (where === "results") break;
+  }
+  return seen;
+}
+const readHint = async (page, seen) => { if (await page.locator(".hint").count()) seen.push(await page.locator(".hint").innerText()); };
+test("chapter 4: practice coins, routing, dividends and the Reinvest toggle, the E18 stop, the time machine", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  await page.evaluate(() => { MS.newRun("ch4", "Harbor Lane 12"); MS.go("town"); });
+  await expect(page.getByText(/adds 10 practice coins every month/)).toBeVisible();
+  await page.getByRole("button", { name: "Start exploring" }).click();
+  await page.locator(".tile").nth(1).click();                                           // the Bakery pays owners four times a year
+  for (let i = 0; i < 4; i++) await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
+  await page.getByRole("button", { name: "My Plan" }).click();
+  await page.locator("#route-select").selectOption("BASKET");
+  await expect(page.locator("#route-select")).toHaveValue("BASKET");
+  await expect(page.locator("input[name=reinvest]")).toHaveCount(0);                 // offered at month 12
+  await page.getByRole("button", { name: "Keep my plan" }).click();
+  await advanceOnce(page); expect(await settle(page, async () => {})).toBe("town");
+  await page.getByRole("button", { name: "My Plan" }).click();
+  await expect(page.locator("input[name=reinvest]")).toHaveCount(2);
+  await page.locator("input[name=reinvest][value='1']").check();
+  await page.getByRole("button", { name: "Keep my plan" }).click();
+  const seen = await playThrough(page, null, readHint);
+  expect(seen.join(" | ")).toMatch(/sharing less money with owners/);               // E18 stop
+  await expect(page.locator(".screen.results")).toBeVisible();
+  await expect(page.getByText(/Shops shared \d+ coins with you this chapter/)).toBeVisible();
+  await expect(page.getByText(/You added 600\./)).toBeVisible();
+  await page.getByRole("button", { name: "Try one change" }).click();
+  await expect(page.locator(".gardens .garden")).toHaveCount(2);
+  await page.locator("#tm-select").selectOption("start-early");
+  await expect(page.getByText("Practice coins start arriving in month 25")).toBeVisible();
+  await expect(page.getByRole("button", { name: "+ 1 year" })).toBeDisabled();            // the slider starts at the last year
+  await page.getByRole("button", { name: "\u2212 1 year" }).click();
+  await expect(page.locator(".garden .small").first()).toContainText("Year 4");
+  await page.getByRole("button", { name: "Save to scrapbook" }).click();
+  await expect(page.getByRole("status")).toContainText("Saved to your scrapbook.");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.locator(".screen.results")).toBeVisible();
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("chapter 5: the slump stop, a closure on the street, Cass on the street, costs paid", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  await page.evaluate(() => { MS.newRun("ch5", "Clover Field 9"); MS.go("town"); });
+  await expect(page.getByText("This is Cass.")).toBeVisible();
+  await page.getByRole("button", { name: "Start exploring" }).click();
+  await expect(page.locator(".house")).toHaveCount(4);
+  await page.locator(".tile.stall").click();
+  await page.locator(".steppers").getByRole("button", { name: "More" }).click();
+  await page.getByRole("button", { name: /^Buy with half my wallet/ }).click();
+  await page.locator(".tile").nth(2).click();                                          // Toy Box, which closes in this town
+  await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
+  const seen = await playThrough(page, null, async (p, acc) => { await readHint(p, acc); if (await p.locator(".tile").nth(2).locator(".ph").filter({ hasText: "shop-toys-closed" }).count()) acc.push("TILE_CLOSED"); });
+  expect(seen.join(" | ")).toMatch(/Many families are spending less/);
+  expect(seen.join(" | ")).toMatch(/Toy Box is closing/);
+  expect(seen.join(" | ")).toMatch(/Toy Box has closed\. You got (about )?\d+ coins back/);
+  expect(seen).toContain("TILE_CLOSED");
+  await expect(page.locator(".screen.results")).toBeVisible();
+  await expect(page.locator(".cols")).toContainText("Cass");
+  const liq = await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).checkpoint.totals.liquidationPaid);
+  expect(liq).toBeGreaterThan(0);
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("chapter 6: the fee lab, two baskets on the street, rising prices, the indexed goal, the lab result", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  await page.evaluate(() => { MS.newRun("ch6", "Lantern Row 5"); MS.go("town"); });
+  await page.getByRole("button", { name: "Start exploring" }).click();
+  await expect(page.getByText("Two baskets charge different fees")).toBeVisible();
+  await page.getByRole("button", { name: "Read the cost card" }).first().click();
+  await page.getByRole("button", { name: "Read the cost card" }).first().click();
+  await expect(page.getByText("Basket A keeps 0.2 of every 100 coins each year.")).toBeVisible();
+  await expect(page.getByText("Basket B keeps 1.5 of every 100 coins each year.")).toBeVisible();
+  await page.getByRole("button", { name: "Choose Basket A" }).click();
+  await expect(page.locator(".screen.town")).toBeVisible();
+  await expect(page.locator(".tile.stall")).toHaveCount(2);
+  await page.locator(".tile.stall").first().click();
+  await page.locator(".steppers").getByRole("button", { name: "More" }).click();
+  await page.getByRole("button", { name: /^Buy with half my wallet/ }).click();
+  await page.getByRole("button", { name: "My Plan" }).click();
+  await expect(page.getByText(/Your money could buy what/)).toBeVisible();
+  await page.locator("#route-select").selectOption("BASKET_A");
+  await page.getByRole("button", { name: "Keep my plan" }).click();
+  const seen = await playThrough(page, null, readHint);
+  await expect(page.locator(".screen.results")).toBeVisible();
+  await expect(page.getByText(/On the same shops, Basket A ended at/)).toBeVisible();
+  await expect(page.locator(".stamp-row").filter({ hasText: "Cost awareness" })).toContainText("You read both cost cards before choosing.");
+  await page.getByRole("button", { name: "Try one change" }).click();
+  await page.locator("#tm-select").selectOption("fee");
+  await expect(page.getByText(/Basket B, 1.5 of every 100 coins a year/)).toBeVisible();
+  await page.getByRole("checkbox", { name: "Show what it can buy" }).check();
+  await expect(page.locator(".gardens .garden")).toHaveCount(2);
+  expect(errors, errors.join("\n")).toEqual([]);
+});

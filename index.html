@@ -84,7 +84,6 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--up);outline-off
 .tile .shop-art{width:100%}
 .tile .tprice{font-variant-numeric:tabular-nums;font-weight:600}
 .tile .small{font-size:.8em}
-.tile.stall strong::after{content:' Fund'}
 .panel{background:var(--card);border:2px solid var(--ink);border-radius:12px;margin:0 12px;overflow:hidden}
 .panel-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:10px 12px 0}
 .center{text-align:center;padding:0 12px}
@@ -176,6 +175,21 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--up);outline-off
 .opts.col{flex-direction:column;align-items:stretch}
 .opts.col .btn{text-align:left;padding:8px 14px;line-height:1.3}
 .intro .keeper{text-align:left}
+/* M4: plan controls, fee lab, time machine */
+.ctl{display:flex;flex-direction:column;gap:6px;padding:8px 0;border-top:1px solid var(--rule)}
+.sel{min-height:48px;font:inherit;padding:0 12px;border:2px solid var(--ink);border-radius:10px;background:var(--card);color:var(--ink);max-width:100%}
+.lab-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.card.lab{text-align:left}
+.cost-text{font-weight:600}
+.gardens{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.garden{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-variant-numeric:tabular-nums}
+.garden-art{position:relative;width:100%;aspect-ratio:1}
+.tree-art{width:100%;height:100%}
+.ground-art{display:none}
+.garden .num{font-size:1.2em;font-weight:700}
+.year-ctl{display:flex;gap:8px;align-items:center}
+.range{flex:1;min-height:48px;accent-color:var(--up)}
+@media (max-width:420px){.lab-cards{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -334,8 +348,13 @@ globalThis.STRINGS = {
   neighborSentence: { held:'{name} kept {his} {what} all year. It {grew}.', jarSame:'{name} kept {his} jar. It stayed the same.', moved:'{name} moved {his} money to {shop} after the {news} news. {shop} had a {kind} year.', bigYear:'{name}\u2019s shop had a big year.', hardYear:'{name}\u2019s shop had a hard year.', quietYear:'{name}\u2019s shop had a quiet year.', paidCost:'{name} paid the surprise cost from {his} jar.', soldForCost:'{name} sold part of {his} basket to pay the cost.', toJar:'{name} sold everything when prices fell and put it in {his} jar.', backIn:'{name} bought the basket again.' },
   neighborPronouns: { ada:{ he:'she', his:'her' }, bo:{ he:'he', his:'his' }, cass:{ he:'she', his:'her' }, dev:{ he:'he', his:'his' } },
   neighborDid: { ada:'{name} put {x} coins in the Basket at the start. Now {now}.', dev:'{name} put {x} coins in {shop} at the start. Now {now}.', bo:'{name} kept {x} coins in {his} jar. Now {now}.', cass:'{name} started with the Basket and moved {n} times. Now {now}.', you:'You started with {x} coins. Now {now}.' },
-  chapterIntro: { ch2:['Six shops are open now. The Town Basket Fund holds a little of all six.', 'What if one shop has trouble?'], ch3:['A surprise cost may come this chapter: {lo} to {hi} coins, sometime after the first year.', 'Your Jar has a new band for exactly that. It is called Buffer.', 'Which money needs to stay ready?'] },
+  chapterIntro: { ch4:['The game now adds 10 practice coins every month. They are added, not earned by your shares.', 'Some shops share money with their owners four times a year. You can keep it or use it to buy more shares.', 'What changes when payments are reinvested?'], ch5:['Some years, many families spend less and most shops feel it. That is a slump. It is not the same as one shop having its own trouble.', 'Cass joins the street. She follows the news.', 'What changed: price, business, or my goal?'], ch6:['Ten years this time. Prices of everyday things rise a little each year, so your goal grows with them.', 'Two baskets hold the same six shops. One charges more each year than the other. Read both cost cards before you choose.', 'What can a plan buy, after costs and rising prices?'], ch2:['Six shops are open now. The Town Basket Fund holds a little of all six.', 'What if one shop has trouble?'], ch3:['A surprise cost may come this chapter: {lo} to {hi} coins, sometime after the first year.', 'Your Jar has a new band for exactly that. It is called Buffer.', 'Which money needs to stay ready?'] },
   fund: { card:'Six shops in one town. Spread out, but still one town.', cost:'Yearly cost: {pct}.', unit:'One basket share holds a little of each shop.' },
+  stops: { e18:'{shop} is sharing less money with owners this year. The business is the same business.', e12:'Robo Lab is fixing a product problem. This is one shop\u2019s trouble, not the whole street\u2019s.', slump:'Many families are spending less this year. Most shops feel it. Check when you need this money.', closure:'{shop} is closing. Owners get {liq} coins a share back next month. {keeper}', closurePaid:'{shop} has closed. You got {paid} coins back for your shares.' },
+  feeLab: { title:'Two baskets charge different fees', body:'Both baskets hold the same six shops in the same amounts. Only the yearly cost is different. Read both cards, then choose one for this chapter. Both stay available.', cardA:'Basket A keeps 0.2 of every 100 coins each year.', cardB:'Basket B keeps 1.5 of every 100 coins each year.', chooseA:'Choose Basket A', chooseB:'Choose Basket B', result:'On the same shops, Basket A ended at {a} a share and Basket B at {b}. The difference is the cost, nothing else.' },
+  inflation: { gazette:'Familiar things cost {pct} more than last year. Your goal now needs {goal} coins.', canBuy:'Your money could buy what {real} coins bought at the start.', toggle:'Show what it can buy' },
+  timeMachine: { title:'The time machine', intro:'Two gardens, one town, one change. Both start with the same coins and see the same prices. The change is labeled.', another:'This is another path, not what would have happened.', save:'Save to scrapbook', saved:'Saved to your scrapbook.',
+    experiments: { 'ada-vs-dev':{ label:'Spread out vs one shop', a:'Ada\u2019s plan: the Basket', b:'Dev\u2019s plan: one shop', note:'Same coins, same town. Which shop Dev picks is seeded by the town.' }, 'buffer':{ label:'Buffer kept vs Buffer invested', a:'Keeps a Buffer for surprise costs', b:'Invests the Buffer too', note:'When a cost comes, the second plan must sell shares to pay it.' }, 'reinvest':{ label:'Reinvest on vs off', a:'Payments buy more shares', b:'Payments stay in the wallet', note:'The wallet money is still yours. It just does not grow.' }, 'start-early':{ label:'Start now vs start in two years', a:'Practice coins invested from month 1', b:'Practice coins start arriving in month 25', note:'The second plan has less time and less money added. Both matter.' }, 'timing':{ label:'Same money, different timing', a:'Invests practice coins as they arrive', b:'Saves them for two years, then invests', note:'Same total added. Only the timing changes.' }, 'hold-vs-sell':{ label:'Hold through the slump vs sell and wait', a:'Keeps the Basket through the slump', b:'Sells when the slump begins, buys back a year later', note:'Selling locks in that year\u2019s prices. Buying back pays that day\u2019s prices. Either can end higher.' }, 'fee':{ label:'Basket A vs Basket B', a:'Basket A, 0.2 of every 100 coins a year', b:'Basket B, 1.5 of every 100 coins a year', note:'Same shops, same amounts. Only the yearly cost differs.' } } },
   costDecision: { paidFrom:'You paid {n} coins for {what} from your {source}.', partly:'You could pay {paid} of {n} coins for {what}. The rest could not be paid.', nothing:'Nothing could pay for {what} this time.', what:{ backpack:'a new backpack strap', bike:'the bike repair', book:'the lost library book' }, bo:'Bo pays surprise costs from his jar.' },
   discoveries: ['My Jar paid for the surprise.','One shop had a bigger year than my basket.','My basket had a bigger year than one shop.','I checked my plan when prices fell.','The news did not tell me what the price would do.','I reached my goal on the day I planned.','I moved my goal date and that was fine.','Cass changed her mind four times this chapter.','Bo’s jar stayed exactly the same.'],
   keepers: {
@@ -429,6 +448,8 @@ function normalizeTownName(s) {
 function createMarket(opts) {
   const sc = resolveScenario(opts.scenarioId, opts.preset);
   const TEST = opts._test || null; if (TEST && TEST.noEvents) { sc.eventSlots = 'none'; sc.lifeCost = null; sc.setback = null; sc.e18 = null; sc.closure = null; }
+  sc.contribStart = 1; sc.overrides = null;
+  if (opts.overrides) { sc.overrides = JSON.parse(JSON.stringify(opts.overrides)); if (isInt(opts.overrides.contribStart) && opts.overrides.contribStart >= 1) sc.contribStart = opts.overrides.contribStart; }
   const seed = String(opts.seed);
   const id = PR.ENGINE_VERSION + '|' + PR.CONTENT_VERSION + '|' + sc.id + (sc.presetId !== 'standard' ? ':' + sc.presetId : '') + '|' + seed;
   const T = sc.months, A = prepAssets(sc), n = A.length, M = PR.moods;
@@ -734,7 +755,7 @@ function applyMut(s, a, m) {
 /* one month, HANDOFF 5 tick order. Step 1 (execute) already happened: actions mutate the draft at the stop and are committed by advance(). */
 function tickMut(s, m) {
   const sc = m.scenario, t = s.t, nt = t + 1;
-  if (sc.contrib > 0) { const cc = sc.contrib * 100; s.wallet += cc; s.totals.contributionsIn += cc;
+  if (sc.contrib > 0 && nt >= sc.contribStart) { const cc = sc.contrib * 100; s.wallet += cc; s.totals.contributionsIn += cc;
     if (s.route === 'saved') { s.jar.saved += cc; s.wallet -= cc; }
     else if (s.route !== 'wallet' && availableIds(sc).includes(s.route) && !isClosed(m, s.route, t)) { const q = quoteAt(m, s.route, t); const msh = mshForCash(cc, q); if (msh > 0) { const spend = posValue(msh, q); s.wallet -= spend; s.pos[s.route] = (s.pos[s.route] || 0) + msh; s.totals.buySpend += spend; addFlow(s, 'buy', s.route, msh); } } }
   const snapIds = [], snapMsh = []; for (let k = 0; k < sc.shops.length; k++) { const id = sc.shops[k], msh = s.pos[id]; if (msh > 0) { snapIds.push(id); snapMsh.push(msh); } }
@@ -862,9 +883,16 @@ function buyAll(s, m, id) { if (s.wallet <= 0 || isClosed(m, id, s.t)) return fa
 function largestHolding(s, m) { let best = null, bv = -1; for (const id of posIds(s, m.scenario)) { const v = posValue(s.pos[id], quoteAt(m, id, s.t)); if (v > bv) { bv = v; best = id; } } return best; }
 const spare = (c, s) => s.wallet > 0 && !soonNeeded(s, c.m, c.t);
 const POLICIES = {
-  ada: { atStop(c, s) { const { sc, m, t } = c, target = sc.funds[0] || sc.shops[0];
-      if (t === 0) { commonStart(c, s); if (sc.dividends) tryApply(s, { type: 'REINVEST', on: true }, m); buyAll(s, m, target); tryApply(s, { type: 'ROUTE', to: target }, m); }
-      else { topUpSoon(c, s); if (spare(c, s)) buyAll(s, m, target); } }, decide: decideCommon },
+  ada: { atStop(c, s) { const { sc, m, t } = c, v = c.variant || {}, target = (v.basket && sc.funds.includes(v.basket)) ? v.basket : (sc.funds[0] || sc.shops[0]);
+      if (t === 0) { if (v.noBuffer) { if (s.goal.due - t <= 12) { const x = Math.min(s.wallet, goalNominal(s, m, t)); if (x > 0) tryApply(s, { type: 'JAR_IN', band: 'soon', cc: x }, m); } } else commonStart(c, s);
+        if (sc.dividends) tryApply(s, { type: 'REINVEST', on: v.reinvest === false ? false : true }, m); if (v.holdUntil) { if (s.wallet > 0) tryApply(s, { type: 'JAR_IN', band: 'saved', cc: s.wallet }, m); tryApply(s, { type: 'ROUTE', to: 'saved' }, m); } else { buyAll(s, m, target); tryApply(s, { type: 'ROUTE', to: target }, m); } s.meta.ada = { parked: false, soldT: null, released: false }; return; }
+      const st = s.meta.ada || (s.meta.ada = { parked: false, soldT: null });
+      if (v.holdUntil) { if (t < v.holdUntil) { if (s.route !== 'saved') tryApply(s, { type: 'ROUTE', to: 'saved' }, m); if (s.wallet > 0) tryApply(s, { type: 'JAR_IN', band: 'saved', cc: s.wallet }, m); return; } else if (!st.released) { if (s.jar.saved > 0) tryApply(s, { type: 'JAR_OUT', band: 'saved', cc: s.jar.saved }, m); buyAll(s, m, target); tryApply(s, { type: 'ROUTE', to: target }, m); st.released = true; } }
+      if (v.noBuffer) { if (soonNeeded(s, m, t)) topUpSoon(c, s); } else topUpSoon(c, s);
+      if (v.slumpSell) { if (!st.parked && c.slumpStarted) { for (const id of posIds(s, sc)) if (!isClosed(m, id, t)) tryApply(s, { type: 'SELL', id, msh: s.pos[id] }, m); if (s.wallet > 0) tryApply(s, { type: 'JAR_IN', band: 'saved', cc: s.wallet }, m); tryApply(s, { type: 'ROUTE', to: 'saved' }, m); st.parked = true; st.soldT = t; s.meta.lastMove = { t, kind: 'toJar' }; return; }
+        if (st.parked && t - st.soldT >= 12) { if (s.jar.saved > 0) tryApply(s, { type: 'JAR_OUT', band: 'saved', cc: s.jar.saved }, m); buyAll(s, m, target); tryApply(s, { type: 'ROUTE', to: target }, m); st.parked = false; s.meta.lastMove = { t, kind: 'backIn' }; return; }
+        if (st.parked) { if (s.wallet > 0) tryApply(s, { type: 'JAR_IN', band: 'saved', cc: s.wallet }, m); return; } }
+      if (spare(c, s)) buyAll(s, m, target); }, decide(c, s, q) { const v = c.variant || {}; if (q.id === 'E24') return tryApply(s, { type: 'CHOOSE_BASKET', id: (v.basket && c.sc.funds.includes(v.basket)) ? v.basket : 'BASKET_A' }, c.m); return decideCommon(c, s, q); } },
   bo: { atStop(c, s) { const { m, t } = c;
       if (t === 0) commonStart(c, s); else topUpSoon(c, s);
       if (s.wallet > 0) tryApply(s, { type: 'JAR_IN', band: 'saved', cc: s.wallet }, m); if (t === 0) tryApply(s, { type: 'ROUTE', to: 'saved' }, m); }, decide: decideCommon },
@@ -902,7 +930,7 @@ function runPolicy(m, policyId, opts) {
   const pol = typeof policyId === 'string' ? POLICIES[policyId] : policyId; if (!pol) throw new Error('unknown policy ' + policyId);
   const s = createRun({ market: m }), moves = [], rng = opts && opts.rng;
   for (let guard = 0; guard < 100000; guard++) {
-    const c = ctxFor(s, m); c.rng = rng;
+    const c = ctxFor(s, m); c.rng = rng; c.variant = opts && opts.variant ? opts.variant : null;
     pol.atStop(c, s);
     for (const q of s.queue) if (q.required && !q.resolved) pol.decide(c, s, q);
     if (s.meta.lastMove && s.meta.lastMove.t === s.t) moves.push(s.meta.lastMove);
@@ -948,7 +976,13 @@ function replayPending(checkpoint, pending, m) { const s = clone(checkpoint); fo
 function advance(s, m, to) { const s2 = clone(s); const r = advanceMut(s2, m, to); return { state: s2, ...r }; }
 function finishChapter(s, m) { const s2 = clone(s); finishMut(s2, m); return s2; }
 function replaySave(save, m) { return replayPending(save.checkpoint, save.pending || [], m); }
-function comparePlan(m, policyId, opts) { return runPolicy(m, policyId, opts); }
+// A declared alternative on the same seed: a policy (with a variant) on this market, or on this market with a scenario override (same seed, same prices).
+function comparePlan(m, spec) {
+  const sp = typeof spec === 'string' ? { policy: spec } : (spec || {});
+  const mm = sp.overrides ? createMarket({ scenarioId: m.scenarioId, seed: m.seed, preset: m.preset !== 'standard' ? m.preset : undefined, overrides: sp.overrides }) : m;
+  const r = runPolicy(mm, sp.policy || 'ada', { variant: sp.variant || null });
+  return { nw: r.nw, state: r.state, moves: r.moves, market: mm, spec: sp };
+}
 
 globalThis.ENGINE = {
   VERSION: { engine: PR.ENGINE_VERSION, content: PR.CONTENT_VERSION, rubric: PR.RUBRIC_VERSION },
@@ -983,7 +1017,7 @@ globalThis.ENGINE = {
 const E = globalThis.ENGINE, PR = globalThis.PARAMS, CT = globalThis.CONTENT, ST = globalThis.STRINGS;
 const BUILD = '0.2.0 M2';
 const KEYS = { save: 'ms:save', bak: 'ms:save:bak', bad: 'ms:save:bad', settings: 'ms:settings' };
-const BUILT = ['ch1', 'ch2', 'ch3'];
+const BUILT = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6'];
 const isBuilt = id => BUILT.includes(id);
 const chapterIds = () => globalThis.CONTENT.chapters.filter(c => c.id !== 'free').map(c => c.id);
 function nextChapterId(id) { const ids = chapterIds(), i = ids.indexOf(id); return i >= 0 && i + 1 < ids.length ? ids[i + 1] : null; }
@@ -1093,6 +1127,14 @@ function arrive() {
   const sticky = S.ui.hint && S.ui.hint.sticky ? S.ui.hint : null;
   if (S.run.scenarioId === 'ch1' && S.ui.tutorialStep >= 0) { if (t === 3) S.ui.hint = { text: ST.lines.samePrice }; else if (t === 6) S.ui.hint = { text: ST.lines.dropStop, button: 'Review my plan', action: () => openPlan() }; else S.ui.hint = null; }
   else S.ui.hint = s.stop.reasons.includes('drop') ? { text: ST.lines.dropStop, button: 'Review my plan', action: () => openPlan() } : null;
+  const stopLines = [];
+  for (const c of S.market.cards) if (c.t === t) {
+    if (c.id === 'E18') stopLines.push(ST.stops.e18.replace('{shop}', nameOf(c.forShop)));
+    else if (c.id === 'E12') stopLines.push(ST.stops.e12); else if (c.id === 'E13') stopLines.push(ST.stops.slump);
+    else if (c.id === 'E19') { const cl = S.market.closure; const line = CT.cards.find(x => x.id === 'E19').keeperLine[cl.id] || ''; stopLines.push(ST.stops.closure.replace('{shop}', nameOf(cl.id)).replace('{liq}', coins(cl.liqQuote)).replace('{keeper}', line)); }
+  }
+  if (S.market.closure && S.market.closure.announceT + 1 > s.lastStopT && S.market.closure.announceT + 1 <= t && s.totals.liquidationPaid > 0) stopLines.push(ST.stops.closurePaid.replace('{shop}', nameOf(S.market.closure.id)).replace('{paid}', coins(s.totals.liquidationPaid)));
+  if (stopLines.length) S.ui.hint = { text: stopLines.join(' ') + (S.ui.hint ? ' ' + S.ui.hint.text : ''), button: 'Review my plan', action: () => openPlan() };
   if (sticky) S.ui.hint = S.ui.hint ? { text: sticky.text + ' ' + S.ui.hint.text, button: S.ui.hint.button, action: S.ui.hint.action } : sticky;
   go('town');
 }
@@ -1102,7 +1144,7 @@ function finishChapter() {
   if (!S.progress.completedChapters.includes(id)) S.progress.completedChapters.push(id);
   for (const k in s.pos) if (k.indexOf('BASKET') !== 0 && !al.shops.includes(k)) al.shops.push(k);
   for (const c of S.market.cards) if (c.t <= s.t && !al.cards.includes(c.id)) al.cards.push(c.id);
-  const sc = S.market.scenario; if (sc.contrib > 0 && !al.cards.includes('E22')) al.cards.push('E22'); if (sc.inflation && !al.cards.includes('E23')) al.cards.push('E23'); if (!guided() && S.market.cards.some(c => c.kind === 'shock' && c.t <= s.t) && !al.cards.includes('E17')) al.cards.push('E17');
+  const sc = S.market.scenario; if (sc.contrib > 0 && !al.cards.includes('E22')) al.cards.push('E22'); if (sc.inflation && !al.cards.includes('E23')) al.cards.push('E23'); if (sc.feeLab && !al.cards.includes('E24')) al.cards.push('E24'); if (!guided() && S.market.cards.some(c => c.kind === 'shock' && c.t <= s.t) && !al.cards.includes('E17')) al.cards.push('E17');
   for (const n of S.market.scenario.neighbors) if (!al.neighbors.includes(n)) al.neighbors.push(n);
   if (s.goal.status === 'funded' && !al.goals.includes(s.goal.slug)) al.goals.push(s.goal.slug);
   save(); go('results');
@@ -1145,6 +1187,7 @@ function shopTile(id, sel) {
 }
 function shopPanel(id) {
   const s = S.draft, m = S.market, a = assetById(id), act = activityNow(s, m), state = act ? act[id] : 'open', [q, q0] = quoteAtStop(id), msh = s.pos[id] || 0, own = E.posValue(msh, q);
+  if (state === 'closed') { const cl = m.closure, paid = s.t > cl.announceT; return el('div', { class: 'panel', 'data-shop': id }, el('div', { class: 'panel-head' }, el('strong', { text: a.name }), el('span', { class: 'muted', text: 'closed' })), el('div', { class: 'detail' }, el('div', { class: 'keeper' }, art('keeper-' + a.keeper + '-talking', 'keeper-art', keeperOf(id).name), el('p', { class: 'bubble', text: CT.cards.find(x => x.id === 'E19').keeperLine[id] || '' })), el('p', { text: paid ? ST.stops.closurePaid.replace('{shop}', a.name).replace('{paid}', coins(s.totals.liquidationPaid)) : ST.stops.closure.replace('{shop}', a.name).replace('{liq}', coins(cl.liqQuote)).replace('{keeper}', '') }), el('p', { class: 'muted', text: msh && !paid ? 'You own ' + shares(msh) + '. The coins arrive next month.' : 'A closed shop is a permanent loss, different from a slump.' }))); }
   const tut = S.ui.tutorialStep, canTrade = (tut < 0 || tut >= 4) && !s.ended, chg = q0 ? (q - q0) / q0 : 0;
   const plusV = E.validateAction(s, { type: 'BUY', id, msh: 1000 }, m), minusV = E.validateAction(s, { type: 'SELL', id, msh: Math.min(1000, msh) }, m);
   return el('div', { class: 'panel', 'data-shop': id },
@@ -1188,7 +1231,7 @@ function townScreen() {
     (() => { const ids = sc.ids; const selected = S.ui.openShop && ids.includes(S.ui.openShop) ? S.ui.openShop : (ids.length === 1 ? ids[0] : null); return el('section', { class: 'street', 'aria-label': 'The street' }, art('plate-sky', 'sky'), el('div', { class: 'shops' + (ids.length === 1 ? ' one' : '') }, sc.shops.map(id => shopTile(id, id === selected)), sc.funds.map(id => stallTile(id, id === selected))), selected ? (m.funds[selected] ? fundPanel(selected) : shopPanel(selected)) : el('p', { class: 'muted center', text: 'Tap a shop to see its shares.' })); })(),
     sc.neighbors.length ? neighborsRow() : null,
     tray(),
-    el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn', onclick: () => go('scrapbook'), text: 'Scrapbook' }), el('button', { type: 'button', class: 'btn', onclick: openPlan, text: 'My Plan' }), el('button', { type: 'button', class: 'btn primary big', disabled: nextOk ? null : true, onclick: () => { S.ui.sheet = { kind: 'confirm' }; render(); }, text: s.t % sc.stopEvery !== 0 ? 'Continue year' : nextLabel })),
+    el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn', onclick: () => go('scrapbook'), text: 'Scrapbook' }), sc.n >= 2 ? el('button', { type: 'button', class: 'btn', onclick: () => { S.ui.tm = null; go('timemachine'); }, text: 'Time machine' }) : null, el('button', { type: 'button', class: 'btn', onclick: openPlan, text: 'My Plan' }), el('button', { type: 'button', class: 'btn primary big', disabled: nextOk ? null : true, onclick: () => { S.ui.sheet = { kind: 'confirm' }; render(); }, text: s.t % sc.stopEvery !== 0 ? 'Continue year' : nextLabel })),
     sheet());
 }
 
@@ -1273,7 +1316,7 @@ function neighborSheetBody(id) {
 function stallTile(id, sel) {
   const s = S.draft, m = S.market, f = m.funds[id], q = f.navQ[s.t], msh = s.pos[id] || 0, lt = s.lastStopT, q0 = f.navQ[lt === s.t ? Math.max(0, s.t - m.scenario.stopEvery) : lt], chg = q0 ? (q - q0) / q0 : 0;
   return el('button', { type: 'button', class: 'tile shop-face stall' + (sel ? ' sel' : ''), 'aria-pressed': sel ? 'true' : 'false', 'aria-label': 'Town Basket Fund, share price ' + coins(q) + ', you own ' + shares(msh), onclick: () => { S.ui.openShop = sel ? null : id; render(); } },
-    art(id === 'BASKET' ? 'stall-normal' : 'stall-ab', 'shop-art', ''), el('strong', { text: 'Town Basket' }), el('span', { class: 'tprice' }, coins(q), s.t > 0 ? el('span', { class: 'chg ' + (chg >= 0 ? 'up' : 'down'), text: ' ' + (chg >= 0 ? '▲' : '▼') + pct(chg) }) : null), el('span', { class: 'muted small', text: msh ? shares(msh) : 'none yet' }));
+    art(id === 'BASKET' ? 'stall-normal' : 'stall-ab', 'shop-art', ''), el('strong', { text: nameOf(id) }), el('span', { class: 'tprice' }, coins(q), s.t > 0 ? el('span', { class: 'chg ' + (chg >= 0 ? 'up' : 'down'), text: ' ' + (chg >= 0 ? '▲' : '▼') + pct(chg) }) : null), el('span', { class: 'muted small', text: msh ? shares(msh) : 'none yet' }));
 }
 function expoRows(weights, warnAbove) { return el('div', { class: 'expo' }, PR.assets.map((a, i) => weights[i] > 0.0005 ? el('div', { class: 'expo-row' }, el('span', { text: a.name }), el('div', { class: 'bar small' }, el('div', { class: 'fill' + (warnAbove && weights[i] > warnAbove ? ' warn' : ''), style: 'width:' + Math.round(weights[i] * 100) + '%' })), el('span', { class: 'muted small', text: Math.round(weights[i] * 100) + ' of 100' })) : null)); }
 function fundPanel(id) {
@@ -1321,8 +1364,20 @@ function planScreen() {
     el('section', { class: 'card' }, el('h3', { text: 'My money' }), el('ul', { class: 'bands-list' }, el('li', { class: 'band-row' }, el('div', {}, el('strong', { text: 'Wallet' }), el('span', { class: 'muted', text: ' everyday money' })), el('strong', { text: coins(s.wallet) })),
       bandRow('soon', 'Soon', 'for my goal'), sc.buffer ? bandRow('buffer', 'Buffer', 'for surprise costs') : null, bandRow('saved', 'Saved', 'plain savings' + (sc.jarRate ? ', pays ' + Math.round(sc.jarRate * 100) + ' of every 100 a year' : '')),
       el('li', { class: 'band-row' }, el('div', {}, el('strong', { text: 'Invested' }), el('span', { class: 'muted', text: ' in shares' })), el('strong', { text: coins(inv) })))),
+    planControls(s, m),
     exposureCard(s, m),
     el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn primary big', onclick: back, text: 'Keep my plan' })));
+}
+function planControls(s, m) {
+  const sc = m.scenario, parts = [];
+  if (sc.contrib > 0) { const opts = [['wallet', 'My wallet'], ['saved', 'My Jar (Saved)'], ...sc.funds.map(f => [f, nameOf(f)]), ...sc.shops.map(id => [id, nameOf(id)])];
+    const sel = el('select', { class: 'sel', id: 'route-select', 'aria-label': 'Where practice coins go each month', disabled: s.ended ? true : null, onchange: e => { queue({ type: 'ROUTE', to: e.target.value }); render(); } }, opts.map(([v, l]) => el('option', { value: v, selected: s.route === v ? true : null, text: l })));
+    parts.push(el('div', { class: 'ctl' }, el('label', { for: 'route-select' }, el('strong', { text: 'Practice coins' }), el('span', { class: 'muted', text: ' The game adds ' + sc.contrib + ' coins every month. They go to:' })), sel)); }
+  if (sc.dividends && (sc.reinvestOffer === 0 || (sc.reinvestOffer !== null && s.t >= sc.reinvestOffer))) {
+    const radio = (on, label) => el('label', { class: 'radio' }, el('input', { type: 'radio', name: 'reinvest', value: on ? '1' : '0', checked: s.reinvest === on ? true : null, disabled: s.ended ? true : null, onchange: () => { queue({ type: 'REINVEST', on }); render(); } }), ' ' + label);
+    parts.push(el('div', { class: 'ctl' }, el('strong', { text: 'When a shop shares money with you' }), radio(false, 'Keep it in my wallet'), radio(true, 'Buy more shares with it (reinvest)'), el('p', { class: 'muted small', text: ST.core.dividend }))); }
+  if (sc.inflation) { const real = E.summarizeRun(s, m).real; parts.push(el('div', { class: 'ctl' }, el('strong', { text: 'Rising prices' }), el('p', { class: 'muted', text: ST.inflation.canBuy.replace('{real}', coins(real)) + ' ' + ST.core.inflation }))); }
+  if (!parts.length) return null; return el('section', { class: 'card' }, el('h3', { text: 'My plan settings' }), parts);
 }
 
 /* ---- Decisions: E21 goal day, E20 surprise cost ---- */
@@ -1351,7 +1406,12 @@ function decisionScreen() {
       opts.length ? null : el('button', { type: 'button', class: 'btn primary', onclick: () => { queue({ type: 'FUND_COST' }); S.ui.hint = { sticky: true, text: ST.costDecision.nothing.replace('{what}', what) }; after(); }, text: 'Continue' }),
       el('button', { type: 'button', class: 'btn ghost', onclick: openPlan, text: 'Review my plan' }), m.scenario.neighbors.includes('bo') ? el('p', { class: 'muted', text: ST.costDecision.bo }) : null);
   }
-  return el('main', { class: 'screen decision' }, frozen, el('h2', { text: card ? card.headline : q.id }), el('p', { text: 'This decision arrives in a later milestone.' }), el('button', { type: 'button', class: 'btn', onclick: () => { if (q.id === 'E24') queue({ type: 'CHOOSE_BASKET', id: 'BASKET_A' }); after(); }, text: 'Continue' }));
+  if (q.id === 'E24') {
+    const viewed = id => S.run.pending.some(p => p.type === 'VIEW_COST' && p.id === id);
+    const costCard = (id, text) => el('div', { class: 'card lab' }, el('div', { class: 'panel-head' }, el('strong', { text: nameOf(id) }), el('span', { class: 'muted', text: 'six shops, equal amounts' })), viewed(id) ? el('p', { class: 'cost-text', text: text }) : el('button', { type: 'button', class: 'btn small', onclick: () => { queue({ type: 'VIEW_COST', id }); render(); }, text: 'Read the cost card' }), el('button', { type: 'button', class: 'btn', onclick: () => { queue({ type: 'CHOOSE_BASKET', id }); S.ui.hint = { sticky: true, text: 'You chose ' + nameOf(id) + ' for this chapter. Both baskets stay on the street.' }; after(); }, text: id === 'BASKET_A' ? ST.feeLab.chooseA : ST.feeLab.chooseB }));
+    return el('main', { class: 'screen decision lab-screen' }, frozen, el('h2', { text: ST.feeLab.title }), el('p', { text: ST.feeLab.body }), el('div', { class: 'lab-cards' }, costCard('BASKET_A', ST.feeLab.cardA), costCard('BASKET_B', ST.feeLab.cardB)), el('p', { class: 'muted', text: ST.core.fees }));
+  }
+  return el('main', { class: 'screen decision' }, frozen, el('h2', { text: card ? card.headline : q.id }), el('button', { type: 'button', class: 'btn', onclick: after, text: 'Continue' }));
 }
 
 /* ---- Scrapbook: chapter pages, album, decoder ---- */
@@ -1363,6 +1423,7 @@ function scrapbookScreen() {
   return el('main', { class: 'screen scrapbook' }, topbar('Scrapbook', { label: '← Back', fn: () => go(S.run ? (S.draft.ended ? 'results' : 'town') : 'home') }),
     pages.length ? pages : el('p', { class: 'muted', text: 'Finish a chapter to add a page.' }),
     el('section', { class: 'card' }, el('h3', { text: 'Album: ' + count + ' of 40 town cards' }), el('p', { class: 'muted', text: 'Some stories only happen in some towns.' }), grid),
+    (S.progress.experiments && S.progress.experiments.length) ? el('section', { class: 'card' }, el('h3', { text: 'Saved experiments' }), el('ul', { class: 'cols' }, S.progress.experiments.map(x => el('li', { text: x.town + ', ' + x.label + ': ' + x.a.label + ' ended at ' + coins(x.a.end) + ', ' + x.b.label + ' at ' + coins(x.b.end) + '.' })))) : null,
     el('section', { class: 'card' }, el('h3', { text: 'Decoder' }), el('table', { class: 'decoder' }, el('tbody', {}, ST.decoder.map(r => el('tr', {}, el('td', {}, el('strong', { text: r[0] })), el('td', { text: r[1] }), el('td', { class: 'muted', text: r[2] })))))));
 }
 
@@ -1404,14 +1465,18 @@ function gazetteScreen() {
   const busiest = p.busiest ? ST.lines.busiest.replace('{shop}', nameOf(p.busiest.id)).replace('{n}', p.busiest.n) : '';
   const moneyWords = ST.lines.moneyPanel.replace('{added}', coins(p.money.added, { noAbout: true })).replace('{result}', signed(p.money.result)).replace('{spent}', coins(p.money.spent, { noAbout: true }));
   const obs = p.observation ? ST.lines.observation.replace('{headline}', CT.cards.find(c => c.id === p.observation.card).headline.toLowerCase()).replace('{shop}', nameOf(p.observation.shop)).replace('{kind}', p.observation.happened === p.observation.suggested ? (p.observation.happened === 'up' ? 'good' : 'hard') : (p.observation.happened === 'up' ? 'better year than the news suggested' : 'quieter')) : null;
-  const costs = p.cards.filter(c => c.id === 'E20');
+  const costs = p.cards.filter(c => c.id === 'E20'), hA = s.history[p.t0], hB = s.history[p.t1], divs = hB.tot.dividendsCash - hA.tot.dividendsCash, extra = [];
+  if (divs > 0) extra.push('Shops shared ' + coins(divs, { noAbout: true }) + ' coins with you this year' + (s.reinvest ? ', and the money bought more shares.' : '.'));
+  if (m.scenario.inflation && p.t1 > p.t0) { const ratio = m.index[p.t1] / m.index[p.t0] - 1; extra.push(ST.inflation.gazette.replace('{pct}', Math.round(ratio * 100) + ' of every 100').replace('{goal}', coins(E.goalNominal(s, m, s.t), { noAbout: true }))); }
+  if (m.closure && m.closure.announceT > p.t0 && m.closure.announceT <= p.t1) extra.push(nameOf(m.closure.id) + ' closed this year. Owners got ' + coins(m.closure.liqQuote) + ' coins a share back. That is a permanent loss, different from a slump.');
+  if (p.money.added > 0 && y === 1 && m.scenario.n === 4) extra.push('The practice coins were added by the game, not earned by your shares.');
   const neighbors = m.scenario.neighbors.length ? el('section', { class: 'card' }, el('h3', { text: 'Your neighbors' }), nbIds().map(id => { const n = nbInfo(id), yr = neighborYear(id, y);
     return el('div', { class: 'gaz-nb' }, art('house-' + id, 'house-art', ''), el('div', {}, el('strong', { text: n.name }), el('span', { class: 'muted', text: ' · ' + n.plan }), el('div', { class: 'nb-money' }, el('strong', { text: coins(yr.nw) }), el('span', { class: 'chg ' + (yr.delta >= 0 ? 'up' : 'down'), text: ' ' + (yr.delta >= 0 ? '▲ ' : '▼ ') + signed(yr.delta) + ' this year' })), el('p', { class: 'muted', text: yr.text }))); }), el('p', { class: 'muted', text: ST.core.neighbors })) : null;
   return el('main', { class: 'screen gazette' },
     el('header', { class: 'masthead' }, el('p', { class: 'eyebrow', text: 'The ' + m.townName + ' Gazette' }), el('h2', { text: biggest ? biggest.headline : (y === 1 && m.scenario.id === 'ch1' ? 'A year of practice on the street' : 'A quiet year on the street') }), el('p', { class: 'muted', text: 'Year ' + y + ' · ' + p.weather.map(w => w === 'sun' ? '☀' : w === 'rain' ? '☂' : '❄').join(' ') })),
     busiest ? el('p', { class: 'busiest', text: busiest }) : null,
     p.cards.filter(c => !['E20', 'E21', 'E22'].includes(c.id)).length > 1 ? el('p', { class: 'muted center', text: 'Also this year: ' + p.cards.filter(c => !['E20', 'E21', 'E22'].includes(c.id) && (!biggest || c.id !== biggest.id)).map(c => CT.cards.find(x => x.id === c.id).headline.toLowerCase()).join('; ') + '.' }) : null,
-    el('section', { class: 'card' }, el('h3', { text: 'Your money' }), el('div', { class: 'money-story' }, el('div', {}, el('span', { class: 'lbl', text: 'Start of year' }), el('strong', { text: coins(p.money.start) })), p.money.added ? el('div', {}, el('span', { class: 'lbl', text: 'Added' }), el('strong', { text: '+' + coins(p.money.added, { noAbout: true }) })) : null, el('div', {}, el('span', { class: 'lbl', text: 'Investments' }), el('strong', { class: p.money.result >= 0 ? 'up' : 'down', text: signed(p.money.result) })), p.money.spent ? el('div', {}, el('span', { class: 'lbl', text: 'Spent' }), el('strong', { text: '−' + coins(p.money.spent, { noAbout: true }) })) : null, el('div', {}, el('span', { class: 'lbl', text: 'Now' }), el('strong', { text: coins(p.money.end) }))), el('p', { class: 'muted', text: moneyWords + (costs.length ? ' A surprise cost came this year.' : '') })),
+    el('section', { class: 'card' }, el('h3', { text: 'Your money' }), el('div', { class: 'money-story' }, el('div', {}, el('span', { class: 'lbl', text: 'Start of year' }), el('strong', { text: coins(p.money.start) })), p.money.added ? el('div', {}, el('span', { class: 'lbl', text: 'Added' }), el('strong', { text: '+' + coins(p.money.added, { noAbout: true }) })) : null, el('div', {}, el('span', { class: 'lbl', text: 'Investments' }), el('strong', { class: p.money.result >= 0 ? 'up' : 'down', text: signed(p.money.result) })), p.money.spent ? el('div', {}, el('span', { class: 'lbl', text: 'Spent' }), el('strong', { text: '−' + coins(p.money.spent, { noAbout: true }) })) : null, el('div', {}, el('span', { class: 'lbl', text: 'Now' }), el('strong', { text: coins(p.money.end) }))), el('p', { class: 'muted', text: moneyWords + (costs.length ? ' A surprise cost came this year.' : '') }), extra.map(x => el('p', { class: 'muted', text: x }))),
     neighbors,
     el('section', { class: 'card' }, el('h3', { text: 'One thing to notice' }), el('p', { text: obs || (m.scenario.id === 'ch1' ? ST.lines.samePrice + ' ' + ST.core.price : ST.core.time) })),
     el('div', { class: 'actions' }, S.ui.lastShow && S.ui.lastShow.length ? el('button', { type: 'button', class: 'btn', onclick: () => { S.ui.seenGazetteAt = s.t; go('show'); }, text: 'Watch again' }) : null, el('button', { type: 'button', class: 'btn primary big', onclick: () => arrive(), text: 'Continue' })));
@@ -1445,11 +1510,13 @@ function resultsScreen() {
   return el('main', { class: 'screen results' }, banner(),
     el('h2', { text: sc.title + ' is finished' }), el('p', { class: 'lead', text: goalStory }), el('p', { class: 'muted', text: ST.lines.chapterEnd }),
     el('section', { class: 'card' }, el('h3', { text: 'Your money this chapter' }), el('p', { text: ST.lines.moneyPanel.replace('{added}', coins(sum.money.added, { noAbout: true })).replace('{result}', signed(sum.money.result)).replace('{spent}', coins(sum.money.spent, { noAbout: true })) }), el('p', { class: 'muted', text: 'Started with ' + coins(sum.money.start) + '. Now ' + coins(sum.money.end) + '.' + (s.totals.costUnmet ? ' Part of a surprise cost could not be paid.' : '') })),
+    s.totals.dividendsCash > 0 ? el('p', { class: 'muted', text: 'Shops shared ' + coins(s.totals.dividendsCash, { noAbout: true }) + ' coins with you this chapter' + (s.totals.reinvestSpend > 0 ? ', and ' + coins(s.totals.reinvestSpend, { noAbout: true }) + ' of it bought more shares.' : '.') }) : null,
+    sc.feeLab ? el('section', { class: 'card' }, el('h3', { text: ST.feeLab.title }), el('p', { text: ST.feeLab.result.replace('{a}', coins(m.funds.BASKET_A.navQ[s.t], { exact: true })).replace('{b}', coins(m.funds.BASKET_B.navQ[s.t], { exact: true })) }), el('p', { class: 'muted', text: ST.core.fees })) : null,
     comparisonCard(s, m),
     el('section', { class: 'card' }, el('h3', { text: 'How you planned' }), el('ul', { class: 'stamps' }, stamps), el('button', { type: 'button', class: 'btn ghost small', onclick: () => { S.ui.showDetails = !S.ui.showDetails; render(); }, text: S.ui.showDetails ? 'Hide details' : 'Show details' }), S.ui.showDetails ? el('p', { class: 'muted', text: score.total === null ? 'Exploring: nothing to grade yet.' : 'Plan Practice ' + score.total + ' of 100 (' + E.VERSION.rubric + '). It grades planning habits in this chapter, not how much money you made.' }) : null),
     el('section', { class: 'card' }, el('h3', { text: 'Choose a decoration' }), el('div', { class: 'decos' }, decos)),
     el('section', { class: 'card' }, el('h3', { text: 'Pick a discovery' }), el('div', { class: 'opts' }, offered.map(t => el('button', { type: 'button', class: 'btn ' + (disc === t ? 'primary' : ''), 'aria-pressed': disc === t ? 'true' : 'false', onclick: () => { S.progress.discoveries[sc.id] = t; saveSettings(); render(); }, text: t })))),
-    el('div', { class: 'actions col' }, nextId && isBuilt(nextId) ? el('button', { type: 'button', class: 'btn primary big', onclick: () => { newRun(nextId, randomTownName()); go('town'); }, text: 'Next chapter: ' + CT.chapters.find(c => c.id === nextId).title }) : el('button', { type: 'button', class: 'btn', disabled: true, text: 'Next chapter (coming soon)' }), el('button', { type: 'button', class: 'btn ' + (nextId && isBuilt(nextId) ? '' : 'primary big'), onclick: () => go('home'), text: 'Save and stop' }), el('button', { type: 'button', class: 'btn', onclick: () => { newRun(sc.id, randomTownName()); go('town'); }, text: 'Replay chapter' }), el('button', { type: 'button', class: 'btn ghost', onclick: () => go('scrapbook'), text: 'Scrapbook' }), el('button', { type: 'button', class: 'btn ghost', onclick: openPlan, text: 'My Plan' })));
+    el('div', { class: 'actions col' }, nextId && isBuilt(nextId) ? el('button', { type: 'button', class: 'btn primary big', onclick: () => { newRun(nextId, randomTownName()); go('town'); }, text: 'Next chapter: ' + CT.chapters.find(c => c.id === nextId).title }) : el('button', { type: 'button', class: 'btn', disabled: true, text: sc.id === 'ch6' ? 'Free play (coming soon)' : 'Next chapter (coming soon)' }), sc.n >= 2 ? el('button', { type: 'button', class: 'btn', onclick: () => { S.ui.tm = null; go('timemachine'); }, text: 'Try one change' }) : null, el('button', { type: 'button', class: 'btn ' + (nextId && isBuilt(nextId) ? '' : 'primary big'), onclick: () => go('home'), text: 'Save and stop' }), el('button', { type: 'button', class: 'btn', onclick: () => { newRun(sc.id, randomTownName()); go('town'); }, text: 'Replay chapter' }), el('button', { type: 'button', class: 'btn ghost', onclick: () => go('scrapbook'), text: 'Scrapbook' }), el('button', { type: 'button', class: 'btn ghost', onclick: openPlan, text: 'My Plan' })));
 }
 
 /* ---- intros ---- */
@@ -1461,7 +1528,7 @@ function chapterIntroScreen() {
     lines.map(l => el('p', { text: l })),
     el('div', { class: 'goal-chip' }, art('goal-' + s.goal.slug, 'goal-art', CT.goals[s.goal.slug]), el('div', { class: 'goal-text' }, el('strong', { text: 'Your goal: ' + CT.goals[s.goal.slug].toLowerCase() }), el('span', { class: 'muted', text: coins(s.goal.amount) + ' coins, in ' + Math.round(s.goal.due / 12) + ' years. You start with ' + coins(s.wallet) + ' coins.' }))),
     newNb.map(id => el('div', { class: 'keeper' }, art('neighbor-' + id + '-neutral', 'keeper-art', nbInfo(id).name), el('p', { class: 'bubble', text: ST.neighborIntro[id] }))),
-    el('button', { type: 'button', class: 'btn primary big', onclick: () => { S.ui.intro = false; save(); go('town'); }, text: 'Start exploring' }));
+    el('button', { type: 'button', class: 'btn primary big', onclick: () => { S.ui.intro = false; save(); arrive(); }, text: 'Start exploring' }));
 }
 
 /* ---- router and boot ---- */
@@ -1470,8 +1537,9 @@ function render() {
   document.documentElement.style.setProperty('--ts', String(S.options.textSize || 1));
   let view;
   if (!S.run && !['settings', 'grownups', 'scrapbook'].includes(S.screen)) S.screen = 'home';
+  if (S.run && S.screen === 'town' && !S.ui.intro && !S.draft.ended && hasRequired(S.draft)) S.screen = 'decision';
   if (S.run && S.screen === 'town' && S.ui.intro) view = S.run.scenarioId === 'ch1' ? introScreen() : chapterIntroScreen();
-  else view = ({ home: homeScreen, town: townScreen, plan: planScreen, decision: decisionScreen, show: showScreen, gazette: gazetteScreen, results: resultsScreen, settings: settingsScreen, grownups: grownupsScreen, scrapbook: scrapbookScreen })[S.screen]();
+  else view = ({ home: homeScreen, town: townScreen, plan: planScreen, decision: decisionScreen, show: showScreen, gazette: gazetteScreen, results: resultsScreen, settings: settingsScreen, grownups: grownupsScreen, scrapbook: scrapbookScreen, timemachine: timeMachineScreen })[S.screen]();
   root.replaceChildren(view);
 }
 function boot() {
@@ -1483,6 +1551,45 @@ function boot() {
   render();
   loadArt().then(render);
 }
+
+/* ---- The time machine: two gardens, one change, on the same town (HANDOFF 3, 8). Declared alternatives, never "what would have happened". ---- */
+const EXPERIMENTS = {
+  ch2: ['ada-vs-dev', 'you-vs-ada', 'you-vs-dev'], ch3: ['buffer', 'you-vs-ada', 'you-vs-bo'], ch4: ['reinvest', 'start-early', 'timing', 'you-vs-ada'],
+  ch5: ['hold-vs-sell', 'you-vs-ada', 'you-vs-cass'], ch6: ['fee', 'you-vs-ada'], free: ['reinvest', 'buffer', 'hold-vs-sell', 'start-early', 'you-vs-ada']
+};
+function experimentSpec(key) {
+  const m = S.market, T = ST.timeMachine.experiments;
+  if (key.startsWith('you-vs-')) { const id = key.slice(7); const n = nbInfo(id); return { label: 'Your path vs ' + n.name + '’s plan', a: 'Your path', b: n.name + '’s plan: ' + n.plan, note: ST.timeMachine.another, runA: 'you', runB: { policy: id } }; }
+  const t = T[key];
+  const specs = { 'ada-vs-dev': [{ policy: 'ada' }, { policy: 'dev' }], 'buffer': [{ policy: 'ada' }, { policy: 'ada', variant: { noBuffer: true } }], 'reinvest': [{ policy: 'ada' }, { policy: 'ada', variant: { reinvest: false } }],
+    'start-early': [{ policy: 'ada' }, { policy: 'ada', overrides: { contribStart: 25 } }], 'timing': [{ policy: 'ada' }, { policy: 'ada', variant: { holdUntil: 24 } }], 'hold-vs-sell': [{ policy: 'ada' }, { policy: 'ada', variant: { slumpSell: true } }], 'fee': [{ policy: 'ada' }, { policy: 'ada', variant: { basket: 'BASKET_B' } }] }[key];
+  return { label: t.label, a: t.a, b: t.b, note: t.note, runA: specs[0], runB: specs[1] };
+}
+function runExperiment(spec) {
+  const m = S.market, s = S.draft;
+  const run = r => r === 'you' ? { nw: s.history.map(h => h.nw), real: s.history.map(h => h.nw / m.index[h.t]), end: E.summarizeRun(s, m).netWorth } : (() => { const c = E.comparePlan(m, r); const st = c.state; return { nw: c.nw, real: c.nw.map((v, t) => v / c.market.index[t]), end: E.summarizeRun(st, c.market).netWorth }; })();
+  return { a: run(spec.runA), b: run(spec.runB) };
+}
+const treeStage = (nw, base) => { const r = base > 0 ? nw / base : 1; return r < 0.9 ? 1 : r < 1.1 ? 2 : r < 1.4 ? 3 : r < 1.9 ? 4 : 5; };
+function timeMachineScreen() {
+  const m = S.market, s = S.draft, sc = m.scenario, keys = EXPERIMENTS[sc.id] || [];
+  const tm = S.ui.tm || (S.ui.tm = { key: keys[0], year: Math.floor(s.t / 12), real: false });
+  if (!keys.includes(tm.key)) tm.key = keys[0];
+  const spec = experimentSpec(tm.key), res = runExperiment(spec), years = Math.floor(s.t / 12), y = Math.min(Math.max(0, tm.year), years), t = y * 12;
+  const val = (r, tt) => tm.real ? r.real[tt] : r.nw[tt];
+  const garden = (label, r, kind) => el('div', { class: 'garden' }, el('div', { class: 'garden-art' }, art('tree-' + kind + '-' + treeStage(r.nw[t], r.nw[0]), 'tree-art', 'Tree at stage ' + treeStage(r.nw[t], r.nw[0]) + ' of 5'), art('tree-ground', 'ground-art', '')), el('strong', { text: label }), el('p', { class: 'num', text: coins(val(r, t)) + ' coins' }), el('p', { class: 'muted small', text: 'Year ' + y + (y === 0 ? ' (start)' : '') }));
+  const pick = el('select', { class: 'sel', id: 'tm-select', 'aria-label': 'Experiment', onchange: e => { tm.key = e.target.value; render(); } }, keys.map(k => el('option', { value: k, selected: k === tm.key ? true : null, text: experimentSpec(k).label })));
+  const slider = el('input', { type: 'range', min: 0, max: years, step: 1, value: y, id: 'tm-year', 'aria-label': 'Year', class: 'range', oninput: e => { tm.year = +e.target.value; render(); } });
+  return el('main', { class: 'screen timemachine' }, topbar(ST.timeMachine.title, { label: '← Back', fn: () => go(s.ended ? 'results' : 'town') }),
+    el('p', { class: 'muted', text: ST.timeMachine.intro }), pick,
+    el('div', { class: 'gardens' }, garden(spec.a, res.a, 'oak'), garden(spec.b, res.b, 'cherry')),
+    el('div', { class: 'year-ctl' }, el('button', { type: 'button', class: 'btn small', disabled: y <= 0 ? true : null, onclick: () => { tm.year = y - 1; render(); }, text: '− 1 year' }), slider, el('button', { type: 'button', class: 'btn small', disabled: y >= years ? true : null, onclick: () => { tm.year = y + 1; render(); }, text: '+ 1 year' })),
+    el('p', { class: 'muted', text: spec.note + ' ' + ST.timeMachine.another }),
+    sc.inflation ? el('label', { class: 'radio' }, el('input', { type: 'checkbox', checked: tm.real ? true : null, onchange: e => { tm.real = e.target.checked; render(); } }), ' ' + ST.inflation.toggle) : null,
+    el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn', onclick: () => { S.progress.experiments = S.progress.experiments || []; S.progress.experiments.push({ chapter: sc.id, town: m.townName, label: spec.label, a: { label: spec.a, end: res.a.end }, b: { label: spec.b, end: res.b.end }, year: years }); saveSettings(); S.ui.hint = { text: ST.timeMachine.saved }; render(); }, text: ST.timeMachine.save }), el('button', { type: 'button', class: 'btn primary', onclick: () => go(s.ended ? 'results' : 'town'), text: 'Continue' })),
+    S.ui.hint && S.ui.hint.text === ST.timeMachine.saved ? el('p', { class: 'muted', role: 'status', text: ST.timeMachine.saved }) : null);
+}
+
 globalThis.MS = { S, render, queue, undo, arrive, newRun, go, commitAndAdvance, finishChapter, BUILD };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

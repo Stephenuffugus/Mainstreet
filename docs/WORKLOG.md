@@ -86,14 +86,22 @@ One box per exit condition. Tick a box only with the command and its result past
       evidence: git tag m3 on the M3 commit
 
 ## M4 Time and uncertainty
-- [ ] Chapters 4 to 6 playable; dividends, Reinvest toggle, contributions and routing
-- [ ] Authored slump with E13/E14/E15; E12 and E19 variants; Cass joins in chapter 5 and makes at least one move in every chapter 5 fixture
-- [ ] Inflation index and "what it can buy"; indexed goal; E23 in the Gazette
-- [ ] Fee lab with both cost cards; Basket B never finishes above Basket A on identical holdings
-- [ ] Time machine: two gardens, per-chapter experiments, "Try Ada's plan" / "Try Dev's plan", labeled assumptions, save to scrapbook
-- [ ] Results reconciles to the cent on every fixture; every neighbor finishes below another on at least one fixture seed
-- [ ] `node tools/harness.mjs --chapter 5 --seeds 2000` green
-- [ ] Tag `m4`
+- [x] Chapters 4 to 6 playable; dividends, Reinvest toggle, contributions and routing
+      evidence: tools/ui.spec.mjs chapter 4, 5 and 6 journeys, chromium and webkit; My Plan has the practice-coins routing select and the Reinvest radios (offered at month 12 in chapter 4)
+- [x] Authored slump with E13/E14/E15; E12 and E19 variants; Cass joins in chapter 5 and makes at least one move in every chapter 5 fixture
+      evidence: chapter 5 journey sees the slump stop hint, the closing notice and the payout line; the Toy Box tile renders closed; engine test "Cass makes at least one move in every chapter 5 fixture seed"
+- [x] Inflation index and "what it can buy"; indexed goal; E23 in the Gazette
+      evidence: chapter 6 journey sees the what-it-can-buy line in My Plan; the goal chip shows the indexed nominal; the Gazette prints the yearly rising-prices line; the time machine has the what-it-can-buy toggle
+- [x] Fee lab with both cost cards; Basket B never finishes above Basket A on identical holdings
+      evidence: chapter 6 journey reads both cards, chooses A, and the Cost awareness stamp passes; Results prints the lab result; engine test "matched fee lab" and the comparePlan variant test
+- [x] Time machine: two gardens, per-chapter experiments, "Try Ada's plan" / "Try Dev's plan", labeled assumptions, save to scrapbook
+      evidence: chapter 4 journey opens the time machine from Results, switches to "Start now vs start in two years", steps a year, saves to the scrapbook; experiments per chapter in EXPERIMENTS; comparePlan runs declared alternatives (variants and a contribution-start override) on the same seed
+- [x] Results reconciles to the cent on every fixture; every neighbor finishes below another on at least one fixture seed
+      evidence: engine tests "Results reconcile to the cent on every fixture" and "every neighbor finishes below another neighbor on at least one fixture seed", 130 pass
+- [x] `node tools/harness.mjs --chapter 5 --seeds 2000` green
+      evidence: node tools/harness.mjs --seeds 2000 --family ch5: 5.0 s; slump in 100% of runs (authored), closures 35%, a cost in 49% of runs; the negative drift gaps are the authored slump, not a calibration fault
+- [x] Tag `m4`
+      evidence: git tag m4 on the M4 commit
 
 ## M5 Finish and access
 - [ ] Scrapbook pages (decoration, discovery pick, year strip, stamps, neighbors' notes); album complete with 40 cards and the "some stories only happen in some towns" line; decoder; saved experiments

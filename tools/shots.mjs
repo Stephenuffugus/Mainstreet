@@ -38,3 +38,26 @@ await (async () => {
   await b2.close();
 })();
 console.log('chapter 2 shots done');
+// chapters 4 to 6: plan controls, the slump and closure, the fee lab, the time machine
+await (async () => {
+  const b3 = await chromium.launch(); const p = await b3.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
+  const shot3 = n => p.screenshot({ path: OUT + n + '.png', fullPage: true });
+  const settle = async () => { for (let k = 0; k < 8; k++) { if (await p.locator('.screen.town').count() || await p.locator('.screen.results').count()) return; if (await p.locator('.screen.gazette').count()) { await p.getByRole('button', { name: 'Continue' }).click(); continue; } if (await p.locator('.screen.decision').count()) { if (await p.getByText('Your goal day has arrived').count()) await p.getByRole('button', { name: /^Buy it/ }).click(); else await p.getByRole('button', { name: /^Pay from my (Buffer|wallet|Saved)/ }).first().click(); continue; } await p.waitForTimeout(100); } };
+  const adv = async () => { await p.getByRole('button', { name: /^(Next year|Continue year)$/ }).click(); await p.locator('#go').click(); await p.getByRole('button', { name: 'Skip' }).click(); await settle(); };
+  await p.goto('file://' + resolve(ROOT, 'index.html'));
+  await p.evaluate(() => { MS.newRun('ch4', 'Harbor Lane 12'); MS.go('town'); }); await p.getByRole('button', { name: 'Start exploring' }).click();
+  await p.locator('.tile').nth(1).click(); for (let i = 0; i < 4; i++) await p.locator('.steppers').getByRole('button', { name: 'Buy 1 share' }).click();
+  await p.getByRole('button', { name: 'My Plan' }).click(); await p.locator('#route-select').selectOption('BASKET'); await p.getByRole('button', { name: 'Keep my plan' }).click(); await adv();
+  await p.getByRole('button', { name: 'My Plan' }).click(); await shot3('20-ch4-plan');
+  await p.locator("input[name=reinvest][value='1']").check(); await p.getByRole('button', { name: 'Keep my plan' }).click();
+  for (let i = 0; i < 6; i++) { if (await p.locator('.screen.results').count()) break; await adv(); }
+  await shot3('21-ch4-results'); await p.getByRole('button', { name: 'Try one change' }).click(); await p.locator('#tm-select').selectOption('start-early'); await shot3('22-timemachine');
+  await p.evaluate(() => { MS.newRun('ch5', 'Clover Field 9'); MS.go('town'); }); await p.getByRole('button', { name: 'Start exploring' }).click();
+  await p.locator('.tile').nth(2).click(); await p.locator('.steppers').getByRole('button', { name: 'Buy 1 share' }).click();
+  for (let i = 0; i < 4; i++) { await adv(); const t = await p.evaluate(() => MS.S.draft.t); if (t === 13) await shot3('23-ch5-slump'); if (t === 28) { await p.locator('.tile').nth(2).click(); await shot3('24-ch5-closing'); } }
+  await p.evaluate(() => { MS.newRun('ch6', 'Lantern Row 5'); MS.go('town'); }); await p.getByRole('button', { name: 'Start exploring' }).click(); await shot3('25-ch6-lab');
+  await p.getByRole('button', { name: 'Read the cost card' }).first().click(); await p.getByRole('button', { name: 'Read the cost card' }).first().click(); await shot3('26-ch6-lab-read');
+  await p.getByRole('button', { name: 'Choose Basket A' }).click(); await shot3('27-ch6-town');
+  await b3.close();
+})();
+console.log('chapter 4 to 6 shots done');

@@ -195,11 +195,32 @@ t("no em or en dash in any player string; exclamation marks only on goal day and
 });
 t("town names: both lists have at least 24 entries and a name round-trips", () => { ok(CONTENT.townNames.adj.length >= 24 && CONTENT.townNames.noun.length >= 24); eq(E.normalizeTownName("  maple   hollow 7 "), "Maple Hollow 7"); eq(E.normalizeTownName("Maple Hollow 7"), "Maple Hollow 7"); const m = M("free", "Maple Hollow 7"); eq(m.townName, "Maple Hollow 7"); });
 
+/* ---------------- M4: reconciliation, neighbors, variants ---------------- */
+const FIX = [["ch1", "Maple Hollow 7"], ["ch2", "Pebble Creek 3"], ["ch3", "Willow Bend 41"], ["ch4", "Harbor Lane 12"], ["ch5", "Clover Field 9"], ["ch6", "Lantern Row 5"], ["free", "Sunny Crossing 2"], ["free", "Cedar Gate 19", "shops-can-close"]];
+t("Results reconcile to the cent on every fixture: start + added + result − spent = end, and result = market change + interest", () => {
+  for (const [id, seed, preset] of FIX) { const m = M(id, seed, preset ? { preset } : undefined); for (const pol of ["planner", ...m.scenario.neighbors]) { const st = E.runPolicy(m, pol).state, sum = E.summarizeRun(st, m), mo = sum.money;
+    eq(mo.start + mo.added + mo.result - mo.spent, mo.end, id + " " + pol + " panel"); let yrs = 0, yres = 0; for (let y = 1; y * 12 <= st.t; y++) { const p = E.yearPanel(st, m, y); eq(p.money.start + p.money.added + p.money.result - p.money.spent, p.money.end, id + " " + pol + " year " + y); yres += p.money.result; yrs++; }
+    const h0 = st.history[0], hN = st.history[st.t]; const resultFromHistory = (hN.nw - h0.nw) - hN.tot.contributionsIn + hN.tot.goalSpending + hN.tot.costSpending; near(yres, resultFromHistory, 0, id + " " + pol + " years sum"); } }
+});
+t("every neighbor finishes below another neighbor on at least one fixture seed", () => {
+  const below = { ada: false, bo: false, cass: false, dev: false };
+  for (const [id, seed, preset] of FIX) { const m = M(id, seed, preset ? { preset } : undefined); if (m.scenario.neighbors.length < 2) continue; const nws = {}; for (const n of m.scenario.neighbors) nws[n] = E.summarizeRun(E.runPolicy(m, n).state, m).netWorth; for (const n in nws) if (Object.keys(nws).some(o => o !== n && nws[o] > nws[n])) below[n] = true; }
+  for (const n in below) ok(below[n], n + " never finishes below another neighbor on any fixture");
+});
+t("Cass makes at least one move in every chapter 5 fixture seed", () => { for (const seed of SEEDS) { const r = E.runPolicy(M("ch5", seed), "cass"); ok(r.moves.length >= 1, seed); } });
+t("comparePlan: a scenario override keeps the same prices; variants obey their declaration", () => {
+  const m = M("ch4", "tm"); const late = E.comparePlan(m, { policy: "ada", overrides: { contribStart: 25 } });
+  deep(Array.from(late.market.quotes[0]), Array.from(m.quotes[0]), "same prices"); eq(late.state.totals.contributionsIn, 36 * 1000, "contributions start in month 25");
+  const on = E.comparePlan(m, { policy: "ada" }), off = E.comparePlan(m, { policy: "ada", variant: { reinvest: false } });
+  eq(on.state.reinvest, true); eq(off.state.reinvest, false); ok(off.state.totals.reinvestSpend === 0 && on.state.totals.reinvestSpend >= 0);
+  const m5 = M("ch5", "Clover Field 9"); const sell = E.comparePlan(m5, { policy: "ada", variant: { slumpSell: true } }); ok(sell.moves.some(x => x.kind === "toJar"), "sold at the slump start"); ok(sell.moves.some(x => x.kind === "backIn"), "bought back later");
+  const m6 = M("ch6", "Lantern Row 5"); const a = E.comparePlan(m6, { policy: "ada" }), b = E.comparePlan(m6, { policy: "ada", variant: { basket: "BASKET_B" } }); eq(a.state.basket, "BASKET_A"); eq(b.state.basket, "BASKET_B"); ok(E.summarizeRun(b.state, m6).netWorth <= E.summarizeRun(a.state, m6).netWorth, "the high-fee basket never wins on identical holdings");
+  const m3 = M("ch3", "Willow Bend 41"); const nb = E.comparePlan(m3, { policy: "ada", variant: { noBuffer: true } }); eq(nb.state.history[1].jar, 0, "no buffer kept");
+});
 /* ---------------- determinism ---------------- */
 t("purity grep", () => { const v = purityViolations(engineSource); eq(v.length, 0, "violations: " + v.join(", ")); });
 t("replaying the same action log twice yields byte-identical results", () => { const m = M("ch5", "rep"); const a = JSON.stringify(E.runPolicy(m, "cass").state), b = JSON.stringify(E.runPolicy(M("ch5", "rep"), "cass").state); eq(a, b); });
 t("frames never change the ledger: advancing with and without reading frames gives identical states", () => { const m = M("ch2", "fr"); const s = E.createRun({ market: m }); const r1 = E.advance(s, m, 12); const r2 = E.advance(s, m, 12); void r1.frames.length; deep(r1.state, r2.state); });
-const FIX = [["ch1", "Maple Hollow 7"], ["ch2", "Pebble Creek 3"], ["ch3", "Willow Bend 41"], ["ch4", "Harbor Lane 12"], ["ch5", "Clover Field 9"], ["ch6", "Lantern Row 5"], ["free", "Sunny Crossing 2"], ["free", "Cedar Gate 19", "shops-can-close"]];
 function fixtureOf(id, seed, preset) {
   const m = M(id, seed, preset ? { preset } : undefined);
   const qh = cyrb128(m.assets.map((a, i) => Array.from(m.quotes[i]).join(",")).join("|") + "|" + Object.keys(m.funds).map(f => Array.from(m.funds[f].navQ).join(",")).join("|")).join("-");
