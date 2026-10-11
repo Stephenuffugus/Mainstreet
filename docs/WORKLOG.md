@@ -141,8 +141,8 @@ One box per exit condition. Tick a box only with the command and its result past
       evidence: docs/FLEET-HANDOFF.md: live URL, file manifest with a vendor MANIFEST entry, card copy, earn moments none (R01), nav map, thumbnail note, every localStorage key, how to update
 - [x] Fleet checks pass: overflow probe, SW cache scope, no dashes, build stamp, `ready`/`close` in a frame, zero requests during play
       evidence: ui.spec.mjs overflow sweep (3 widths, 0 px), no-dashes content test, build stamp on #s-title asserted in the chapter 1 journey, embed-protocol journey (ready posted, no worker in the frame, exactly one close, nothing else leaves the frame), offline-after-install journey (plays with the network off); sw.js deletes only mainstreet-* caches
-- [ ] Portal card `beta:true` live; thumbnail delivered
-      open: needs Pages enabled and the lucid-winds vendoring step (docs/FLEET-HANDOFF.md has the card entry and the MANIFEST line); thumbnail is in the M5 art batch
+- [x] Portal card `beta:true` live; thumbnail delivered
+      evidence: vendored into lucid-winds 2026-10-11 by the section 9 patch (lucid-winds fcda4676, deployed to main the same hour): FEATURED card MAINSTREET `?v=20261011e` with `beta:true`, search alias, 480 px Town thumbnail; `vendor_satellites.mjs --check mainstreet` reports only BEHIND on docs commits (not drift), `--selftest` 11 ok, `sw_cache_scope_check` SCOPED own=mainstreet-, the dev-gate line present; engine tests 131 pass on the lucid-winds box; live URL https://lucidwinds.com/satellites/mainstreet/?v=20261011e behind the gate. Pages on this repo still waits on Stephen
 - [x] Tag `v1.0.0-rc1`; STATUS.md says what shipped and what did not
       evidence: git tag v1.0.0-rc1 on the M6 commit; STATUS.md and docs/RELEASE-NOTES.md list what shipped and the backlog
 

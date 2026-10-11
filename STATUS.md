@@ -1,5 +1,5 @@
 # STATUS, MAINSTREET
-Updated: 2026-10-11  ·  Current milestone: handed to the dev team at v1.0.0-rc3; playtest, songs, sprites and vendoring open (fun gate still open)  ·  Engine MS1 · Content DECK2 · Rubric PLAN1 · Art ART0
+Updated: 2026-10-11  ·  Current milestone: handed to the dev team at v1.0.0-rc3; vendored into lucid-winds behind the beta gate 2026-10-11; playtest, songs and sprites open (fun gate still open)  ·  Engine MS1 · Content DECK2 · Rubric PLAN1 · Art ART0
 
 ## Done since last note
 - Pickup kit: START-HERE.md, split and join tools, npm scripts, a devcontainer, CI on every push, tag v1.0.0-rc3. Stephen is closing his Codespace; the dev team and Astra pick up from the repo alone.
@@ -17,7 +17,8 @@ Updated: 2026-10-11  ·  Current milestone: handed to the dev team at v1.0.0-rc3
 - `node tools/calibrate-v1.js` reproduces the v1 table (pasted into `docs/calibration.md`).
 
 ## In progress
-- Waiting on Stephen: GitHub Pages, the fun gate with Penny, the wider playtest, the art batches, the reference device, vendoring into lucid-winds with the portal card beta:true.
+- Vendored into lucid-winds 2026-10-11 (lucid-winds fcda4676): card MAINSTREET beta:true at /satellites/mainstreet/?v=20261011e, gated on lucidwinds.com; re-vendor with `node scripts/vendor_satellites.mjs --vendor mainstreet` then `git add -f satellites/mainstreet/music`.
+- Waiting on Stephen: GitHub Pages, the fun gate with Penny, the wider playtest, the art batches, the reference device.
 - Fun gate (R12) still open: Penny plays chapters 1 and 2 when Stephen has a moment; M3 proceeded on his call.
 - Earlier: M0 committed and pushed. `tools/setup.sh` ran (Playwright 1.64.0, engines chromium and webkit). GitHub Pages could not be enabled from the Codespace (403); waiting on Stephen.
 - Asset lists are in Drive: Business Materials › Github › 012Assets › mainstreet (sheet with 113 rows plus the direction and prompts doc); links at the top of `docs/ART-BRIEF.md`.
@@ -31,7 +32,7 @@ Updated: 2026-10-11  ·  Current milestone: handed to the dev team at v1.0.0-rc3
 ## Next three steps
 1. Stephen: enable Pages (Settings, Pages, main, root), open the URL on a phone, play chapter 1, airplane mode, reload, play on; then let Penny play (docs/playtest.md prompts) and rule on the fun gate.
 2. Stephen: the M2 art batch per the Drive asset list; name the reference device so the performance line and the TalkBack pass can be done there.
-3. Fleet: vendor per docs/FLEET-HANDOFF.md with the portal card beta:true; after the playtest, tag v1.0.0 and drop beta.
+3. Fleet: vendored (done 2026-10-11); after the playtest, tag v1.0.0, drop beta:true and the dev-gate line, re-vendor.
 
 ## Tests
 - node tools/test.mjs: 131 pass / 0 fail · npx playwright test: 62 passed (replay fixtures and twenty-three UI journeys incl. offline after install with the art precached, the embed protocol, two tabs, import, recovery, three overflow widths, focus, sound, blocked storage, exit, hidden page, reduced motion; chromium and webkit) · harness: free standard 10,000 held-out towns in about 60 s, all families and presets in about 7 min · harness ch5 2,000 seeds: 5.0 s · harness 10,000 seeds, four neighbors: 58.4 s
