@@ -1,4 +1,4 @@
-From b5280e1ac1bdf3cd7a4fd27a0209f0c8f9fd08d1 Mon Sep 17 00:00:00 2001
+From 4ddc98bafdbffbc9975e5236aa9437977d6271ed Mon Sep 17 00:00:00 2001
 From: Stephenuffugus <99242197+Stephenuffugus@users.noreply.github.com>
 Date: Sun, 11 Oct 2026 13:54:58 +0000
 Subject: [PATCH] Add MAINSTREET to the arcade, vendored, beta
@@ -22,9 +22,7 @@ Claude-Session: https://claude.ai/code/session_016cH7LsegPyFfW3pQ9fQuJN
 ---
  portal-assets/thumbs/mainstreet.png           |  Bin 0 -> 59193 bytes
  portal/index.html                             |    5 +-
- .../.devcontainer/devcontainer.json           |    7 +
- satellites/mainstreet/START-HERE.md           |   73 +
- satellites/mainstreet/VENDORED.json           |  148 ++
+ satellites/mainstreet/VENDORED.json           |  149 ++
  satellites/mainstreet/art/.gitkeep            |    0
  satellites/mainstreet/art/card-back.webp      |  Bin 0 -> 8380 bytes
  satellites/mainstreet/art/deco-benches-1.webp |  Bin 0 -> 6706 bytes
@@ -145,10 +143,8 @@ Claude-Session: https://claude.ai/code/session_016cH7LsegPyFfW3pQ9fQuJN
  satellites/mainstreet/music/manifest.json     |   11 +
  satellites/mainstreet/sw.js                   |   33 +
  scripts/vendor_satellites.mjs                 |    8 +-
- 125 files changed, 2637 insertions(+), 2 deletions(-)
+ 123 files changed, 2558 insertions(+), 2 deletions(-)
  create mode 100644 portal-assets/thumbs/mainstreet.png
- create mode 100644 satellites/mainstreet/.devcontainer/devcontainer.json
- create mode 100644 satellites/mainstreet/START-HERE.md
  create mode 100644 satellites/mainstreet/VENDORED.json
  create mode 100644 satellites/mainstreet/art/.gitkeep
  create mode 100644 satellites/mainstreet/art/card-back.webp
@@ -1423,119 +1419,30 @@ index 25460cc..9c91115 100644
    /* ⛔ KEYED ON THE GAME'S CURRENT DISPLAY NAME. searchGames() looks these up with
       ALIASES[nm.toLowerCase()], so renaming a game silently orphans its aliases and
       kills every classic-name search that pointed at it. That had happened to EIGHT
-diff --git a/satellites/mainstreet/.devcontainer/devcontainer.json b/satellites/mainstreet/.devcontainer/devcontainer.json
-new file mode 100644
-index 0000000..8723226
---- /dev/null
-+++ b/satellites/mainstreet/.devcontainer/devcontainer.json
-@@ -0,0 +1,7 @@
-+{
-+  "name": "MAINSTREET",
-+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
-+  "features": { "ghcr.io/devcontainers/features/python:1": {} },
-+  "postCreateCommand": "bash tools/setup.sh",
-+  "customizations": { "vscode": { "extensions": ["ms-playwright.playwright"] } }
-+}
-diff --git a/satellites/mainstreet/START-HERE.md b/satellites/mainstreet/START-HERE.md
-new file mode 100644
-index 0000000..5dfd881
---- /dev/null
-+++ b/satellites/mainstreet/START-HERE.md
-@@ -0,0 +1,73 @@
-+# START HERE (MAINSTREET pickup, 2026-10-11)
-+
-+For the Sky Wolf dev team, and for any Claude Code session opening this repo cold. Ten minutes here saves a day.
-+
-+## What this is
-+
-+MAINSTREET is a free, offline, kid-safe investing-habits game for ages 8 to 11: six chapters, then twenty years of free play in named towns. One `index.html` plus `sw.js`, `manifest.webmanifest`, `icons/`, `art/` and `music/` are the whole game. No build step, no framework, no network during play, no accounts, no sunbeams or studio currency (Director's ruling R01). `HANDOFF.md` is the spec and the single source of truth; nothing in its section 16 backlog is authorized for v1.
-+
-+## State at pickup
-+
-+- Tag `v1.0.0-rc3` on `main`. Everything in the spec is built and tested: 131 engine tests (`npm test`) and 62 browser journeys in Chromium and WebKit (`npm run ui`) are green. CI runs both on every push (`.github/workflows/tests.yml`).
-+- Every sprite slot holds first-pass generated art; Astra's renders replace them file by file. The music lane is built and empty; Stephen's songs drop in by feel.
-+- `STATUS.md` is the current state in one page. `docs/WORKLOG.md` has every milestone box with its evidence. `docs/decisions.md` has every choice the build made, newest first. `docs/RELEASE-NOTES.md` says what each candidate carries.
-+
-+## Open items and owners
-+
-+| Item | Owner | Where |
-+| --- | --- | --- |
-+| Enable GitHub Pages (`main`, root), then the airplane-mode check on the live URL | Stephen | `docs/WORKLOG.md` M0 and M5 |
-+| The fun gate: Penny plays chapter 1 and 2; Stephen rules proceed or fix | Stephen | `docs/playtest.md` |
-+| Songs in `music/` with feels assigned | Stephen | `docs/MUSIC.md` |
-+| Sprites in `art/`, batch by batch | Astra (art lane) | `docs/ART-BRIEF.md`, `docs/art/ASSET-LIST.md` |
-+| Vendor into lucid-winds with the portal card `beta:true` | dev team | `docs/FLEET-HANDOFF.md` section 9 (a one-paste patch) |
-+| Reference device: name it, run the performance line and a TalkBack pass | dev team | `STATUS.md`, `docs/playtest.md` |
-+| Five to eight children playtested, release blockers tallied | dev team with Stephen | `docs/playtest.md`, HANDOFF section 15 |
-+| Ship v1.0.0: remove the beta gate line in the embed block, drop `beta:true`, tag, release notes | dev team | `docs/FLEET-HANDOFF.md` |
-+
-+## Set up
-+
-+```bash
-+npm run setup        # npm install, Playwright with Chromium and WebKit, Pillow if available
-+npm test             # engine tests, fixtures, content rules, art-slot guard (seconds)
-+npm run ui           # browser journeys in both engines (about 2 minutes)
-+```
-+
-+A Codespace or VS Code devcontainer runs setup itself (`.devcontainer/devcontainer.json`).
-+
-+## The editing loop
-+
-+`index.html` is the source. It holds four blocks in this order: `<style>`, `<script id="content">` (data only: PARAMS, CONTENT, STRINGS), `<script id="engine">` (pure: no DOM, Date, Math.random, fetch, storage, timers), `<script id="app">` (store and screens). The content block must stay before the engine block.
-+
-+```bash
-+npm run split        # writes src/styles.css, content.js, engine.js, app.js, shell.html (src/ is ignored by git)
-+#   edit under src/
-+npm run join         # rebuilds index.html; refuses a block with a syntax error
-+npm run check        # engine tests, join --check, browser journeys
-+```
-+
-+Commit `index.html`, never `src/`. The rules the tests enforce:
-+
-+- The engine stays pure (`tools/lib.mjs` greps for forbidden calls) and deterministic; money is integer centi-coins; conservation laws hold exactly.
-+- The eight golden fixtures in `tools/fixtures/` must replay identically. A locked number may change only with an entry in `docs/decisions.md`, a version bump (`MS1`, `DECK2`, `PLAN1` in the content block and `VERSION` in `sw.js`), and `node tools/test.mjs --write-fixtures` in the same commit.
-+- Player copy: no dashes anywhere, exclamation marks only on goal day and chapter end, no coins or arrows or numbers in art, 48 px touch targets, no flashing red during drops.
-+- Every art slot the game can request must exist in `art/manifest.json` (the guard test enumerates them).
-+
-+## The lanes
-+
-+- **Art**: `docs/ART-BRIEF.md`. Drop a WebP with the slot's exact name into `art/`, run `npm run art`, bump `VERSION` in `sw.js`. `node tools/gen_art.mjs --only=<slot>` regenerates a first-pass placeholder if one is ever needed again.
-+- **Music**: `docs/MUSIC.md`. Drop mp3 files into `music/`, list them with a feel in `music/manifest.json`, map moments to feels, run `npm run music`, bump `VERSION` in `sw.js`. Then add `ownMusic:true` to the portal card.
-+
-+## The arcade
-+
-+`docs/FLEET-HANDOFF.md` is the whole vendoring note. Section 9 has a ready-made patch and the one-paste instruction for a lucid-winds session; the arcade's `.gitignore` ignores `music/`, so force-add it after a re-vendor. The game is carded `beta:true` behind the tester key until the playtest passes.
-+
-+## Writing things down
-+
-+- A choice the spec left open, or a locked number that changes: one line in `docs/decisions.md`, newest first (date, milestone, who, what, why, where).
-+- Progress: tick the box in `docs/WORKLOG.md` with its evidence; refresh `STATUS.md` (one page, newest first).
-+- Commits on `main`, one per finished piece, with the evidence (test counts) in the message.
-+
-+## Paste this into a fresh Claude Code session in this repo
-+
-+> You are picking up MAINSTREET, a finished-to-spec kids' investing game. Read START-HERE.md, then STATUS.md, then the first unticked box in docs/WORKLOG.md. HANDOFF.md is the spec; section 16 is not authorized. Edit through `npm run split` and `npm run join`, never commit `src/`. Run `npm test` and `npm run ui` before every commit and put the counts in the commit message. Log every open choice in docs/decisions.md. Keep the Director's rulings: no sunbeams, no earn hooks, no dashes in player text, exclamation marks only on goal day and chapter end, nothing that looks like a payout. Ask Stephen before changing a locked number or starting a backlog item.
 diff --git a/satellites/mainstreet/VENDORED.json b/satellites/mainstreet/VENDORED.json
 new file mode 100644
-index 0000000..a13e22b
+index 0000000..98d1b22
 --- /dev/null
 +++ b/satellites/mainstreet/VENDORED.json
-@@ -0,0 +1,148 @@
+@@ -0,0 +1,149 @@
 +{
 +  "_readme": "Generated by scripts/vendor_satellites.mjs. Do not hand-edit this folder — edit the upstream repo and re-vendor.",
 +  "repo": "Stephenuffugus/Mainstreet",
 +  "ref": "main",
-+  "commit": "495e0c3253aa6ad475c6f77cf9a01fca56796d07",
++  "commit": "ea93f25c245d1d76cb46b95b42d24b39444a43cb",
 +  "build": "none (github pages legacy: the branch tree is the site)",
 +  "dropped": [
 +    "tools/",
 +    "docs/",
++    "src/",
++    ".devcontainer/",
 +    "package.json",
 +    "package-lock.json",
 +    "playwright.config.mjs",
 +    "HANDOFF.md",
 +    "STATUS.md",
 +    "README.md",
++    "START-HERE.md",
 +    ".git/",
 +    ".github/",
 +    ".gitignore",
@@ -1543,11 +1450,9 @@ index 0000000..a13e22b
 +  ],
 +  "injectedArcadeExit": [],
 +  "rewrittenPaths": [],
-+  "fileCount": 121,
-+  "bytes": 1619439,
++  "fileCount": 119,
++  "bytes": 1613160,
 +  "files": {
-+    ".devcontainer/devcontainer.json": "0383765ed8291915",
-+    "START-HERE.md": "7d03bb9658cab52a",
 +    "art/.gitkeep": "e3b0c44298fc1c14",
 +    "art/card-back.webp": "f44afb7862372b16",
 +    "art/deco-benches-1.webp": "5c14478c267ea6d4",
@@ -31308,7 +31213,7 @@ index 0000000..3275300
 +  }));
 +});
 diff --git a/scripts/vendor_satellites.mjs b/scripts/vendor_satellites.mjs
-index c124559..22a2506 100644
+index c124559..56b1f4a 100644
 --- a/scripts/vendor_satellites.mjs
 +++ b/scripts/vendor_satellites.mjs
 @@ -87,6 +87,12 @@ export const MANIFEST = [
@@ -31320,7 +31225,7 @@ index c124559..22a2506 100644
 +     dev notes and the Playwright config. It ships its own exit (SWS_EXIT on window, referrer based)
 +     and a scoped sw.js that deletes only mainstreet-* caches. No earn moments, by ruling.           */
 +  { slug:"mainstreet",         repo:"Mainstreet",         ref:"main", card:"MAINSTREET",
-+    drop:["tools/","docs/","package.json","package-lock.json","playwright.config.mjs","HANDOFF.md","STATUS.md","README.md"] },
++    drop:["tools/","docs/","src/",".devcontainer/","package.json","package-lock.json","playwright.config.mjs","HANDOFF.md","STATUS.md","README.md","START-HERE.md"] },
  ];
  
  const ALWAYS_DROP = [".git/", ".github/", ".gitignore", ".env.example"];

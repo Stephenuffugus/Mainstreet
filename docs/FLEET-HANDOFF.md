@@ -10,12 +10,12 @@ Modeled on the Blooming Words handoff per `NEW_SATELLITE_BRIEF.md`; the contract
 
 ## 2. File manifest
 
-Deployable: `index.html`, `sw.js`, `manifest.webmanifest`, `icons/`, `art/` (sprites plus `art/manifest.json`). Everything else is dev only and can be dropped when vendoring: `tools/`, `docs/`, `package.json`, `package-lock.json`, `playwright.config.mjs`, `HANDOFF.md`, `STATUS.md`, `README.md`, `.gitignore`.
+Deployable: `index.html`, `sw.js`, `manifest.webmanifest`, `icons/`, `art/` (sprites plus `art/manifest.json`), `music/` (songs plus `music/manifest.json`). Everything else is dev only and is dropped when vendoring: `tools/`, `docs/`, `src/`, `.devcontainer/`, `.github/`, `package.json`, `package-lock.json`, `playwright.config.mjs`, `HANDOFF.md`, `STATUS.md`, `README.md`, `START-HERE.md`, `.gitignore`.
 
 `MANIFEST` entry in `scripts/vendor_satellites.mjs` (the script's `--selftest` counts entries and cards; bump both when adding):
 
 ```js
-{ slug:"mainstreet", repo:"Mainstreet", ref:"main", card:"MAINSTREET", drop:["tools/","docs/","package.json","package-lock.json","playwright.config.mjs","HANDOFF.md","STATUS.md"] },
+{ slug:"mainstreet", repo:"Mainstreet", ref:"main", card:"MAINSTREET", drop:["tools/","docs/","src/",".devcontainer/","package.json","package-lock.json","playwright.config.mjs","HANDOFF.md","STATUS.md","README.md","START-HERE.md"] },
 ```
 
 The clone the script reads must sit at `/workspaces/Mainstreet` and it resolves `origin/main`, so push upstream before re-vendoring. `sw.js` stays in the vendored copy: it registers at `/satellites/mainstreet/` scope, deletes only `mainstreet-*` caches, and passes `node scripts/sw_cache_scope_check.mjs`.
