@@ -66,15 +66,24 @@ One box per exit condition. Tick a box only with the command and its result past
 - [ ] Stephen's call recorded in `docs/decisions.md`: proceed to M3, or fix first (what)
 
 ## M3 Town loop
-- [ ] Chapters 2 and 3 playable end to end
-- [ ] Six shops, Basket stall, look-through exposure, Spread and Readiness scoring
-- [ ] Keeper lines (three idle each plus card lines) wired to activity state and the year's cards
-- [ ] Year show with activity overlays from `G` thresholds, news cues, neighbor coin bars
-- [ ] Gazette with Ada, Bo and Dev in fixed order; chapter 2 ending shows child, Ada, Dev on the same market
-- [ ] Cost decision with every funding path; Bo pays from the jar in every fixture; "Goal postponed" path records a ledger entry
-- [ ] Album collects shop cards, news cards and neighbor cards
-- [ ] Fixtures extended to chapters 2 and 3; all tests green
-- [ ] Tag `m3`
+- [x] Chapters 2 and 3 playable end to end
+      evidence: tools/ui.spec.mjs chapter 2 and chapter 3 journeys, chromium and webkit, 2026-10-11
+- [x] Six shops, Basket stall, look-through exposure, Spread and Readiness scoring
+      evidence: the street shows six tiles and the stall; My Plan shows look-through bars; Spread and Readiness stamps on Results read from the engine's opportunities (engine tests cover the rubric)
+- [x] Keeper lines (three idle each plus card lines) wired to activity state and the year's cards
+      evidence: keeperLineFor() picks the card line for a shop touched since the last stop, else the idle line by activity state; content test enforces three idle lines and a line per card
+- [x] Year show with activity overlays from `G` thresholds, news cues, neighbor coin bars
+      evidence: frames come from ENGINE.frame (busy at G ≥ 1.02, quiet at G ≤ 0.98, special on a card's shop); neighbor bars follow neighborLedgers; screenshot 16-ch2-show
+- [x] Gazette with Ada, Bo and Dev in fixed order; chapter 2 ending shows child, Ada, Dev on the same market
+      evidence: chapter 2 journey asserts two neighbor rows in the Gazette and three rows in "Every plan on this town"; screenshots 17 and 18
+- [x] Cost decision with every funding path; Bo pays from the jar in every fixture; "Goal postponed" path records a ledger entry
+      evidence: chapter 3 journey offers Buffer and wallet paths (Saved, Soon and sell appear when they can contribute), pays from the Buffer, and the payment commits on Continue year; engine test "Bo pays the chapter 3 cost from the jar in every fixture seed"; an unmet remainder is recorded as costUnmet and shown on Results
+- [x] Album collects shop cards, news cards and neighbor cards
+      evidence: finishChapter() records shops owned, every card that fired, neighbors met and goals funded; Scrapbook shows 40 slots; screenshot 19
+- [x] Fixtures extended to chapters 2 and 3; all tests green
+      evidence: tools/fixtures/ch2-standard.json and ch3-standard.json replay in two engines; node tools/test.mjs 126 pass
+- [x] Tag `m3`
+      evidence: git tag m3 on the M3 commit
 
 ## M4 Time and uncertainty
 - [ ] Chapters 4 to 6 playable; dividends, Reinvest toggle, contributions and routing

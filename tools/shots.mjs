@@ -20,3 +20,21 @@ await shot('9-gazette'); await page.getByRole('button', { name: 'Continue' }).cl
 await page.getByRole('button', { name: 'Buy it from my Jar' }).click(); await shot('11-results');
 await page.getByRole('button', { name: 'My Plan' }).click(); await shot('12-plan');
 await b.close(); console.log('shots written to', OUT);
+// chapter 2 and 3 screens
+await (async () => {
+  const b2 = await chromium.launch(); const p2 = await b2.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
+  const shot2 = n => p2.screenshot({ path: OUT + n + '.png', fullPage: true });
+  await p2.goto('file://' + resolve(ROOT, 'index.html'));
+  await p2.evaluate(() => { MS.newRun('ch2', 'Pebble Creek 3'); MS.go('town'); }); await shot2('13-ch2-intro');
+  await p2.getByRole('button', { name: 'Start exploring' }).click(); await shot2('14-ch2-town');
+  await p2.locator('.tile.stall').click(); await p2.locator('.steppers').getByRole('button', { name: 'Buy 1 share' }).click(); await shot2('15-ch2-stall');
+  await p2.getByRole('button', { name: 'Next year' }).click(); await p2.locator('#go').click(); await p2.waitForTimeout(2600); await shot2('16-ch2-show');
+  await p2.getByRole('button', { name: 'Skip' }).click(); await shot2('17-ch2-gazette');
+  await p2.getByRole('button', { name: 'Continue' }).click();
+  for (let i = 0; i < 2; i++) { await p2.getByRole('button', { name: 'Next year' }).click(); await p2.locator('#go').click(); await p2.getByRole('button', { name: 'Skip' }).click(); if (await p2.locator('.screen.gazette').count()) await p2.getByRole('button', { name: 'Continue' }).click(); }
+  if (await p2.locator('.screen.decision').count()) await p2.getByRole('button', { name: /^Buy it/ }).click();
+  await shot2('18-ch2-results');
+  await p2.getByRole('button', { name: 'Scrapbook' }).click(); await shot2('19-scrapbook');
+  await b2.close();
+})();
+console.log('chapter 2 shots done');

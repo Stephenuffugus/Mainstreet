@@ -6,6 +6,12 @@ Format: `YYYY-MM-DD · milestone · who · decision · why · what it affects`
 
 ## Entries
 
+- 2026-10-11 · M3 · Fable · The Basket stall is a full-width row under the six storefront tiles · Seven tiles in three columns left the stall alone on a third row; a market stall reads as its own thing · Town screen
+- 2026-10-11 · M3 · Fable · The cost decision offers one button per funding source that can actually contribute first (Buffer, wallet, Saved, Soon, sell), each labeled with the full chain it would use; the pending choice commits on Continue year · HANDOFF 8 "all funding paths" without a maze; the chain label is the preview · Decision screen
+- 2026-10-11 · M3 · Fable · "Every plan on this town" compares post-purchase net worth for the child and every neighbor · The first draft mixed the child's post-purchase total with neighbors' pre-purchase history, which read as a contradiction · Results
+- 2026-10-11 · M3 · Fable · Neighbor ledgers are computed once per market and memoized on the market object · Four full replays per render would be wasteful; the market is immutable and the neighbors never read the child · App, engine neighborLedgers
+- 2026-10-11 · M3 · Fable · Goal copy uses per-goal nouns and funded lines (CONTENT.goalNoun, CONTENT.goalFunded) · "Your a nature trip are here" · Content
+- 2026-10-11 · M3 · Stephen · M3 starts before the fun gate ("Keep building"); the gate stays open in docs/playtest.md and is run on the six-shop street once chapters 2 and 3 exist · Stephen's call; a built street is a better gate than a paper mock · WORKLOG fun gate, HANDOFF 13
 - 2026-10-11 · M2 · Fable · The street is a grid of compact storefront tiles (three per row on a phone) with one trading panel beneath for the selected shop; chapter 1 auto-selects the Bakery · One full-size card per shop made the six-shop street a long scroll; the panel keeps plus and minus one tap from any tile · HANDOFF 8 Town screen
 - 2026-10-11 · M2 · Fable · A reload resumes into the town (or the Results page) instead of Home · "Refresh mid-chapter resumes exactly"; Home stays one tap away · App boot
 - 2026-10-11 · M2 · Fable · Season labels follow the calendar: the chapter starts in January, so the first advance is "Go to spring" and the first show is winter weather · The packet's "Go to summer" was illustrative; the Gazette weather strip must match · App copy

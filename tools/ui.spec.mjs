@@ -119,3 +119,91 @@ test("keyboard only: start, jar, pick the shop, buy, next season, confirm, skip 
   await expect(page.locator(".screen.town")).toBeVisible(); await expect(page.locator(".price strong")).toContainText("11");
   expect(errors, errors.join("\n")).toEqual([]);
 });
+
+/* ---- M3 journeys: chapters 2 and 3 ---- */
+async function advanceOnce(page) {
+  const next = page.getByRole("button", { name: /^(Next year|Continue year|Next season)$/ });
+  await next.click(); await page.locator("#go").click(); await skipShow(page);
+}
+async function settle(page, onCost) {
+  // after a show: handle whatever screen arrived, until the town or the results page is showing
+  for (let i = 0; i < 6; i++) {
+    if (await page.locator(".screen.town").count()) return "town";
+    if (await page.locator(".screen.results").count()) return "results";
+    if (await page.locator(".screen.gazette").count()) { await page.getByRole("button", { name: "Continue" }).click(); continue; }
+    if (await page.locator(".screen.decision").count()) {
+      if (await page.getByText("Your goal day has arrived").count()) { await page.getByRole("button", { name: /^Buy it/ }).click(); continue; }
+      await onCost(page); continue;
+    }
+    await page.waitForTimeout(100);
+  }
+  throw new Error("did not settle");
+}
+test("chapter 2: six shops, the Basket, Ada and Dev; no trading is ever required; results compare the plans", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  await page.evaluate(() => { MS.newRun("ch2", "Pebble Creek 3"); MS.go("town"); });
+  await expect(page.getByText("Different Shops")).toBeVisible();
+  await expect(page.getByText("This is Ada.")).toBeVisible();
+  await expect(page.getByText("This is Dev.")).toBeVisible();
+  await page.getByRole("button", { name: "Start exploring" }).click();
+  await expect(page.locator(".tile")).toHaveCount(7);
+  await expect(page.locator(".house")).toHaveCount(2);
+  await page.locator(".tile.stall").click();
+  await expect(page.locator(".panel")).toContainText("Six shops in one town");
+  await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
+  await page.locator(".tile").first().click();
+  await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
+  await expect(page.locator(".tray li")).toHaveCount(2);
+  await page.getByRole("button", { name: "My Plan" }).click();
+  await expect(page.getByText("Where your invested money sits")).toBeVisible();
+  await page.getByRole("button", { name: "Keep my plan" }).click();
+  await advanceOnce(page);
+  await expect(page.locator(".masthead")).toContainText("Gazette");
+  await expect(page.locator(".gaz-nb")).toHaveCount(2);
+  await page.getByRole("button", { name: "Continue" }).click();
+  await advanceOnce(page); expect(await settle(page, async () => {})).toBe("town");
+  await advanceOnce(page); expect(await settle(page, async () => {})).toBe("results");
+  await expect(page.getByText("Every plan on this town")).toBeVisible();
+  await expect(page.locator(".cols li")).toHaveCount(3);
+  await expect(page.locator(".cols")).toContainText("Ada");
+  await expect(page.locator(".cols")).toContainText("Dev");
+  await expect(page.getByRole("button", { name: /Next chapter: Ready for Rain/ })).toBeVisible();
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("chapter 3: the surprise cost arrives, every funding path is offered, the Buffer pays it, Bo paid from his jar", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  await page.evaluate(() => { MS.newRun("ch3", "Willow Bend 41"); MS.go("town"); });
+  await expect(page.getByText(/A surprise cost may come this chapter: 15 to 30 coins/)).toBeVisible();
+  await expect(page.getByText("This is Bo.")).toBeVisible();
+  await page.getByRole("button", { name: "Start exploring" }).click();
+  await expect(page.locator(".house")).toHaveCount(3);
+  await page.getByRole("button", { name: "My Plan" }).click();
+  const bufIn = page.getByRole("button", { name: "Put 5 coins in Buffer" });
+  await bufIn.click(); await bufIn.click(); await bufIn.click(); await bufIn.click();
+  await expect(page.locator(".band-row").filter({ hasText: "Buffer" })).toContainText("20");
+  await page.getByRole("button", { name: "Keep my plan" }).click();
+  await expect(page.locator(".band.buffer")).toContainText("Buffer 20");
+  let paid = false;
+  for (let i = 0; i < 5 && !paid; i++) {
+    await advanceOnce(page);
+    const where = await settle(page, async p => {
+      await expect(p.getByText(/Your backpack strap broke/)).toBeVisible();
+      await expect(p.getByRole("button", { name: /^Pay from my Buffer/ })).toBeVisible();
+      await expect(p.getByRole("button", { name: /^Pay from my wallet/ })).toBeVisible();
+      await expect(p.getByText("Bo pays surprise costs from his jar.")).toBeVisible();
+      await p.getByRole("button", { name: /^Pay from my Buffer/ }).click(); paid = true;
+    });
+    if (where === "results") break;
+  }
+  expect(paid).toBe(true);
+  await expect(page.locator(".hint")).toContainText(/You paid \d+ coins for a new backpack strap from your Buffer/);
+  await expect(page.getByRole("button", { name: "Continue year" })).toBeVisible();
+  // the payment sits in the plan tray until "Continue year" commits it (HANDOFF 5: decision choices take the same path)
+  expect(await page.evaluate(() => MS.S.draft.totals.costSpending)).toBeGreaterThan(0);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).checkpoint.totals.costSpending)).toBe(0);
+  await advanceOnce(page); await settle(page, async () => {});
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).checkpoint.totals.costSpending)).toBeGreaterThan(0);
+  expect(errors, errors.join("\n")).toEqual([]);
+});
