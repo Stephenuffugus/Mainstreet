@@ -12,7 +12,8 @@ One box per exit condition. Tick a box only with the command and its result past
       evidence: 2026-10-11, Version 1.64.0, engines: chromium, webkit
 - [ ] GitHub Pages enabled (`main`, root); `https://stephenuffugus.github.io/Mainstreet/` serves the stub with the build stamp
       blocked 2026-10-11: the Codespace token gets 403 on the Pages API; Stephen flips it in Settings → Pages
-- [ ] Tag `m0`
+- [x] Tag `m0`
+      evidence: M0 shipped inside the M1 commit (50e566a, tag m1); no separate m0 tag exists
 
 ## M1 Trustworthy core
 - [x] `<script id="engine">` complete: PRNG with five streams, PARAMS, market generation with `scripted`/`off`/`noSlump`/`authored`/`full` modes, tick order, draft and pending, neighbors (Ada, Bo, Cass, Dev), scoring
@@ -155,5 +156,7 @@ One box per exit condition. Tick a box only with the command and its result past
       evidence: six journeys in ui.spec.mjs; docs/playtest.md boxes ticked with the test names
 - [x] First-pass art for all 113 slots from tools/gen_art.mjs; manifest regenerated; precache total recorded in STATUS.md
       evidence: 110 sprites in art/ (the other three slots are the two PWA icons and the portal thumbnail, already in place), 1,326 KB, largest 19 KB, every corner transparent except the two opaque plates; contact sheet checked; the show's news cards fixed (an array was passed to replaceChildren); sky and weather plates sized; offline-after-install test waits for install to finish; npx playwright test 56 passed
+- [x] Art-slot guard: tools/test.mjs enumerates every slot the app can request (shops by state, closable shops, keepers, neighbors, houses, goals, decorations, frames, stamps, trees, weather from real frames) and fails if art/manifest.json lacks one; free-play scrapbook pages borrow a chapter frame by town name
+      evidence: node tools/test.mjs 131 pass / 0 fail
 - [x] Tag `v1.0.0-rc2`
       evidence: git tag v1.0.0-rc2; build stamp 1.0.0-rc2; worker cache DECK2-MS1-1.0.0-rc2

@@ -34,6 +34,24 @@ for (const ch of CONTENT.chapters) for (const seed of SEEDS.slice(0, 2)) {
   t(`laws ${ch.id} ${seed} random`, () => checkLaws(E.runPolicy(m, "random", { rng: sfc32(...cyrb128("bot|" + ch.id + seed)) }).state));
 }
 
+
+/* ---------------- art slots: everything the app can ask for exists in art/manifest.json ---------------- */
+t("every art slot the app can request exists in art/manifest.json", () => {
+  const files = new Set(JSON.parse(readFileSync(resolve(ROOT, "art/manifest.json"), "utf8")).files.map(f => f.name));
+  const slots = new Set(["stall-normal", "stall-ab", "plate-sky", "plate-ground", "card-back", "tree-ground"]);
+  for (const a of PARAMS.assets) { const id = a.id.toLowerCase(); for (const st of ["open", "busy", "quiet", "special"]) slots.add(`shop-${id}-${st}`); for (const pose of ["neutral", "talking", "busy"]) slots.add(`keeper-${a.keeper}-${pose}`); }
+  for (const id of CONTENT.freePlay && CONTENT.freePlay.closureCandidates || ["TOYS", "ROBO"]) slots.add(`shop-${id.toLowerCase()}-closed`);
+  for (const sc of CONTENT.chapters) { if (sc.closure && sc.closure.candidates) for (const id of sc.closure.candidates) slots.add(`shop-${id.toLowerCase()}-closed`); for (const n of sc.neighbors || []) { for (const pose of ["neutral", "talking"]) slots.add(`neighbor-${n}-${pose}`); slots.add(`house-${n}`); } if (sc.id !== "free") slots.add(`frame-${sc.id}`); }
+  for (const g of Object.keys(CONTENT.goals)) slots.add(`goal-${g}`);
+  for (const fam of ["plants", "bunting", "murals", "benches", "paths", "pinwheels"]) for (const n of [1, 2, 3]) slots.add(`deco-${fam}-${n}`);
+  for (const d of ["goal-fit", "readiness", "spread", "follow-through", "cost"]) slots.add(`stamp-${d}`);
+  for (const k of ["oak", "cherry"]) for (let st = 1; st <= 5; st++) slots.add(`tree-${k}-${st}`);
+  for (const seed of SEEDS) { const m = M("free", seed, { preset: "late-storm" }); const r = E.advance(E.createRun({ market: m }), m, 36); for (const f of r.frames) slots.add(`weather-${f.weather}`); }
+  const missing = [...slots].filter(s => !files.has(s + ".webp"));
+  eq(missing.length, 0, "missing art for: " + missing.join(", "));
+  ok(slots.size >= 100, "slot enumeration looks complete: " + slots.size);
+});
+
 /* ---------------- buy lossless, sell < 1 cc, 1000 cycles ---------------- */
 for (const q of [800, 5000, 11200]) t(`buy lossless at quote ${q}`, () => {
   for (let X = 1; X <= 20000; X++) { const msh = E.mshForCash(X, q); if (msh <= 0) continue; const spend = E.posValue(msh, q); ok(spend <= X, "spend <= X"); eq(E.posValue(msh, q), spend, "value equals spend"); }
