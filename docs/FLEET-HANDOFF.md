@@ -93,4 +93,4 @@ node scripts/vendor_satellites.mjs --check mainstreet      # CLEAN
 git push -u origin add-mainstreet && gh pr create --fill
 ```
 
-If the patch ever stops applying because `main` moved, re-vendor instead: add the MANIFEST line from section 2, run `node scripts/vendor_satellites.mjs --vendor mainstreet` with `/workspaces/Mainstreet` cloned beside the arcade, and add the card from section 3.
+`--check mainstreet` reports BEHIND whenever this repo has a newer commit, including docs-only commits that change nothing in the deployable files; that is not drift. Run `node scripts/vendor_satellites.mjs --vendor mainstreet` (then `git add -f satellites/mainstreet/music`) to refresh. If the patch ever stops applying because `main` moved, re-vendor instead: add the MANIFEST line from section 2, run `node scripts/vendor_satellites.mjs --vendor mainstreet` with `/workspaces/Mainstreet` cloned beside the arcade, and add the card from section 3.
