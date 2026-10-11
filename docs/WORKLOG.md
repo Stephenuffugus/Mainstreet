@@ -225,3 +225,21 @@ One box per exit condition. Tick a box only with the command and its result past
 - [ ] The lead reviews the pictures, pushes, and re-vendors into the arcade
 - [ ] Stephen rules on Bo's chapter 3 (he now buys his bicycle in about 1 town in 10) and names the Clerk
 - [ ] WebKit journeys green in CI on the push
+
+## R17 The walk in (2026-10-11; Stephen's fourth note, "the tutorial needs to be like the person walking in"; plan docs/plans/CH1-WALK-IN-2026-10-11.md)
+
+- [x] Chapter 1 is a guided walk: the Clerk at the door (Come in), then nine steps on the Town, one lit at a time (the money row, the goal chip, the Jar with Put 30 in my Jar, the bakery tile, the share card, the plan tray, My Plan, Next season, the confirm sheet), the plan's copy, a tinted blocker with a hole and a ring, the card never on the lit control; Next season off until step 8; S.ui.walk saved with the run; Skip the walk for players who finished chapter 1
+      evidence: ui.spec.mjs "R17 the walk in" (every step's words in order, the ring on the money row, Next season off until step 8, the panel closed before step 4, no More in the walk, Go ends it and the save reads done), "R17 taps outside the lit control do nothing" (the goal chip, Home, the tile and My Plan dead under the blocker; the money row and the tile take taps in the hole), "R17 step 7 opens My Plan", "R17 a saved run mid walk" (steps 2, 3, 5, 8 and the sheet after reload), "R17 a player who finished chapter 1 sees Skip the walk", "R17 at 412x915" and "R17 at 320x568" (at every step: card off the control, ring within 1 px of the control plus 8, a tap at its center lands on it, both in view, card text whole); the keyboard journey walks it by Tab and Enter with only the lit control in the Tab order
+- [x] My Plan explains itself in every chapter (the Clerk's card at the top; Buffer line only with a Buffer); in the walk its Back to town returns to step 8
+      evidence: ui.spec.mjs "R17 step 7 opens My Plan" (chapter 1 text without Buffer, chapter 3 with it, chapter 2 without, no button outside the walk); screenshot 07b-plan-screen
+- [x] The chapter 1 stop guides keep their text and carry the Clerk's eyebrow and border instead of "Practice year"
+      evidence: ui.spec.mjs "R14 chapter 1 guide" (.hint.clerk .eyebrow reads The Town Clerk); screenshot 10-spring-guide-412x915
+- [x] Every chapter 1 journey opens through one helper, walkCh1(page), by the real controls
+      evidence: tools/ui.spec.mjs walkCh1; the end to end, accidental tap, show, keyboard, overflow sweep (with a check at every walk step), export and import, recovery, two tabs, offline, focus, sound, blocked storage, hidden page, update banner, reduced motion, town answers, music and R14 journeys use it
+- [x] Versions and suites: build 1.0.0-rc8, worker DECK4-MS1-1.0.0-rc8, content DECK4, engine MS1 and rubric PLAN1 unchanged, engine code untouched, fixtures unchanged (no --write-fixtures)
+      evidence: node tools/test.mjs 131 pass / 0 fail; node tools/join.mjs --check matches; npx playwright test --project=chromium 52 passed (45 before plus 7 R17), 2026-10-11; node tools/shots.mjs runs through the new opening. WebKit is not installed on this box; CI runs it on push
+- [x] Pictures looked at, served over http, viewport shots (not full page): /tmp/ms-build/shots5, every step at 412 by 915 (00-intro to 09-confirm, 07b-plan-screen, 10-spring-guide) and every step at 320 by 568 (the plan asked 3, 6 and 8), plus 06c (tray opened by hand at 320)
+      evidence: node /tmp/ms-build/shoot5.mjs against python3 -m http.server 8767, with a geometry report per shot (card over control, ring offset, tap hit, card cut). Fixed after looking: the light sliced the shop's name at step 5; "Undo takes a line back" over a shut tray; a dead More in the light; square hole corners outside the round ring; a stray ring line over the confirm sheet; step 1 did not fit at 320; a buy at 320 pushed the lit area off screen; "Tap Go" with Go below the fold at 320; the card above the Jar hid the goal bar filling. Seen, not fixed: at 320 with the tray opened by hand at step 6 the card scrolls (Next stays in view); Home and Scrapbook are dead during the walk (the plan's rule)
+- [ ] The lead looks at the pictures, pushes, and re-vendors into the arcade
+- [ ] WebKit journeys green in CI on the push
+- [ ] Stephen plays chapter 1 again

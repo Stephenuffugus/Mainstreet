@@ -10,8 +10,11 @@ const b = await chromium.launch(); const page = await b.newPage({ viewport: { wi
 const shot = n => page.screenshot({ path: OUT + n + '.png', fullPage: true });
 await page.goto('file://' + resolve(ROOT, 'index.html')); await shot('1-home');
 await page.getByRole('button', { name: 'Start chapter 1' }).click(); await shot('2-intro');
-await page.getByRole('button', { name: 'Start exploring' }).click(); await shot('3-town-step2');
-await page.getByRole('button', { name: 'Put 30 in my Jar' }).click(); await page.locator('.shop-face').click(); await page.locator('.steppers').getByRole('button', { name: 'Buy 1 share' }).click(); await shot('4-town-tray');
+// R17: chapter 1 opens with the Clerk's walk (docs/plans/CH1-WALK-IN-2026-10-11.md); /tmp/ms-build/shoot5.mjs shoots each step at the viewport
+const walkNext = () => page.locator('.walk-card').getByRole('button', { name: 'Next', exact: true }).click();
+await page.getByRole('button', { name: 'Come in' }).click(); await shot('3-town-walk1');
+await walkNext(); await walkNext(); await page.locator('.walk-card').getByRole('button', { name: 'Put 30 in my Jar' }).click(); await walkNext(); await page.locator('.shop-face').click(); await page.locator('.steppers').getByRole('button', { name: 'Buy 1 share' }).click(); await walkNext(); await shot('4-town-tray');
+await walkNext(); await page.getByRole('button', { name: 'My Plan' }).click(); await page.locator('.plan-clerk').getByRole('button', { name: 'Back to town' }).click();
 await page.getByRole('button', { name: 'Next season' }).click(); await shot('5-confirm');
 await page.locator('#go').click(); await page.waitForTimeout(1300); await shot('6-show');
 await page.getByRole('button', { name: 'Skip' }).click(); await shot('6b-recap-winter'); await page.locator('#recap-go').click(); await shot('7-town-spring');

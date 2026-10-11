@@ -10,39 +10,61 @@ function watch(page) { const errors = []; page.on("pageerror", e => errors.push(
 // R14: every advance now ends on the recap sheet; its one button (#recap-go) goes on to whatever arrive() opens next
 async function passRecap(page) { await expect(page.locator(".screen.recap")).toBeVisible(); await page.locator("#recap-go").click(); }
 async function skipShow(page) { await expect(page.locator(".screen.show")).toBeVisible(); await page.getByRole("button", { name: "Skip" }).click(); await passRecap(page); }
+// R17: chapter 1 is a guided walk (docs/plans/CH1-WALK-IN-2026-10-11.md). walkCh1 performs it by its real controls: Start chapter 1 and Come in (0), Next on the money row (1),
+// Next on the goal chip (2), Put 30 in my Jar then Next (3), the bakery tile (4), plus `shares` times then Next (5), Next on the plan tray (6), My Plan then the Clerk's Back to town (7),
+// Next season (8), which opens the confirm sheet (step 9); the caller taps Go (#go). `from` and `to` run part of it: the walk stops when it is AT step `to`. `each(step)` runs on arrival at every step.
+async function walkCh1(page, opts = {}) {
+  const { from = 0, to = 9, shares = 1, each = null } = opts, card = page.locator(".walk-card"), next = () => card.getByRole("button", { name: "Next", exact: true }).click();
+  const at = async n => { await expect(page.locator(".walk-layer")).toHaveAttribute("data-step", String(n)); if (each) await each(n); };
+  const steps = [
+    async () => { if (!(await page.getByRole("button", { name: "Come in" }).count())) await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Come in" }).click(); },
+    async () => { await at(1); await next(); },
+    async () => { await at(2); await next(); },
+    async () => { await at(3); await card.getByRole("button", { name: "Put 30 in my Jar" }).click(); await expect(card).toContainText("is safe"); await next(); },
+    async () => { await at(4); await page.locator(".shop-face").click(); },
+    async () => { await at(5); for (let i = 0; i < shares; i++) await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click(); await next(); },
+    async () => { await at(6); await next(); },
+    async () => { await at(7); await page.getByRole("button", { name: "My Plan" }).click(); await page.locator(".screen.plan .plan-clerk").getByRole("button", { name: "Back to town" }).click(); },
+    async () => { await at(8); await page.getByRole("button", { name: "Next season" }).click(); }
+  ];
+  for (let i = from; i < Math.min(to, 9); i++) await steps[i]();
+  if (to >= 1 && to <= 9) await at(to);
+}
 
-test("chapter 1 end to end: opening order, tray, confirm, show, Gazette, goal day, results", async ({ page }) => {
+test("chapter 1 end to end: the walk in, tray, confirm, show, Gazette, goal day, results", async ({ page }) => {
   const errors = watch(page);
   await page.goto(URL);
   await expect(page.locator("#s-title")).toBeVisible();
   await expect(page.locator("#build-stamp")).toContainText("build");
   await page.getByRole("button", { name: "Start chapter 1" }).click();
-  await expect(page.getByText("These are pretend coins")).toBeVisible();                       // step 1
-  await page.getByRole("button", { name: "Start exploring" }).click();
-  await expect(page.getByText("Some for soon. Some to try growing.")).toBeVisible();          // step 2
+  await expect(page.locator(".cold-open")).toContainText("I am the Town Clerk. One shop is open this year, Bram\u2019s bakery");   // the Clerk at the door
+  await page.getByRole("button", { name: "Come in" }).click();
+  await expect(page.locator(".walk-card")).toContainText("Here are your coins: 100, all pretend.");                    // step 1, the money row
   await expect(page.locator(".money").first()).toContainText("100");
   await expect(page.getByRole("button", { name: "Next season" })).toBeDisabled();
-  await page.getByRole("button", { name: "Put 30 in my Jar" }).click();                       // step 3
+  await walkCh1(page, { from: 1, to: 5 });                                                     // the goal chip, the Jar, the bakery
   await expect(page.locator(".band.soon")).toContainText("Soon 30");
-  await page.locator(".shop-face").click();                                                   // step 4: tap the Bakery
   await expect(page.locator(".share-grid")).toBeVisible();
-  await expect(page.getByText("A share is one tiny piece of this business. Each one costs 10 right now.")).toBeVisible();
-  await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();                          // step 5
+  await expect(page.locator(".walk-card")).toContainText("A share costs 10 right now.");    // step 5, the share card
+  await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
   await expect(page.locator(".tray")).toContainText("+1 share Rise & Shine Bakery");
-  await expect(page.getByText("1 share for 10 coins. 60 coins stay in your wallet.")).toBeVisible();
   await expect(page.locator(".money").nth(1)).toContainText("60");
   await expect(page.locator(".own")).toContainText("1 share");
-  // refresh mid-stop: the tray and the draft come back exactly
+  // refresh mid walk: the tray, the draft and the step come back exactly
   await page.reload();
+  await expect(page.locator(".walk-layer")).toHaveAttribute("data-step", "5");
   await expect(page.locator(".tray")).toContainText("+1 share Rise & Shine Bakery");
   await expect(page.locator(".band.soon")).toContainText("Soon 30");
   await expect(page.locator(".money").nth(1)).toContainText("60");
-  await page.getByRole("button", { name: "Next season" }).click();                            // step 6
+  await page.locator(".walk-card").getByRole("button", { name: "Next", exact: true }).click();
+  await walkCh1(page, { from: 6 });                                                            // the tray, My Plan, Next season
   await expect(page.locator(".sheet")).toContainText("Buy 1 share of Rise & Shine Bakery for 10 coins");
+  await expect(page.locator(".sheet .walk-card")).toContainText("Tap Go to spring.");        // step 9, the Clerk on the confirm sheet
   await page.locator("#go").click();
-  await expect(page.locator(".receipt")).toContainText("You own 1 share.");                  // step 7 receipt
+  await expect(page.locator(".receipt")).toContainText("You own 1 share.");                  // the receipt
   await skipShow(page);
-  await expect(page.getByText("Same share. A different price.")).toBeVisible();              // step 8
+  await expect(page.locator(".walk-layer")).toHaveCount(0);                                  // the walk is done
+  await expect(page.getByText("Same share. A different price.")).toBeVisible();              // the spring stop guide
   await expect(page.locator(".price strong")).toContainText("11");
   await expect(page.locator(".tray")).toHaveCount(0);                                        // undo is gone after a commit
   await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click(); await skipShow(page);
@@ -77,17 +99,15 @@ test("chapter 1 end to end: opening order, tray, confirm, show, Gazette, goal da
 test("an accidental tap on a stepper changes the tray, never the ledger; Clear plan empties it", async ({ page }) => {
   const errors = watch(page);
   await page.goto(URL);
-  await page.getByRole("button", { name: "Start chapter 1" }).click();
-  await page.getByRole("button", { name: "Start exploring" }).click();
-  await page.getByRole("button", { name: "Put 30 in my Jar" }).click();
-  await page.locator(".shop-face").click();
+  await walkCh1(page, { to: 5 });
   const plus = page.locator(".steppers").getByRole("button", { name: "Buy 1 share" });
-  await plus.click(); await plus.click(); await plus.click();
+  await plus.click(); await plus.click(); await plus.click();                              // step 5 takes as many as the wallet allows
   await expect(page.locator(".tray li")).toHaveCount(4);
   await expect(page.locator(".own")).toContainText("3 shares");
   const committed = await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).checkpoint.pos.BAKE || 0);
   expect(committed).toBe(0);
-  await page.getByRole("button", { name: "Show plan" }).click();                           // the tray is one line until opened (second play, 11 Oct)
+  await page.locator(".walk-card").getByRole("button", { name: "Next", exact: true }).click();
+  await expect(page.locator(".tray")).toHaveClass(/open/);                                  // R17 step 6 lights the tray and opens it, so its Undo buttons show
   await page.getByRole("button", { name: "Undo +1 share Rise & Shine Bakery (−10)" }).first().click();
   await expect(page.locator(".own")).toContainText("2 shares");
   await page.getByRole("button", { name: "Clear plan" }).click();
@@ -98,12 +118,7 @@ test("an accidental tap on a stepper changes the tray, never the ledger; Clear p
 
 test("the show and skipping it never change a number", async ({ page }) => {
   await page.goto(URL);
-  await page.getByRole("button", { name: "Start chapter 1" }).click();
-  await page.getByRole("button", { name: "Start exploring" }).click();
-  await page.getByRole("button", { name: "Put 30 in my Jar" }).click();
-  await page.locator(".shop-face").click();
-  await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
-  await page.getByRole("button", { name: "Next season" }).click();
+  await walkCh1(page);
   await page.locator("#go").click();
   const during = await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).checkpoint.history.map(h => h.nw));
   await skipShow(page);
@@ -112,13 +127,28 @@ test("the show and skipping it never change a number", async ({ page }) => {
   expect(after.length).toBe(4);
 });
 
-test("keyboard only: start, jar, pick the shop, buy, next season, confirm, skip the show", async ({ page }) => {
+test("keyboard only: the walk in by Tab and Enter (each step opens on the Clerk's button, only the lit control is in the Tab order), Next season, confirm, skip the show", async ({ page }) => {
   const errors = watch(page);
   await page.goto(URL);
-  async function pressUntil(label) { for (let i = 0; i < 60; i++) { await page.keyboard.press("Tab"); const t = await page.evaluate(() => { const a = document.activeElement; return a ? ((a.getAttribute("aria-label") || a.textContent) || "").trim() : ""; }); if (t.startsWith(label)) { await page.keyboard.press("Enter"); return; } } throw new Error("not reachable by Tab: " + label); }
-  await pressUntil("Start chapter 1"); await pressUntil("Start exploring"); await pressUntil("Put 30 in my Jar"); await pressUntil("Rise & Shine Bakery"); await pressUntil("Buy 1 share");
+  const label = () => page.evaluate(() => { const a = document.activeElement; return a && a !== document.body && a !== document.documentElement ? ((a.getAttribute("aria-label") || a.textContent) || "").trim() : ""; });
+  async function pressUntil(name, exact) { for (let i = 0; i < 60; i++) { await page.keyboard.press("Tab"); const t = await label(); if (exact ? t === name : t.startsWith(name)) { await page.keyboard.press("Enter"); return; } } throw new Error("not reachable by Tab: " + name); }
+  await pressUntil("Start chapter 1"); await pressUntil("Come in");
+  expect(await label()).toBe("Next");                                                          // step 1 opens on the Clerk's button
+  const reached = new Set(); for (let i = 0; i < 12; i++) { await page.keyboard.press("Tab"); reached.add(await label()); }
+  expect([...reached].filter(t => t && t !== "Next")).toEqual([]);                             // nothing else on the Town is in the Tab order (the money row has no controls)
+  await page.locator(".walk-card #walk-go").focus(); await page.keyboard.press("Enter");          // 1
+  expect(await label()).toBe("Next"); await page.keyboard.press("Enter");                         // 2
+  expect(await label()).toBe("Put 30 in my Jar"); await page.keyboard.press("Enter");             // 3
+  expect(await label()).toBe("Next"); await page.keyboard.press("Enter");
+  await pressUntil("Rise & Shine Bakery");                                                         // 4: no button, the lit tile is reachable by Tab
+  await pressUntil("Buy 1 share");                                                                 // 5
   await expect(page.locator(".tray")).toContainText("+1 share");
-  await pressUntil("Next season"); await pressUntil("Go to spring"); await pressUntil("Skip"); await pressUntil("Back to town");
+  await pressUntil("Next", true);
+  expect(await label()).toBe("Next"); await page.keyboard.press("Enter");                         // 6
+  await pressUntil("My Plan");                                                                     // 7
+  await pressUntil("Back to town");                                                                // the Clerk's card on My Plan
+  await pressUntil("Next season");                                                                 // 8
+  await pressUntil("Go to spring"); await pressUntil("Skip"); await pressUntil("Back to town");
   await expect(page.locator(".screen.town")).toBeVisible(); await expect(page.locator(".price strong")).toContainText("11");
   expect(errors, errors.join("\n")).toEqual([]);
 });
@@ -360,8 +390,8 @@ for (const [w, h] of [[412, 915], [375, 667], [320, 568]]) test(`no horizontal o
   const noOverflow = async label => { const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth); expect(over, label + " overflows by " + over + "px at " + w).toBeLessThanOrEqual(0); };
   await page.goto(URL); await noOverflow("home");
   await page.getByRole("button", { name: "Start chapter 1" }).click(); await noOverflow("intro");
-  await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click(); await page.locator(".shop-face").click(); await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click(); await noOverflow("town");
-  await page.getByRole("button", { name: "Next season" }).click(); await noOverflow("confirm sheet"); await page.locator("#go").click(); await expect(page.locator(".screen.show")).toBeVisible(); await noOverflow("show"); await page.getByRole("button", { name: "Skip" }).click(); await expect(page.locator(".screen.recap")).toBeVisible(); await noOverflow("recap"); await page.locator("#recap-go").click();
+  await walkCh1(page, { to: 6, each: async n => noOverflow("walk step " + n) }); await noOverflow("town");
+  await walkCh1(page, { from: 6, each: async n => noOverflow("walk step " + n) }); await noOverflow("confirm sheet"); await page.locator("#go").click(); await expect(page.locator(".screen.show")).toBeVisible(); await noOverflow("show"); await page.getByRole("button", { name: "Skip" }).click(); await expect(page.locator(".screen.recap")).toBeVisible(); await noOverflow("recap"); await page.locator("#recap-go").click();
   for (let i = 0; i < 3; i++) { await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click(); await page.getByRole("button", { name: "Skip" }).click(); await page.locator("#recap-go").click(); }
   await expect(page.locator(".masthead")).toBeVisible(); await noOverflow("gazette"); await page.getByRole("button", { name: "Continue" }).click();
   await page.getByRole("button", { name: /^Buy it/ }).click(); await expect(page.locator(".screen.results")).toBeVisible(); await noOverflow("results");
@@ -371,7 +401,7 @@ for (const [w, h] of [[412, 915], [375, 667], [320, 568]]) test(`no horizontal o
 test("export and import: a town file round-trips; a crafted file is refused and renders nothing", async ({ page }) => {
   const errors = watch(page);
   await page.goto(URL);
-  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click();
+  await walkCh1(page, { to: 4 });                                                            // the Jar holds 30; the walk waits at the bakery
   // the download itself cannot be observed headless, so capture the anchor the exporter creates
   await page.goto(URL + "?debug=1");
   await expect(page.getByText("Export JSON")).toBeVisible();
@@ -385,8 +415,9 @@ test("export and import: a town file round-trips; a crafted file is refused and 
   await page.getByRole("button", { name: "Yes, replace it" }).click();
   await expect(page.locator(".screen.town")).toBeVisible();
   await expect(page.locator(".band.soon")).toContainText("Soon 30");
-  // crafted file: HTML strings, __proto__, oversized numbers
-  await page.getByRole("button", { name: "Home" }).click(); await page.getByRole("button", { name: "Settings" }).click();
+  await expect(page.locator(".walk-layer")).toHaveAttribute("data-step", "4");               // the walk step came with the town file
+  // crafted file: HTML strings, __proto__, oversized numbers (the walk blocks the Town's Home button, so go home directly)
+  await page.evaluate(() => MS.go("home")); await page.getByRole("button", { name: "Settings" }).click();
   const crafted = JSON.stringify({ app: "mainstreet", kind: "town-file", engineVersion: parsed.engineVersion, contentVersion: parsed.contentVersion, save: Object.assign(JSON.parse(JSON.stringify(parsed.save)), { seed: "<img src=x onerror=alert(1)>", checkpoint: Object.assign(parsed.save.checkpoint, { wallet: 1e300, __proto__: { polluted: true } }) }) });
   await page.locator("#import-file").setInputFiles({ name: "bad.json", mimeType: "application/json", buffer: Buffer.from(crafted) });
   await expect(page.getByText("That file is not a MAINSTREET town file.")).toBeVisible();
@@ -396,7 +427,7 @@ test("export and import: a town file round-trips; a crafted file is refused and 
 });
 test("recovery: a damaged save is kept aside, the backup can be tried, the player can start new", async ({ page }) => {
   await page.goto(URL);
-  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click();
+  await walkCh1(page, { to: 4 });
   await page.evaluate(() => { localStorage.setItem("ms:save", "{not json"); });
   await page.reload();
   await expect(page.getByText("A saved town could not be read")).toBeVisible();
@@ -407,7 +438,7 @@ test("recovery: a damaged save is kept aside, the backup can be tried, the playe
 });
 test("two tabs: the second tab is read-only until it takes over, then the first goes read-only", async ({ browser }) => {
   const ctx = await browser.newContext(); const p1 = await ctx.newPage();
-  await p1.goto(URL); await p1.getByRole("button", { name: "Start chapter 1" }).click(); await p1.getByRole("button", { name: "Start exploring" }).click();
+  await p1.goto(URL); await p1.getByRole("button", { name: "Start chapter 1" }).click(); await p1.getByRole("button", { name: "Come in" }).click();
   const p2 = await ctx.newPage(); await p2.goto(URL);
   await expect(p2.getByText("This town is open in another tab")).toBeVisible();
   await p2.getByRole("button", { name: "Take over" }).click();
@@ -427,7 +458,7 @@ test("offline after install: once the worker has cached the game, it loads and p
   await page.reload();
   await expect(page.locator("#s-title")).toBeVisible();
   await page.getByRole("button", { name: "Start chapter 1" }).click();
-  await expect(page.getByText("These are pretend coins")).toBeVisible();
+  await expect(page.getByText("I am the Town Clerk")).toBeVisible();
   await ctx.close();
 });
 
@@ -447,17 +478,19 @@ test("embed protocol: framed with ?embed=1 the game posts ready, registers no wo
 });
 
 /* ---- M7 journeys: focus, sound, the remaining manual checklist items ---- */
-test("focus: a screen change lands on the heading, an in-screen action keeps focus on its control, a sheet takes focus", async ({ page }) => {
+test("focus: a screen change lands on the heading, a walk step lands on the Clerk's button, an in-screen action keeps focus on its control, a sheet takes focus", async ({ page }) => {
   await page.goto(URL);
-  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click();
+  await page.getByRole("button", { name: "Start chapter 1" }).click();
   expect(await page.evaluate(() => /^H[12]$/.test(document.activeElement.tagName) || document.activeElement.getAttribute("role") === "heading")).toBe(true);
-  await page.getByRole("button", { name: "Put 30 in my Jar" }).click();
-  await page.locator(".shop-face").click();
+  await page.getByRole("button", { name: "Come in" }).click();
+  expect(await page.evaluate(() => document.activeElement.id)).toBe("walk-go");                 // R17: a walk step opens with the Clerk's button focused
+  await walkCh1(page, { from: 1, to: 5 });
   const buy = page.locator(".steppers").getByRole("button", { name: "Buy 1 share" });
   await buy.focus(); await page.keyboard.press("Enter");
   await expect(page.locator(".own")).toContainText("1 share");
   expect(await page.evaluate(() => document.activeElement.getAttribute("aria-label") || document.activeElement.textContent.trim())).toBe("Buy 1 share");
-  await page.getByRole("button", { name: "Next season" }).click();
+  await page.locator(".walk-card").getByRole("button", { name: "Next", exact: true }).click();
+  await walkCh1(page, { from: 6 });
   expect(await page.evaluate(() => !!document.activeElement.closest('[role="dialog"]'))).toBe(true);
 });
 test("sound: off by default, the Settings toggle persists, a show with sound on raises no errors", async ({ page }) => {
@@ -469,18 +502,17 @@ test("sound: off by default, the Settings toggle persists, a show with sound on 
   expect(await page.evaluate(() => MS.S.options.sound)).toBe(true);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem("ms:settings")).options.sound)).toBe(true);
   await page.getByRole("button", { name: "Home" }).click();
-  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click(); await page.locator(".shop-face").click(); await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
-  await advanceOnce(page);
+  await walkCh1(page); await page.locator("#go").click(); await skipShow(page);
   await expect(page.locator(".screen.town")).toBeVisible();
   expect(errors, errors.join("\n")).toEqual([]);
 });
 test("blocked storage: with localStorage throwing, Home says it is playing without saving, play continues, Export is still offered", async ({ page }) => {
   await page.addInitScript(() => { const bad = { getItem() { throw new Error("blocked"); }, setItem() { throw new Error("blocked"); }, removeItem() { throw new Error("blocked"); }, key() { return null; }, clear() {}, get length() { return 0; } }; Object.defineProperty(window, "localStorage", { get: () => bad }); });
   await page.goto(URL);
-  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click();
+  await walkCh1(page, { to: 4 });
   await expect(page.locator(".band.soon")).toContainText("Soon 30");
   await expect(page.getByText("Playing without saving on this device.")).toBeVisible();      // the banner appears once a save has failed
-  await page.getByRole("button", { name: "Home" }).click(); await page.getByRole("button", { name: "Settings" }).click();
+  await page.evaluate(() => MS.go("home")); await page.getByRole("button", { name: "Settings" }).click();   // the walk blocks the Town's Home button
   await expect(page.getByRole("button", { name: "Export my town" })).toBeVisible();
 });
 test("exit: with no history the title button replaces the page with the portal; with a portal referrer it steps back", async ({ page }) => {
@@ -496,8 +528,7 @@ test("exit: with no history the title button replaces the page with the portal; 
 });
 test("hidden page: nothing advances and nothing repeats while the page is hidden", async ({ page }) => {
   await page.goto(URL);
-  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click(); await page.locator(".shop-face").click(); await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
-  await advanceOnce(page);
+  await walkCh1(page); await page.locator("#go").click(); await skipShow(page);
   const before = await page.evaluate(() => JSON.stringify([MS.S.draft.t, MS.S.draft.wallet, MS.S.draft.totals]));
   await page.evaluate(() => { Object.defineProperty(document, "visibilityState", { value: "hidden", configurable: true }); document.dispatchEvent(new Event("visibilitychange")); });
   await page.waitForTimeout(1200);
@@ -506,10 +537,10 @@ test("hidden page: nothing advances and nothing repeats while the page is hidden
 });
 test("update banner: shows on Home only, never on the Town, never when embedded", async ({ page }) => {
   await page.goto(URL);
-  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click();
+  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Come in" }).click();
   await page.evaluate(() => { MS.S.ui.updateReady = { waiting: { postMessage() {} } }; MS.render(); });
   await expect(page.getByText("A new version is ready.")).toHaveCount(0);
-  await page.getByRole("button", { name: "Home" }).click();
+  await page.evaluate(() => MS.go("home"));                                                      // the walk blocks the Town's Home button
   await expect(page.getByText("A new version is ready.")).toBeVisible();
   await page.goto(URL + "?embed=1");
   await page.evaluate(() => { MS.S.ui.updateReady = { waiting: { postMessage() {} } }; MS.go("home"); });
@@ -518,8 +549,7 @@ test("update banner: shows on Home only, never on the Town, never when embedded"
 test("reduced motion: the year show is a strip of still frames stepped by tap, never on a timer", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(URL);
-  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click(); await page.locator(".shop-face").click(); await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
-  await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click();
+  await walkCh1(page); await page.locator("#go").click();
   await expect(page.locator(".screen.show")).toBeVisible();
   const next = page.getByRole("button", { name: "Next month" }); await expect(next).toBeVisible();
   const first = await page.locator(".screen.show h2.month").innerText();
@@ -533,8 +563,7 @@ test("reduced motion: the year show is a strip of still frames stepped by tap, n
 });
 test("town screen answers what you own, what you spent and what is left", async ({ page }) => {
   await page.goto(URL);
-  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click();
-  await page.locator(".shop-face").click(); await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
+  await walkCh1(page, { to: 5 }); await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
   await expect(page.locator(".money-row")).toContainText("Wallet");
   await expect(page.locator(".money-row")).toContainText("Spent");
   await expect(page.locator(".money-row")).toContainText("Jar");
@@ -572,10 +601,9 @@ test("music: off by default, nothing plays before a tap, the Home toggle starts 
   await expect.poll(() => page.evaluate(() => MS.music.state().track)).toBe("Calm Street");
   if (browserName === "chromium") await expect.poll(() => page.evaluate(() => MS.music.state().playing)).toBe(true);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem("ms:settings")).options.music)).toBe(true);
-  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click();
-  await page.locator(".shop-face").click(); await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
+  await walkCh1(page);
   expect(await page.evaluate(() => MS.music.state().track)).toBe("Calm Street");               // same feel, no switch
-  for (let i = 0; i < 4; i++) { await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click(); await page.getByRole("button", { name: "Skip" }).click(); await page.locator("#recap-go").click(); }
+  for (let i = 0; i < 4; i++) { if (i) await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click(); await page.getByRole("button", { name: "Skip" }).click(); await page.locator("#recap-go").click(); }
   await expect(page.locator(".masthead")).toBeVisible();
   await expect.poll(() => page.evaluate(() => MS.music.state().feel)).toBe("bright");
   await expect.poll(() => page.evaluate(() => MS.music.state().track)).toBe("Bright Morning");
@@ -610,11 +638,9 @@ test("music: the arcade's host-music message mutes and unmutes; Settings shows t
 });
 
 /* ---- R14 (Stephen's first play, 2026-10-11): it must explain itself. Before, during and after every advance, and a guide at every chapter 1 stop ---- */
-async function ch1Bought(page, n) {
+async function ch1Bought(page, n) {                                                             // R17: the walk with n shares, waiting at Next season (step 8)
   await page.goto(URL);
-  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click();
-  await page.locator(".shop-face").click();
-  for (let i = 0; i < n; i++) await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
+  await walkCh1(page, { shares: n, to: 8 });
 }
 test("R14 recap: after the first season it says the price went from 10 to 11 and the share is still yours; a reload falls through to the town; the year end goes on to the Gazette", async ({ page }) => {
   const errors = watch(page);
@@ -661,7 +687,6 @@ test("R14 recap after a drop: the price fell, the shares did not; the busy-means
 test("R14 confirm sheet: the two futures in the player's own numbers, from the live quote; with nothing held it says prices cannot change your money", async ({ page }) => {
   const errors = watch(page);
   await ch1Bought(page, 3);
-  await expect(page.getByText("3 shares for 30 coins. 40 coins stay in your wallet.")).toBeVisible();   // the guide follows the tray
   await page.getByRole("button", { name: "Next season" }).click();
   const fut = page.locator(".sheet .futures");
   await expect(fut).toContainText(/If the bakery.s price goes from 10 to 11, your 3 shares would be worth 33\. If it goes to 9, they would be worth 27\./);
@@ -699,8 +724,8 @@ test("R14 show captions: every month has a line; one shop speaks through its kee
 test("R14 chapter 1 guide: the stops at 3, 6 and 9 months say what moved, from what to what, and what to do next", async ({ page }) => {
   const errors = watch(page);
   await ch1Bought(page, 1);
-  await expect(page.locator(".hint .eyebrow")).toHaveText("Practice year");
   await advanceOnce(page);
+  await expect(page.locator(".hint.clerk .eyebrow")).toHaveText("The Town Clerk");             // R17: the stop guides carry the Clerk's eyebrow and border, not "Practice year"
   await expect(page.locator(".hint")).toContainText("Same share. A different price. The bakery’s price went from 10 to 11, so each share you own is worth 11 now.");
   await expect(page.locator(".hint")).toContainText("Try one, then tap Next season.");
   await advanceOnce(page);
@@ -745,9 +770,9 @@ test("phase A cold open: the Clerk names the stake (goal, start, what saving alo
   await page.evaluate(() => { MS.newRun("ch6", "Lantern Row 5"); MS.go("town"); });
   await expect(page.locator(".cold-open")).toContainText("Your big project costs 1500 coins today and is due in 10 years. Its price rises with everyday prices.");
   await expect(page.locator(".cold-open")).toContainText("and by then your big project will cost more than that. The rest has to grow.");
-  await page.evaluate(() => { MS.newRun("ch1", "Maple Hollow 7"); MS.go("town"); });                    // rc7: chapter 1's intro has the Clerk too, with the practice year
+  await page.evaluate(() => { MS.newRun("ch1", "Maple Hollow 7"); MS.go("town"); });                    // R17: chapter 1's intro is the Clerk at the door
   await expect(page.locator(".clerk")).toHaveCount(1);
-  await expect(page.locator(".cold-open")).toContainText("This first year is practice. Your art supplies cost 30 and are due in a year. You have 100 coins. We will keep 30 in the Jar for the art supplies and try growing the rest with one bakery. Prices here follow a story, not a real market.");
+  await expect(page.locator(".cold-open")).toContainText("Welcome to Maple Hollow 7. I am the Town Clerk. One shop is open this year, Bram\u2019s bakery, and you have a year to learn how owning a piece of it works. Come in, I will show you around.");
   await expect(page.locator(".cold-open").locator(".eyebrow")).toHaveText("The Town Clerk");
   await page.evaluate(() => MS.go("home")); await expect(page.locator("#s-title")).toBeVisible(); await expect(page.locator(".clerk")).toHaveCount(0);   // Home: no Clerk
   expect(errors, errors.join("\n")).toEqual([]);
@@ -869,7 +894,7 @@ test("rc7 Gazette after a recap: chapter 2 drops the Your money panel and keeps 
   await page.getByRole("button", { name: "Continue" }).click();
   await expect(page.locator(".screen.town")).toBeVisible();
   // chapter 1: four seasons, each with a seasonal recap, then the year end Gazette with its money panel
-  await page.evaluate(() => { MS.newRun("ch1", "Maple Hollow 7"); MS.S.ui.intro = false; MS.S.ui.tutorialStep = -1; MS.go("town"); });
+  await page.evaluate(() => { MS.newRun("ch1", "Maple Hollow 7"); MS.S.ui.intro = false; MS.S.ui.walk = "done"; MS.go("town"); });
   await expect(page.locator(".town-links")).toHaveCount(0);
   await expect(page.locator(".town-head").getByRole("button", { name: "Scrapbook" })).toBeVisible();
   await expect(page.locator(".town-head").getByRole("button", { name: "Home" })).toBeVisible();
@@ -909,4 +934,174 @@ test("rc7 the stake for chapters 3 and 5 (DECK4): the cold opens name 190 and 80
   await expect(page.locator(".cold-open")).toContainText("Your week at camp costs 800 coins and is due in 5 years. You have 300 coins, and 10 coins arrive each month. Saving alone gets you about 963, enough for this goal.");
   await expect(page.locator(".intro .goal-chip")).toContainText("800 coins, in 5 years.");
   expect(errors, errors.join("\n")).toEqual([]);
+});
+
+/* ---- R17 (Stephen's fourth note, 2026-10-11): chapter 1 is a guided walk. The Clerk lights one piece of the Town at a time. docs/plans/CH1-WALK-IN-2026-10-11.md ---- */
+// where the lit control is, where the card is, and where the ring is, at the step on screen now
+async function walkGeometry(page) {
+  return page.evaluate(() => {
+    const layer = document.querySelector(".walk-layer"); if (!layer) return null;
+    const step = +layer.dataset.step, q = x => document.querySelector(x), R = e => e.getBoundingClientRect();
+    let t, own;
+    if (step === 5) { const a = R(q(".town .share-card")), b = R(q(".town .panel .panel-head")); t = { left: Math.min(a.left, b.left), top: Math.min(a.top, b.top), right: Math.max(a.right, b.right), bottom: Math.max(a.bottom, b.bottom) }; own = q(".town .panel"); }
+    else { own = q({ 1: ".town .money-row", 2: ".town .goal-chip", 3: ".town .money.jar", 4: ".town .shop-face", 6: ".town .tray", 7: "#town-plan", 8: "#town-next", 9: ".town .sheet" }[step]); t = R(own); }
+    const cardEl = step === 9 ? null : q(".walk-card"), card = cardEl ? R(cardEl) : null, ring = q(".walk-ring"), rg = R(ring);
+    const over = !!card && card.left < t.right && t.left < card.right && card.top < t.bottom && t.top < card.bottom;
+    const ringOff = step === 9 ? (ring.hidden ? 0 : 99) : Math.max(Math.abs(rg.left - (t.left - 8)), Math.abs(rg.top - (t.top - 8)), Math.abs(rg.right - (t.right + 8)), Math.abs(rg.bottom - (t.bottom + 8)));
+    const center = document.elementFromPoint((t.left + t.right) / 2, (t.top + t.bottom) / 2);
+    return { step, over, ringOff: Math.round(ringOff), hits: !!(center && own.contains(center)), inView: t.top >= -1 && t.bottom <= innerHeight + 1, cardInView: !card || (card.top >= 0 && card.bottom <= innerHeight + 1), cardScrolls: !!cardEl && cardEl.scrollHeight > cardEl.clientHeight + 1, text: cardEl ? cardEl.querySelector(".walk-text").textContent : q(".sheet .walk-card .walk-text").textContent };
+  });
+}
+test("R17 the walk in: the Clerk at the door, the money row lit first with the 100 coins, each step's words in order, Next season off until step 8, Go ends the walk", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  await page.getByRole("button", { name: "Start chapter 1" }).click();
+  await expect(page.locator(".screen.intro h2")).toHaveText("A Little Piece");
+  await expect(page.locator(".screen.intro .cold-open .eyebrow")).toHaveText("The Town Clerk");
+  await expect(page.locator(".screen.intro")).not.toContainText("These are pretend coins");        // the old practice line is gone
+  await page.getByRole("button", { name: "Come in" }).click();
+  const card = page.locator(".walk-card"), texts = [];
+  await expect(page.locator(".walk-layer")).toHaveAttribute("data-step", "1");
+  await expect(card.locator(".eyebrow")).toHaveText("The Town Clerk");
+  await expect(card).toContainText("Here are your coins: 100, all pretend. Wallet is what you can spend right now. Jar is money you keep safe. Spent is what you have paid for so far.");
+  const g1 = await walkGeometry(page); expect(g1.ringOff).toBeLessThanOrEqual(1); expect(g1.over).toBe(false);   // the ring sits on the money row
+  expect((await card.locator("#walk-go").boundingBox()).height).toBeGreaterThanOrEqual(48);
+  await expect(card.locator(".walk-skip")).toHaveCount(0);                                          // a first timer has no skip
+  await expect(page.locator(".hint")).toHaveCount(0);                                               // no stop guide under the walk
+  await walkCh1(page, { from: 1, each: async n => {
+    const g = await walkGeometry(page); texts.push(g.text);
+    if (n < 8) await expect(page.locator("#town-next")).toBeDisabled(); else if (n === 8) await expect(page.locator("#town-next")).toBeEnabled();
+    if (n < 5) await expect(page.locator(".town .panel")).toHaveCount(0);                            // the bakery opens when the Clerk asks for the tap
+    if (n === 5) { await expect(card.locator("#walk-go")).toHaveCount(0); await expect(page.locator(".steppers").getByRole("button", { name: "More" })).toHaveCount(0); await expect(page.locator(".steppers").getByRole("button", { name: "Buy 1 share" })).toBeEnabled(); }
+  } });
+  expect(texts).toEqual([
+    "Here are your coins: 100, all pretend. Wallet is what you can spend right now. Jar is money you keep safe. Spent is what you have paid for so far.",
+    "This year you are saving for one thing: art supplies, 30 coins, due in 1 year. The bar fills as your Jar fills.",
+    "Goal money goes in the Jar first, so a quiet month at the bakery cannot touch it. Put 30 in now.",
+    "This is the bakery. A business is split into tiny pieces called shares. Own one and you own a tiny piece of the shop. Tap the bakery.",
+    "A share costs 10 right now. Plus buys one, minus sells one. Try one, three or seven. More shares means more of your money moves with the price.",
+    "That bought nothing yet. It went into your plan, here at the bottom. A plan is what you will do before time moves. Undo takes a line back. Nothing is spent until you say go.",
+    "My Plan shows the shape of your money: what is in the Jar, what is in shares, what is still free. Open it.",
+    "Time moves only when you tap Next season. Three months pass. The bakery has busy days and quiet days and its price moves. Your shares move with it. Your Jar does not. Tap it when you are ready.",
+    "The last look before time moves: your plan in words, then the two ways it could go. Tap Go to spring."]);
+  for (const t of texts) { expect(t).not.toMatch(/[–—!←-⇿▲▼]/); expect(t).not.toMatch(/\b(win|wins|beat|profit|bonus)\b/i); }
+  await page.locator("#go").click(); await skipShow(page);
+  await expect(page.locator(".walk-layer")).toHaveCount(0);
+  expect(await page.evaluate(() => [MS.S.ui.walk, JSON.parse(localStorage.getItem("ms:save")).ui.walk])).toEqual(["done", "done"]);
+  await expect(page.locator(".steppers").getByRole("button", { name: "More" })).toBeEnabled();     // More is back after the walk
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("R17 taps outside the lit control do nothing: the goal chip, Home and the bakery are dead during step 1; the hole passes taps through to the lit control", async ({ page }) => {
+  const errors = watch(page);
+  await page.setViewportSize({ width: 412, height: 915 });                                        // his phone: the whole Town top and the bakery are on screen
+  await page.goto(URL);
+  await walkCh1(page, { to: 1 });
+  const mid = b => [b.x + b.width / 2, b.y + b.height / 2];
+  const chip = mid(await page.locator(".town .goal-chip").boundingBox());
+  expect(await page.evaluate(([x, y]) => document.elementFromPoint(x, y).className, chip)).toContain("walk-block");
+  await page.mouse.click(...chip);
+  await page.mouse.click(...mid(await page.locator(".town-head").getByRole("button", { name: "Home" }).boundingBox()));
+  await page.mouse.click(...mid(await page.locator(".shop-face").boundingBox()));
+  await expect(page.locator(".screen.town")).toBeVisible();
+  await expect(page.locator(".walk-layer")).toHaveAttribute("data-step", "1");
+  await expect(page.locator(".town .panel")).toHaveCount(0);
+  expect(await page.evaluate(() => MS.S.ui.walk)).toBe(1);
+  const row = mid(await page.locator(".town .money-row").boundingBox());                            // inside the hole the money row itself is under the finger
+  expect(await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y).closest(".money-row"), row)).toBe(true);
+  await walkCh1(page, { from: 1, to: 4 });
+  await page.locator("#town-plan").scrollIntoViewIfNeeded();
+  await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));   // the walk re-measures on the frame after a scroll, before a finger can land
+  const plan = mid(await page.locator("#town-plan").boundingBox());
+  expect(await page.evaluate(([x, y]) => document.elementFromPoint(x, y).className, plan)).toContain("walk-block");
+  await page.mouse.click(...plan);                                                                    // at step 4 My Plan is dimmed and dead
+  await expect(page.locator(".screen.town")).toBeVisible();
+  await expect(page.locator(".walk-layer")).toHaveAttribute("data-step", "4");
+  await page.locator(".shop-face").click();                                                           // the lit tile takes the tap (Playwright checks the tile is what receives it)
+  await expect(page.locator(".walk-layer")).toHaveAttribute("data-step", "5");
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("R17 step 7 opens My Plan with the Clerk's card, Back to town returns to step 8; every chapter keeps the card, with the Buffer line only where there is a Buffer", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  await walkCh1(page, { to: 7 });
+  await page.getByRole("button", { name: "My Plan" }).click();
+  const clerk = page.locator(".screen.plan .plan-clerk");
+  await expect(clerk.locator(".eyebrow")).toHaveText("The Town Clerk");
+  await expect(clerk).toContainText("Your plan is the shape of your money. Soon is money for your goal. Saved is extra you set aside. Shares are the pieces of shops you own. Move coins between them here any time before time moves; nothing is spent until you confirm.");
+  await expect(clerk).not.toContainText("Buffer");
+  expect(await page.evaluate(() => MS.S.ui.walk)).toBe(8);
+  await clerk.getByRole("button", { name: "Back to town" }).click();
+  await expect(page.locator(".walk-layer")).toHaveAttribute("data-step", "8");
+  await expect(page.locator(".walk-card")).toContainText("Time moves only when you tap Next season.");
+  await expect(page.locator("#town-next")).toBeEnabled();
+  await page.evaluate(() => { MS.newRun("ch3", "Willow Bend 41"); MS.S.ui.intro = false; MS.go("plan"); });
+  await expect(page.locator(".plan-clerk")).toContainText("Soon is money for your goal. Buffer is for surprises. Saved is extra you set aside.");
+  await expect(page.locator(".plan-clerk").getByRole("button")).toHaveCount(0);                    // outside the walk the card has no button
+  await page.evaluate(() => { MS.newRun("ch2", "Pebble Creek 3"); MS.S.ui.intro = false; MS.go("plan"); });
+  await expect(page.locator(".plan-clerk")).toContainText("Your plan is the shape of your money.");
+  await expect(page.locator(".plan-clerk")).not.toContainText("Buffer");
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("R17 a saved run mid walk comes back at the same step after a reload, with the tray and the Jar", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  const step = () => page.locator(".walk-layer");
+  await walkCh1(page, { to: 2 });
+  await page.reload(); await expect(step()).toHaveAttribute("data-step", "2");
+  await walkCh1(page, { from: 2, to: 3 });
+  await page.locator(".walk-card").getByRole("button", { name: "Put 30 in my Jar" }).click();
+  await page.reload(); await expect(step()).toHaveAttribute("data-step", "3");
+  await expect(page.locator(".walk-card")).toContainText("30 is safe. The other 70 are free to try growing.");   // the half done step reads from the plan
+  await expect(page.locator(".band.soon")).toContainText("Soon 30");
+  await page.locator(".walk-card").getByRole("button", { name: "Next", exact: true }).click(); await page.locator(".shop-face").click();
+  await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click(); await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).ui.walk)).toBe(5);
+  await page.reload(); await expect(step()).toHaveAttribute("data-step", "5");
+  await expect(page.locator(".own")).toContainText("2 shares");
+  await expect(page.locator(".walk-card").getByRole("button", { name: "Next", exact: true })).toBeVisible();
+  await walkCh1(page, { from: 5, to: 7, shares: 0 });
+  await page.getByRole("button", { name: "My Plan" }).click(); await expect(page.locator(".screen.plan")).toBeVisible();
+  await page.reload(); await expect(step()).toHaveAttribute("data-step", "8");                       // a reload on My Plan lands on the Town at Next season
+  await page.getByRole("button", { name: "Next season" }).click(); await expect(step()).toHaveAttribute("data-step", "9");
+  await page.reload(); await expect(step()).toHaveAttribute("data-step", "8");                       // the sheet is not saved, so the walk waits at Next season again
+  await page.getByRole("button", { name: "Next season" }).click();
+  await page.locator(".sheet").getByRole("button", { name: "Back to town" }).click(); await expect(step()).toHaveAttribute("data-step", "8");
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("R17 a player who finished chapter 1 sees Skip the walk; it ends the walk and stays ended after a reload", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  await page.evaluate(() => { MS.S.progress.completedChapters = ["ch1"]; MS.render(); });
+  await page.getByRole("button", { name: "Play again: A Little Piece" }).click();
+  await page.getByRole("button", { name: "Come in" }).click();
+  const skip = page.locator(".walk-card").getByRole("button", { name: "Skip the walk" });
+  await expect(skip).toBeVisible();
+  expect((await skip.boundingBox()).height).toBeGreaterThanOrEqual(48);
+  await skip.click();
+  await expect(page.locator(".walk-layer")).toHaveCount(0);
+  await expect(page.locator("#town-next")).toBeEnabled();
+  await expect(page.locator(".town .panel")).toBeVisible();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).ui.walk)).toBe("done");
+  await page.reload();
+  await expect(page.locator(".screen.town")).toBeVisible();
+  await expect(page.locator(".walk-layer")).toHaveCount(0);
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+for (const [w, h] of [[412, 915], [320, 568]]) test(`R17 at ${w}x${h}: at every step the card never covers the lit control, the ring sits on it after scrolling, both are in view and the card text is whole`, async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } }); const page = await ctx.newPage(); const errors = watch(page);
+  await page.goto(URL);
+  const seen = [];
+  await walkCh1(page, { each: async n => {
+    const g = await walkGeometry(page); seen.push(n);
+    expect(g.step).toBe(n);
+    expect(g.over, "the card covers the lit control at step " + n).toBe(false);
+    expect(g.ringOff, "the ring is off the control at step " + n).toBeLessThanOrEqual(1);
+    expect(g.hits, "a tap at the control's center misses it at step " + n).toBe(true);
+    expect(g.inView, "the lit control is out of view at step " + n).toBe(true);
+    expect(g.cardInView, "the card is out of view at step " + n).toBe(true);
+    expect(g.cardScrolls, "the card text is cut at step " + n).toBe(false);
+  } });
+  expect(seen).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  expect(errors, errors.join("\n")).toEqual([]);
+  await ctx.close();
 });
