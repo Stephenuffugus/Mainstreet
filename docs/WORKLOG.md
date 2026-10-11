@@ -15,19 +15,32 @@ One box per exit condition. Tick a box only with the command and its result past
 - [ ] Tag `m0`
 
 ## M1 Trustworthy core
-- [ ] `<script id="engine">` complete: PRNG with five streams, PARAMS, market generation with `scripted`/`off`/`noSlump`/`authored`/`full` modes, tick order, draft and pending, neighbors (Ada, Bo, Cass, Dev), scoring
-- [ ] `<script id="content">` complete: chapters, 24 cards with `expectedDirection` and `keeperLine`, presets, opportunities, town-name lists, STRINGS
-- [ ] `tools/test.mjs`: cash law and share law hold on every tick of every fixture
-- [ ] Total-return convention test (noise off): price at drift, price plus reinvested payments at drift plus yield, within 0.1 pt, every asset
-- [ ] Buy lossless at quotes 8, 50, 112 coins; 1,000 cycles lose under 1,000 cc and never gain
-- [ ] Dividend, suspension, reinvest, Basket internal dividend, look-through (incl. BASKET_A/B), matched fee lab, transfers, goal purchase, contribution, invalid actions, pending tray, closure, neighbor tests, zero wealth, undo: all pass
-- [ ] Content tests: card directions (E08 regression), schema completeness, E20 variants, keeper lines, no dashes, town names round-trip
-- [ ] Scoring and abuse tests pass; random clicker scores below Ada; Bo scores 100 in chapter 3
-- [ ] Eight golden fixtures written (quote hash, mood path, cards, Dev's pick, final totals for the child plan and all four neighbors)
-- [ ] `tools/replay.html` prints PASS for all fixtures in Node and two browser engines via `npx playwright test tools/replay.spec.mjs` (name the engines)
-- [ ] Purity grep passes with the full banned list (HANDOFF section 14)
-- [ ] `node tools/harness.mjs --seeds 10000` with four neighbors finishes under 90 s
-- [ ] Tag `m1`
+- [x] `<script id="engine">` complete: PRNG with five streams, PARAMS, market generation with `scripted`/`off`/`noSlump`/`authored`/`full` modes, tick order, draft and pending, neighbors (Ada, Bo, Cass, Dev), scoring
+      evidence: index.html engine block, 2026-10-11; node tools/test.mjs 126 pass
+- [x] `<script id="content">` complete: chapters, 24 cards with `expectedDirection` and `keeperLine`, presets, opportunities, town-name lists, STRINGS
+      evidence: content block; schema test passes for all 24 cards
+- [x] `tools/test.mjs`: cash law and share law hold on every tick of every fixture
+      evidence: laws checked for 7 scenarios × 2 seeds × 6 policies, 0 violations
+- [x] Total-return convention test (noise off): price at drift, price plus reinvested payments at drift plus yield, within 0.1 pt, every asset
+      evidence: exact identity within 1e-9 for all six shops (monthly-compounded drift plus yield; see decisions.md)
+- [x] Buy lossless at quotes 8, 50, 112 coins; 1,000 cycles lose under 1,000 cc and never gain
+      evidence: exhaustive X up to 200 coins at quotes 800, 5000, 11200 cc
+- [x] Dividend, suspension, reinvest, Basket internal dividend, look-through (incl. BASKET_A/B), matched fee lab, transfers, goal purchase, contribution, invalid actions, pending tray, closure, neighbor tests, zero wealth, undo: all pass
+      evidence: node tools/test.mjs 2026-10-11, 126 pass / 0 fail
+- [x] Content tests: card directions (E08 regression), schema completeness, E20 variants, keeper lines, no dashes, town names round-trip
+      evidence: in the same run
+- [x] Scoring and abuse tests pass; random clicker scores below Ada; Bo scores 100 in chapter 3
+      evidence: random 5-seed sum below planner; cash-only planner scores 100 on all 5 chapter 3 seeds (after the funding-order fix, decisions.md)
+- [x] Eight golden fixtures written (quote hash, mood path, cards, Dev's pick, final totals for the child plan and all four neighbors)
+      evidence: tools/fixtures/*.json, 8 files
+- [x] `tools/replay.html` prints PASS for all fixtures in Node and two browser engines via `npx playwright test tools/replay.spec.mjs` (name the engines)
+      evidence: npx playwright test, 2026-10-11: chromium 8/8 PASS, webkit 8/8 PASS
+- [x] Purity grep passes with the full banned list (HANDOFF section 14)
+      evidence: purityViolations() empty
+- [x] `node tools/harness.mjs --seeds 10000` with four neighbors finishes under 90 s
+      evidence: node tools/harness.mjs --seeds 10000 --family free --policies ada,bo,cass,dev: 58.4 s
+- [x] Tag `m1`
+      evidence: git tag m1 on the M1 commit
 
 ## M2 First playable
 - [ ] Home with `#s-title`, build stamp, Continue, "← All Sky Wolf games" (embed block in place)

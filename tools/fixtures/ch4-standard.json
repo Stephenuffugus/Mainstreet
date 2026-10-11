@@ -1,0 +1,92 @@
+{
+ "id": "ch4",
+ "seed": "Harbor Lane 12",
+ "preset": "standard",
+ "marketId": "MS1|DECK1|ch4|Harbor Lane 12",
+ "versions": {
+  "engine": "MS1",
+  "content": "DECK1",
+  "rubric": "PLAN1"
+ },
+ "townName": "Harbor Lane 12",
+ "quoteHash": "653527493-4109825121-1342529453-2181538313",
+ "moods": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNBBB",
+ "cards": [
+  "E16@9:TOYS:-90561",
+  "E11@22:ROBO:-2912",
+  "E03@34:BAKE:63290",
+  "E09@43:PAWS:53777",
+  "E18@48:BAKE",
+  "E11@52:ROBO:30209",
+  "E21@60"
+ ],
+ "devPick": "LEMN",
+ "closure": null,
+ "index": 1000000000,
+ "totals": {
+  "planner": {
+   "contributionsIn": 60000,
+   "jarInterest": 240,
+   "dividendsCash": 0,
+   "sellProceeds": 11983,
+   "liquidationPaid": 0,
+   "buySpend": 74981,
+   "reinvestSpend": 0,
+   "goalSpending": 12000,
+   "costSpending": 0,
+   "costUnmet": 0,
+   "fundFeesEstimate": 595.7652077598735,
+   "nw": 91578,
+   "goal": "funded",
+   "score": 100
+  },
+  "ada": {
+   "contributionsIn": 60000,
+   "jarInterest": 240,
+   "dividendsCash": 0,
+   "sellProceeds": 11983,
+   "liquidationPaid": 0,
+   "buySpend": 74981,
+   "reinvestSpend": 0,
+   "goalSpending": 12000,
+   "costSpending": 0,
+   "costUnmet": 0,
+   "fundFeesEstimate": 595.7652077598735,
+   "nw": 91578,
+   "goal": "funded",
+   "score": 69
+  },
+  "bo": {
+   "contributionsIn": 60000,
+   "jarInterest": 4697,
+   "dividendsCash": 0,
+   "sellProceeds": 0,
+   "liquidationPaid": 0,
+   "buySpend": 0,
+   "reinvestSpend": 0,
+   "goalSpending": 12000,
+   "costSpending": 0,
+   "costUnmet": 0,
+   "fundFeesEstimate": 0,
+   "nw": 67697,
+   "goal": "funded",
+   "score": 56
+  },
+  "dev": {
+   "contributionsIn": 60000,
+   "jarInterest": 240,
+   "dividendsCash": 4921,
+   "sellProceeds": 11981,
+   "liquidationPaid": 0,
+   "buySpend": 75001,
+   "reinvestSpend": 4900,
+   "goalSpending": 12000,
+   "costSpending": 0,
+   "costUnmet": 0,
+   "fundFeesEstimate": 0,
+   "nw": 44548,
+   "goal": "funded",
+   "score": 38
+  }
+ }
+}

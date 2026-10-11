@@ -1,0 +1,90 @@
+{
+ "id": "ch3",
+ "seed": "Willow Bend 41",
+ "preset": "standard",
+ "marketId": "MS1|DECK1|ch3|Willow Bend 41",
+ "versions": {
+  "engine": "MS1",
+  "content": "DECK1",
+  "rubric": "PLAN1"
+ },
+ "townName": "Willow Bend 41",
+ "quoteHash": "2179158234-837965090-278910512-2693714888",
+ "moods": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+ "cards": [
+  "E10@9:PAWS:-3141",
+  "E09@13:PAWS:57596",
+  "E20@22",
+  "E11@31:ROBO:-282872",
+  "E21@36"
+ ],
+ "devPick": "PAWS",
+ "closure": null,
+ "index": 1000000000,
+ "totals": {
+  "planner": {
+   "contributionsIn": 0,
+   "jarInterest": 229,
+   "dividendsCash": 0,
+   "sellProceeds": 10856,
+   "liquidationPaid": 0,
+   "buySpend": 18500,
+   "reinvestSpend": 0,
+   "goalSpending": 8000,
+   "costSpending": 2900,
+   "costUnmet": 0,
+   "fundFeesEstimate": 105.5759860987857,
+   "nw": 14403,
+   "goal": "funded",
+   "score": 100
+  },
+  "ada": {
+   "contributionsIn": 0,
+   "jarInterest": 229,
+   "dividendsCash": 0,
+   "sellProceeds": 10856,
+   "liquidationPaid": 0,
+   "buySpend": 18500,
+   "reinvestSpend": 0,
+   "goalSpending": 8000,
+   "costSpending": 2900,
+   "costUnmet": 0,
+   "fundFeesEstimate": 105.5759860987857,
+   "nw": 14403,
+   "goal": "funded",
+   "score": 76
+  },
+  "bo": {
+   "contributionsIn": 0,
+   "jarInterest": 1149,
+   "dividendsCash": 0,
+   "sellProceeds": 0,
+   "liquidationPaid": 0,
+   "buySpend": 0,
+   "reinvestSpend": 0,
+   "goalSpending": 8000,
+   "costSpending": 2900,
+   "costUnmet": 0,
+   "fundFeesEstimate": 0,
+   "nw": 10249,
+   "goal": "funded",
+   "score": 69
+  },
+  "dev": {
+   "contributionsIn": 0,
+   "jarInterest": 229,
+   "dividendsCash": 0,
+   "sellProceeds": 10855,
+   "liquidationPaid": 0,
+   "buySpend": 18499,
+   "reinvestSpend": 0,
+   "goalSpending": 8000,
+   "costSpending": 2900,
+   "costUnmet": 0,
+   "fundFeesEstimate": 0,
+   "nw": 14969,
+   "goal": "funded",
+   "score": 53
+  }
+ }
+}

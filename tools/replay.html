@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>MAINSTREET fixture replay</title>
+<style>body{font:15px/1.5 system-ui,sans-serif;margin:24px;max-width:70ch}pre{background:#f3f2ee;padding:12px;overflow:auto}.pass{color:#0072B2}.fail{color:#B00020}</style></head>
+<body>
+<h1>MAINSTREET fixture replay</h1>
+<p>Recomputes every golden fixture with the engine loaded from <code>../index.html</code> and compares, in this browser. The Playwright spec injects the engine and fixtures itself; served over http this page fetches them with the button.</p>
+<button id="run" type="button">Run fixtures</button>
+<pre id="out">idle</pre>
+<script>
+(function () {
+  var FIXTURES = ['ch1-standard', 'ch2-standard', 'ch3-standard', 'ch4-standard', 'ch5-standard', 'ch6-standard', 'free-standard', 'free-shops-can-close'];
+  function compute(E, fx) {
+    var m = E.createMarket({ scenarioId: fx.id, seed: fx.seed, preset: fx.preset !== 'standard' ? fx.preset : undefined });
+    var qs = m.assets.map(function (a, i) { return Array.from(m.quotes[i]).join(','); }).join('|') + '|' + Object.keys(m.funds).map(function (f) { return Array.from(m.funds[f].navQ).join(','); }).join('|');
+    var qh = E._internals.cyrb128(qs).join('-');
+    var totals = {}; var pols = ['planner'].concat(m.scenario.neighbors);
+    pols.forEach(function (p) { var st = E.runPolicy(m, p).state; var inv = E.invested(st, m, st.t); var o = {}; for (var k in st.totals) o[k] = st.totals[k]; o.nw = st.wallet + st.jar.soon + st.jar.buffer + st.jar.saved + inv; o.goal = st.goal.status; o.score = E.scorePlanPractice(st, m).total; totals[p] = o; });
+    return { id: fx.id, seed: fx.seed, preset: fx.preset, marketId: m.id, versions: E.VERSION, townName: m.townName, quoteHash: qh, moods: m.moods.join(''),
+      cards: m.cards.map(function (c) { return c.id + '@' + c.t + (c.forShop ? ':' + c.forShop : '') + (c.mag !== undefined ? ':' + Math.round(c.mag * 1e6) : ''); }),
+      devPick: m.devPick, closure: m.closure ? { id: m.closure.id, t: m.closure.announceT, liqQuote: m.closure.liqQuote } : null, index: Math.round(m.index[m.T] * 1e9), totals: totals };
+  }
+  function run(fixtures) {
+    var E = window.ENGINE; var results = [];
+    fixtures.forEach(function (fx) { var name = fx.id + '-' + fx.preset; try { var got = compute(E, fx); var a = JSON.stringify(got), b = JSON.stringify(fx); var pass = a === b; var diff = ''; if (!pass) { var i = 0; while (i < a.length && a[i] === b[i]) i++; diff = 'first difference at ' + i + ': ' + a.slice(Math.max(0, i - 40), i + 80); } results.push({ name: name, pass: pass, diff: diff }); } catch (e) { results.push({ name: name, pass: false, diff: String(e && e.message || e) }); } });
+    return results;
+  }
+  function show(results) { var out = document.getElementById('out'); out.textContent = results.map(function (r) { return (r.pass ? 'PASS ' : 'FAIL ') + r.name + (r.diff ? '  ' + r.diff : ''); }).join('\n'); }
+  window.MS_REPLAY = { compute: compute, run: run, show: show };
+  document.getElementById('run').addEventListener('click', function () {
+    var out = document.getElementById('out'); out.textContent = 'loading…';
+    fetch('../index.html').then(function (r) { return r.text(); }).then(function (html) {
+      ['content', 'engine'].forEach(function (id) { var m = html.match(new RegExp('<script id="' + id + '">([\\s\\S]*?)<\\/script>')); var s = document.createElement('script'); s.textContent = m[1]; document.head.appendChild(s); });
+      return Promise.all(FIXTURES.map(function (n) { return fetch('fixtures/' + n + '.json').then(function (r) { return r.json(); }); }));
+    }).then(function (fixtures) { show(run(fixtures)); }).catch(function (e) { out.textContent = 'error: ' + e; });
+  });
+})();
+</script>
+</body></html>

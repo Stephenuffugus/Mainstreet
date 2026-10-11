@@ -28,12 +28,767 @@ button:focus-visible{outline:3px solid var(--up);outline-offset:2px;}
   <button type="button" id="exit-arcade">← All Sky Wolf games</button>
 </main>
 
-<script id="engine">
-/* ENGINE (M1). Pure: no DOM, Date, Math.random, fetch, localStorage, timers. See HANDOFF sections 4, 5, 14. */
+<script id="content">
+/* CONTENT (M1). PARAMS, CONTENT, STRINGS. Data only: no functions, no DOM. See HANDOFF sections 3, 4, 6, 7, 9. */
+globalThis.PARAMS = {
+  ENGINE_VERSION: 'MS1', CONTENT_VERSION: 'DECK1', RUBRIC_VERSION: 'PLAN1',
+  SQRT12: 3.4641016151377544, IH_SCALE: 1.4142135623730951,
+  assets: [
+    { id:'LEMN', name:'Lemon Lane',          keeper:'lou',     sector:0, start:8.00,  drift:0.050, vol:0.28, yield:0.020, mkt:0.40, sec:0.40, own:0.824621125123532 },
+    { id:'BAKE', name:'Rise & Shine Bakery', keeper:'bram',    sector:0, start:10.00, drift:0.045, vol:0.14, yield:0.035, mkt:0.45, sec:0.35, own:0.8215838362577492 },
+    { id:'TOYS', name:'Toy Box',             keeper:'ottilie', sector:1, start:12.00, drift:0.060, vol:0.24, yield:0.015, mkt:0.55, sec:0.40, own:0.733143914930759 },
+    { id:'BIKE', name:'Spoke Bikes',         keeper:'hop',     sector:2, start:15.00, drift:0.055, vol:0.20, yield:0.025, mkt:0.50, sec:0.35, own:0.792148975887743 },
+    { id:'PAWS', name:'Paws Pet Care',       keeper:'hazel',   sector:3, start:9.00,  drift:0.050, vol:0.16, yield:0.025, mkt:0.40, sec:0.30, own:0.8660254037844386 },
+    { id:'ROBO', name:'Robo Lab',            keeper:'fen',     sector:4, start:20.00, drift:0.090, vol:0.36, yield:0.000, mkt:0.55, sec:0.35, own:0.7582875444051551 }
+  ],
+  sectors: ['Food', 'Fun', 'Outdoor', 'Care', 'Tech'],
+  funds: [
+    { id:'BASKET',   name:'Town Basket Fund', expense:0.002, startNav:10.00 },
+    { id:'BASKET_A', name:'Basket A',         expense:0.002, startNav:10.00 },
+    { id:'BASKET_B', name:'Basket B',         expense:0.015, startNav:10.00 }
+  ],
+  moods: {
+    order: ['N', 'B', 'S'],
+    N: { name:'Normal', driftY:-0.0115, volMul:1.0, inflY:0.025, to:{ B:0.010, S:0.005 } },
+    B: { name:'Boom',   driftY: 0.060,  volMul:0.8, inflY:0.035, to:{ N:0.025, S:0.004 } },
+    S: { name:'Slump',  driftY:-0.200,  volMul:1.5, inflY:0.015, to:{ N:0.070, B:0.030 } }
+  },
+  divMonths: [3, 6, 9, 12], divSuspendG: 0.7, floorG: 0.4,
+  activity: { busyG: 1.02, quietG: 0.98 },
+  weather: { sun:[4,5,6,7,8,9], rain:[3,10,11], snow:[12,1,2] },
+  neighbors: [
+    { id:'ada',  name:'Ada',  animal:'owl',      plan:'I spread it out and leave it alone.' },
+    { id:'bo',   name:'Bo',   animal:'tortoise', plan:'I keep it all in my jar.' },
+    { id:'cass', name:'Cass', animal:'magpie',   plan:'I follow the news.' },
+    { id:'dev',  name:'Dev',  animal:'goat',     plan:'I pick one shop I believe in.' }
+  ],
+  spread: { company:0.40, sector:0.60 }, dropPct: 0.10,
+  rubric: { weights: { goalFit:25, readiness:20, spread:20, followThrough:20, costAwareness:15 } },
+  maxCC: 1000000000000,
+  freePlay: { poolAMonthly:0.15, e12Monthly:0.006, e18Yearly:0.15, e20Yearly:0.25, closureYears:[3,15], costRange:[20,50] }
+};
+
+const ALL = ['LEMN','BAKE','TOYS','BIKE','PAWS','ROBO'];
+const SP = (p, at) => at.map((m, i) => ({ id: p + 'abcde'[i], dim:'spread', at:m }));
+globalThis.CONTENT = {
+  chapters: [
+    { id:'ch1', n:1, title:'A Little Piece', question:'What do I own when I buy?', months:12, stopEvery:3, start:100,
+      goal:{ slug:'art-supplies', amount:30, due:12, indexed:false }, contrib:0, moodMode:'scripted',
+      script:{ BAKE:[1000,1033,1067,1100,1033,967,900,950,1000,1050,1050,1050,1050] },
+      shops:['BAKE'], funds:[], jarRate:0, inflation:false, dividends:false, reinvestOffer:null, buffer:false,
+      lifeCost:null, setback:null, slump:null, e18:null, eventSlots:'none', negativeRule:false, neighbors:[],
+      checkpoints:{ goalFit:[0,9], readiness:null, spread:[], costAwareness:null },
+      opportunities:[ { id:'GF1a', dim:'goalFit', at:0 }, { id:'GF1b', dim:'goalFit', at:9 }, { id:'FT1', dim:'followThrough', at:6, kind:'scripted' } ] },
+    { id:'ch2', n:2, title:'Different Shops', question:'What if one shop has trouble?', months:36, stopEvery:12, start:200,
+      goal:{ slug:'nature-trip', amount:60, due:36, indexed:false }, contrib:0, moodMode:'off', script:null,
+      shops:ALL, funds:['BASKET'], jarRate:0, inflation:false, dividends:false, reinvestOffer:null, buffer:false,
+      lifeCost:null, setback:null, slump:null, e18:null, eventSlots:'yearly', negativeRule:true, neighbors:['ada','dev'],
+      checkpoints:{ goalFit:[24], readiness:null, spread:[0,12,24], costAwareness:null },
+      opportunities:[ { id:'GF2', dim:'goalFit', at:24 }, ...SP('SP2', [0,12,24]), { id:'FT2x', dim:'followThrough', kind:'drop' } ] },
+    { id:'ch3', n:3, title:'Ready for Rain', question:'Which money needs to stay ready?', months:36, stopEvery:12, start:200,
+      goal:{ slug:'bicycle', amount:80, due:36, indexed:false }, contrib:0, moodMode:'off', script:null,
+      shops:ALL, funds:['BASKET'], jarRate:0.02, inflation:false, dividends:false, reinvestOffer:null, buffer:true,
+      lifeCost:{ count:1, span:[13,30], range:[15,30], variant:'backpack' }, setback:null, slump:null, e18:null,
+      eventSlots:'yearly', negativeRule:true, neighbors:['ada','bo','dev'],
+      checkpoints:{ goalFit:[24], readiness:{ at:12, min:15 }, spread:[0,12,24], costAwareness:null },
+      opportunities:[ { id:'GF3', dim:'goalFit', at:24 }, { id:'RD3', dim:'readiness', at:12, min:15 }, ...SP('SP3', [0,12,24]), { id:'FT3a', dim:'followThrough', kind:'cost' }, { id:'FT3x', dim:'followThrough', kind:'drop' } ] },
+    { id:'ch4', n:4, title:'Payments Can Grow', question:'What changes when payments are reinvested?', months:60, stopEvery:12, start:150,
+      goal:{ slug:'project-kit', amount:120, due:60, indexed:false }, contrib:10, moodMode:'noSlump', script:null,
+      shops:ALL, funds:['BASKET'], jarRate:0.02, inflation:false, dividends:true, reinvestOffer:12, buffer:true,
+      lifeCost:null, setback:null, slump:null, e18:{ span:[25,48] }, eventSlots:'yearly', negativeRule:true, neighbors:['ada','bo','dev'],
+      checkpoints:{ goalFit:[48], readiness:null, spread:[0,12,24,36,48], costAwareness:null },
+      opportunities:[ { id:'GF4', dim:'goalFit', at:48 }, ...SP('SP4', [0,12,24,36,48]), { id:'FT4a', dim:'followThrough', kind:'e18' }, { id:'FT4x', dim:'followThrough', kind:'drop' } ] },
+    { id:'ch5', n:5, title:'A Bumpy Journey', question:'What changed: price, business, or my goal?', months:60, stopEvery:12, start:300,
+      goal:{ slug:'camp-week', amount:150, due:60, indexed:false }, contrib:10, moodMode:'authored', script:null,
+      shops:ALL, funds:['BASKET'], jarRate:0.02, inflation:false, dividends:true, reinvestOffer:0, buffer:true,
+      lifeCost:{ prob:0.5, span:[13,42], range:[20,40], variant:'bike' },
+      setback:{ e12:0.5, e19:0.33, span:[13,42], candidates:['TOYS','ROBO'] }, slump:{ startSpan:[13,30], lenSpan:[8,18] }, e18:null,
+      eventSlots:'yearly', negativeRule:true, neighbors:['ada','bo','cass','dev'],
+      checkpoints:{ goalFit:[48], readiness:{ at:12, min:20 }, spread:[0,12,24,36,48], costAwareness:null },
+      opportunities:[ { id:'GF5', dim:'goalFit', at:48 }, { id:'RD5', dim:'readiness', at:12, min:20 }, ...SP('SP5', [0,12,24,36,48]), { id:'FT5a', dim:'followThrough', kind:'slumpStart' }, { id:'FT5b', dim:'followThrough', kind:'cost' }, { id:'FT5c', dim:'followThrough', kind:'setback' } ] },
+    { id:'ch6', n:6, title:'Two Futures', question:'What can a plan buy, after costs and rising prices?', months:120, stopEvery:12, start:300,
+      goal:{ slug:'big-project', amount:300, due:120, indexed:true }, contrib:10, moodMode:'full', script:null,
+      shops:ALL, funds:['BASKET_A','BASKET_B'], feeLab:true, jarRate:0.02, inflation:true, dividends:true, reinvestOffer:0, buffer:true,
+      lifeCost:{ prob:0.5, span:[13,60], range:[25,50], variant:'book' }, setback:null, slump:null, e18:null,
+      eventSlots:'yearly', negativeRule:true, neighbors:['ada','bo','cass','dev'],
+      checkpoints:{ goalFit:[108], readiness:{ at:12, min:25 }, spread:[0,24,48,72,96], costAwareness:0 },
+      opportunities:[ { id:'GF6', dim:'goalFit', at:108 }, { id:'RD6', dim:'readiness', at:12, min:25 }, ...SP('SP6', [0,24,48,72,96]), { id:'FT6x', dim:'followThrough', kind:'drop' }, { id:'CA6', dim:'costAwareness', at:0 } ] },
+    { id:'free', n:7, title:'Free play', question:'Twenty years in a named town.', months:240, stopEvery:12, start:300,
+      goal:{ slug:'big-project', amount:400, due:120, indexed:true }, contrib:10, moodMode:'full', script:null,
+      shops:ALL, funds:['BASKET'], jarRate:0.02, inflation:true, dividends:true, reinvestOffer:0, buffer:true,
+      lifeCost:{ yearly:0.25, range:[20,50], variants:['backpack','bike','book'] }, setback:null, slump:null, e18:{ yearly:0.15 },
+      eventSlots:'free', negativeRule:false, neighbors:['ada','bo','cass','dev'],
+      checkpoints:'yearly', readinessMin:20, opportunities:'yearly' }
+  ],
+  presets: {
+    'standard':         { name:'Standard',        says:'Twenty ordinary years. Anything can happen.' },
+    'early-storm':      { name:'Early Storm',     says:'A slump begins in the first year.', slumpStart:[1,12] },
+    'late-storm':       { name:'Late Storm',      says:'A slump arrives in years 16 to 19.', slumpStart:[181,228] },
+    'long-quiet':       { name:'Long Quiet',      says:'No booms, and every shop grows two points slower.', boomProb:0, driftAdj:-0.02 },
+    'rising-prices':    { name:'Rising Prices',   says:'Prices rise 5% a year. The jar pays 2%.', inflationFixed:0.05, jarRate:0.02 },
+    'savings-pay-well': { name:'Savings Pay Well', says:'The jar pays 4%. Prices rise 1% a year.', jarRate:0.04, inflationFixed:0.01 },
+    'shops-can-close':  { name:'Shops Can Close', says:'One shop will close for good somewhere in years 3 to 15.', closure:true }
+  },
+  cards: [
+    { id:'E01', kind:'shock', chapterMin:2, headline:'Hot days bring thirsty customers', shortExplanation:'Thirsty people buy more lemonade. Some shoppers already expected a hot summer.', visualCue:'lemon-queue', accessibilityText:'A long line forms at Lemon Lane under bright sun.', keeperLine:{ LEMN:'Busiest week all year. I ran out of cups twice.', BAKE:'Too hot for bread. Everyone wanted something cold.' }, learningPoint:'Demand can help sales. Prices may already expect it.', eligibleAssets:{ LEMN:1.0, BAKE:-0.25 }, expectedDirection:{ LEMN:'up', BAKE:'down' }, season:[6,7,8], cooldownMonths:12, prerequisites:{ mood:['N','B'], notWithin:null, requires:null }, regimeEffect:null, companyEffect:{ mean:0.08, sd:0.06, flip:0.20 }, durationMonths:2, informationTiming:{ pricedIn:0.4, leadMonths:1 }, decisionRequired:false, variants:null },
+    { id:'E02', kind:'shock', chapterMin:2, headline:'Lemon deliveries arrive late', shortExplanation:'No lemons, no lemonade for a while. Supply matters as much as thirsty customers.', visualCue:'lemon-crates-missing', accessibilityText:'Empty crates at Lemon Lane.', keeperLine:{ LEMN:'The lemon truck took the long way round. Twice.' }, learningPoint:'Supply limits can offset demand.', eligibleAssets:{ LEMN:1.0 }, expectedDirection:{ LEMN:'down' }, season:null, cooldownMonths:18, prerequisites:{ mood:null, notWithin:null, requires:null }, regimeEffect:null, companyEffect:{ mean:-0.06, sd:0.04, flip:0.10 }, durationMonths:2, informationTiming:{ pricedIn:0.4, leadMonths:1 }, decisionRequired:false, variants:null },
+    { id:'E03', kind:'shock', chapterMin:2, headline:'Flour costs more this season', shortExplanation:'The bakery pays more for flour. Selling the same bread brings in less profit.', visualCue:'bakery-cost-board', accessibilityText:'A chalkboard at the bakery shows higher flour prices.', keeperLine:{ BAKE:'Flour costs more this season. Same bread, thinner margins.' }, learningPoint:'Higher sales are not always higher profit.', eligibleAssets:{ BAKE:1.0 }, expectedDirection:{ BAKE:'down' }, season:null, cooldownMonths:18, prerequisites:{ mood:null, notWithin:null, requires:null }, regimeEffect:null, companyEffect:{ mean:-0.06, sd:0.04, flip:0.15 }, durationMonths:3, informationTiming:{ pricedIn:0.4, leadMonths:1 }, decisionRequired:false, variants:null },
+    { id:'E04', kind:'shock', chapterMin:2, headline:'A new oven saves energy', shortExplanation:'The bakery spends less to bake the same bread.', visualCue:'bakery-oven-glow', accessibilityText:'A warm glow from a new oven in the bakery window.', keeperLine:{ BAKE:'The new oven heats in half the time. The old one is a planter now.' }, learningPoint:'Lower costs can help a business.', eligibleAssets:{ BAKE:1.0 }, expectedDirection:{ BAKE:'up' }, season:null, cooldownMonths:24, prerequisites:{ mood:null, notWithin:null, requires:null }, regimeEffect:null, companyEffect:{ mean:0.05, sd:0.04, flip:0.15 }, durationMonths:3, informationTiming:{ pricedIn:0.4, leadMonths:1 }, decisionRequired:false, variants:null },
+    { id:'E05', kind:'shock', chapterMin:2, headline:'A toy trend brings new shoppers', shortExplanation:'Everyone wants the same toy this season. Trends come and go.', visualCue:'toys-trend-window', accessibilityText:'A crowd at the Toy Box window.', keeperLine:{ TOYS:'Everyone wants the spinning thing. I cannot keep them on the shelf.' }, learningPoint:'Popularity can fade.', eligibleAssets:{ TOYS:1.0 }, expectedDirection:{ TOYS:'up' }, season:[10,11,12], cooldownMonths:18, prerequisites:{ mood:null, notWithin:null, requires:null }, regimeEffect:null, companyEffect:{ mean:0.10, sd:0.07, flip:0.25 }, durationMonths:3, informationTiming:{ pricedIn:0.4, leadMonths:1 }, decisionRequired:false, variants:null },
+    { id:'E06', kind:'shock', chapterMin:2, headline:'Toy deliveries cost more', shortExplanation:'Getting toys to the shop costs more this year.', visualCue:'toys-detour-cart', accessibilityText:'A delivery cart takes a detour past the Toy Box.', keeperLine:{ TOYS:'The delivery cart goes the long way now. It costs me.' }, learningPoint:'Input costs matter.', eligibleAssets:{ TOYS:1.0 }, expectedDirection:{ TOYS:'down' }, season:null, cooldownMonths:18, prerequisites:{ mood:null, notWithin:null, requires:null }, regimeEffect:null, companyEffect:{ mean:-0.06, sd:0.04, flip:0.15 }, durationMonths:3, informationTiming:{ pricedIn:0.4, leadMonths:1 }, decisionRequired:false, variants:null },
+    { id:'E07', kind:'shock', chapterMin:2, headline:'A new bike path opens', shortExplanation:'More people ride, so more people need bikes fixed and sold.', visualCue:'bike-path-bunting', accessibilityText:'Cyclists on a marked lane past Spoke Bikes.', keeperLine:{ BIKE:'A new path. Riders I have never met before.' }, learningPoint:'Demand for a business can change.', eligibleAssets:{ BIKE:1.0 }, expectedDirection:{ BIKE:'up' }, season:[3,4,5,6], cooldownMonths:36, prerequisites:{ mood:null, notWithin:null, requires:null }, regimeEffect:null, companyEffect:{ mean:0.07, sd:0.05, flip:0.20 }, durationMonths:4, informationTiming:{ pricedIn:0.4, leadMonths:1 }, decisionRequired:false, variants:null },
+    { id:'E08', kind:'shock', chapterMin:2, headline:'Rain changes weekend plans', shortExplanation:'Outdoor customers stay in. Some shops share a risk and some do not.', visualCue:'rain-umbrellas', accessibilityText:'Rain over the street; umbrellas at the doors.', keeperLine:{ BIKE:'Rain all weekend. Everyone stayed in.', LEMN:'Nobody wants lemonade in the rain.', TOYS:'Rainy days are board game days. Busy inside.' }, learningPoint:'Shops share some risks and differ in others.', eligibleAssets:{ BIKE:1.0, LEMN:0.5, TOYS:-0.3 }, expectedDirection:{ BIKE:'down', LEMN:'down', TOYS:'up' }, season:null, cooldownMonths:12, prerequisites:{ mood:null, notWithin:null, requires:null }, regimeEffect:null, companyEffect:{ mean:-0.05, sd:0.03, flip:0.10 }, durationMonths:1, informationTiming:{ pricedIn:0.4, leadMonths:1 }, decisionRequired:false, variants:null },
+    { id:'E09', kind:'shock', chapterMin:2, headline:'Pet care bookings fill up', shortExplanation:'More pets, more appointments.', visualCue:'paws-board-full', accessibilityText:'The appointment board at Paws is full.', keeperLine:{ PAWS:'Full house today. Eight dogs, one very grumpy cat.' }, learningPoint:'Recurring services grow with demand.', eligibleAssets:{ PAWS:1.0 }, expectedDirection:{ PAWS:'up' }, season:null, cooldownMonths:18, prerequisites:{ mood:null, notWithin:null, requires:null }, regimeEffect:null, companyEffect:{ mean:0.06, sd:0.04, flip:0.15 }, durationMonths:3, informationTiming:{ pricedIn:0.4, leadMonths:1 }, decisionRequired:false, variants:null },
+    { id:'E10', kind:'shock', chapterMin:2, headline:'Pet care needs more helpers', shortExplanation:'Hiring helpers costs money before it earns any.', visualCue:'paws-help-sign', accessibilityText:'A HELP WANTED sign at Paws.', keeperLine:{ PAWS:'I need two more helpers. Good ones cost.' }, learningPoint:'Growth also brings costs.', eligibleAssets:{ PAWS:1.0 }, expectedDirection:{ PAWS:'down' }, season:null, cooldownMonths:18, prerequisites:{ mood:null, notWithin:null, requires:null }, regimeEffect:null, companyEffect:{ mean:-0.04, sd:0.03, flip:0.15 }, durationMonths:3, informationTiming:{ pricedIn:0.4, leadMonths:1 }, decisionRequired:false, variants:null },
+    { id:'E11', kind:'shock', chapterMin:2, headline:'Robo Lab announces an invention', shortExplanation:'A new gadget could sell well. Or not. Nobody knows yet.', visualCue:'robo-demo', accessibilityText:'A gadget demonstration outside Robo Lab.', keeperLine:{ ROBO:'I invented a thing. It does a thing. Mostly.' }, learningPoint:'Expectations and uncertainty move together.', eligibleAssets:{ ROBO:1.0 }, expectedDirection:{ ROBO:'up' }, season:null, cooldownMonths:24, prerequisites:{ mood:null, notWithin:null, requires:null }, regimeEffect:null, companyEffect:{ mean:0.15, sd:0.12, flip:0.30 }, durationMonths:3, informationTiming:{ pricedIn:0.4, leadMonths:1 }, decisionRequired:false, variants:null },
+    { id:'E12', kind:'shock', chapterMin:5, headline:'Robo Lab repairs a product problem', shortExplanation:'A gadget had a fault. Fixing every one costs the business.', visualCue:'robo-repair-desk', accessibilityText:'A repair desk outside Robo Lab.', keeperLine:{ ROBO:'We are fixing every one of them. Properly, this time.' }, learningPoint:'A company-specific setback.', eligibleAssets:{ ROBO:1.0 }, expectedDirection:{ ROBO:'down' }, season:null, cooldownMonths:36, prerequisites:{ mood:null, notWithin:{ card:'E11', months:12 }, requires:null }, regimeEffect:null, companyEffect:{ mean:-0.18, sd:0.08, flip:0.00 }, durationMonths:6, informationTiming:{ pricedIn:0.4, leadMonths:1 }, decisionRequired:false, variants:null },
+    { id:'E13', kind:'explain', chapterMin:5, headline:'Many families spend less', shortExplanation:'Many families are spending less this year. Most shops feel it.', visualCue:'town-quiet', accessibilityText:'Quieter activity across the whole street.', keeperLine:{ ALL:'Folks are spending less. I understand.' }, learningPoint:'Broad pressure touches most businesses at once.', eligibleAssets:null, expectedDirection:null, season:null, cooldownMonths:0, prerequisites:{ mood:null, notWithin:null, requires:null }, regimeEffect:'slumpStart', companyEffect:null, durationMonths:0, informationTiming:null, decisionRequired:false, variants:null },
+    { id:'E14', kind:'shock', chapterMin:5, headline:'Deliveries slow across town', shortExplanation:'Every shop waits longer for its deliveries.', visualCue:'carts-queue', accessibilityText:'Several delivery carts queue at the bridge.', keeperLine:{ ALL:'Still waiting on last week’s delivery.' }, learningPoint:'A common shock touches everyone.', eligibleAssets:{ LEMN:1.0, BAKE:1.0, TOYS:1.0, BIKE:1.0, PAWS:1.0, ROBO:1.0 }, expectedDirection:{ LEMN:'down', BAKE:'down', TOYS:'down', BIKE:'down', PAWS:'down', ROBO:'down' }, season:null, cooldownMonths:36, prerequisites:{ mood:['S'], notWithin:null, requires:null }, regimeEffect:null, companyEffect:{ mean:-0.04, sd:0.02, flip:0.00 }, durationMonths:2, informationTiming:{ pricedIn:0.4, leadMonths:1 }, decisionRequired:false, variants:null },
+    { id:'E15', kind:'explain', chapterMin:5, headline:'Deliveries return to their routes', shortExplanation:'Things are moving again. Not every loss is undone.', visualCue:'carts-clear', accessibilityText:'Delivery routes are clear again.', keeperLine:{ ALL:'Deliveries are back on time. Good to see.' }, learningPoint:'Improvement need not undo every loss.', eligibleAssets:null, expectedDirection:null, season:null, cooldownMonths:0, prerequisites:{ mood:null, notWithin:null, requires:null }, regimeEffect:'slumpEnd', companyEffect:null, durationMonths:0, informationTiming:null, decisionRequired:false, variants:null },
+    { id:'E16', kind:'shock', chapterMin:2, headline:'Businesses share an encouraging update', shortExplanation:'Good news from one shop. The price may or may not follow.', visualCue:'noticeboard', accessibilityText:'A notice on the town noticeboard.', keeperLine:{ ANY:'Good month. I put a note on the board.' }, learningPoint:'The same news need not produce certain gains.', eligibleAssets:{ ANY:1.0 }, expectedDirection:{ ANY:'up' }, season:null, cooldownMonths:12, prerequisites:{ mood:null, notWithin:null, requires:null }, regimeEffect:null, companyEffect:{ mean:0.04, sd:0.06, flip:0.35 }, durationMonths:2, informationTiming:{ pricedIn:0.4, leadMonths:1 }, decisionRequired:false, variants:null },
+    { id:'E17', kind:'overlay', chapterMin:2, headline:'Some prices already expected the news', shortExplanation:'Part of a story is in the price before the headline.', visualCue:'forecast-board', accessibilityText:'An earlier forecast beside the new headline.', keeperLine:null, learningPoint:'Expectations are already in prices.', eligibleAssets:null, expectedDirection:null, season:null, cooldownMonths:0, prerequisites:{ mood:null, notWithin:null, requires:null }, regimeEffect:null, companyEffect:null, durationMonths:0, informationTiming:null, decisionRequired:false, variants:null },
+    { id:'E18', kind:'decision', chapterMin:4, headline:'A shop changes its payment plan', shortExplanation:'This shop is sharing less money with owners this year. The business is the same business.', visualCue:'dividend-notice', accessibilityText:'A notice about owner payments.', keeperLine:{ ANY:'We are keeping more money in the business this year. New ovens, new ideas.' }, learningPoint:'Payments can shrink or stop.', eligibleAssets:{ ANY:1.0 }, expectedDirection:null, season:null, cooldownMonths:48, prerequisites:{ mood:null, notWithin:null, requires:'dividends' }, regimeEffect:null, companyEffect:null, durationMonths:12, informationTiming:null, decisionRequired:false, variants:null },
+    { id:'E19', kind:'decision', chapterMin:5, headline:'A shop closes this chapter', shortExplanation:'This shop is closing. Owners get some coins a share back. The shopkeeper is starting a new project.', visualCue:'closing-notice', accessibilityText:'Boards over a window and a NEW PROJECT banner.', keeperLine:{ TOYS:'The Toy Box is closing. I am starting a puppet theater. Come see it.', ROBO:'Robo Lab is closing. I am going to teach robotics at the school.' }, learningPoint:'A permanent loss is different from a slump.', eligibleAssets:{ TOYS:1.0, ROBO:1.0 }, expectedDirection:null, season:null, cooldownMonths:0, prerequisites:{ mood:null, notWithin:null, requires:null }, regimeEffect:null, companyEffect:null, durationMonths:0, informationTiming:null, decisionRequired:false, variants:null },
+    { id:'E20', kind:'decision', chapterMin:3, headline:'A surprise cost', shortExplanation:'Something needs paying for. Where does the money come from?', visualCue:'repair-picture', accessibilityText:'A small repair picture beside the goal.', keeperLine:null, learningPoint:'A buffer is for this.', eligibleAssets:null, expectedDirection:null, season:null, cooldownMonths:0, prerequisites:{ mood:null, notWithin:null, requires:'buffer' }, regimeEffect:null, companyEffect:null, durationMonths:0, informationTiming:null, decisionRequired:true, variants:{ backpack:'Your backpack strap broke', bike:'Your bike needs a small repair', book:'A library book went missing' } },
+    { id:'E21', kind:'decision', chapterMin:1, headline:'Your goal day has arrived', shortExplanation:'The day you planned for.', visualCue:'goal-day', accessibilityText:'The chosen goal is displayed.', keeperLine:null, learningPoint:'Planned spending is success.', eligibleAssets:null, expectedDirection:null, season:null, cooldownMonths:0, prerequisites:{ mood:null, notWithin:null, requires:null }, regimeEffect:null, companyEffect:null, durationMonths:0, informationTiming:null, decisionRequired:true, variants:null },
+    { id:'E22', kind:'explain', chapterMin:4, headline:'A practice contribution arrives', shortExplanation:'The game added practice coins. They were added, not earned by the shares.', visualCue:'ledger-entry', accessibilityText:'A quiet ledger entry.', keeperLine:null, learningPoint:'Money added is not investment growth.', eligibleAssets:null, expectedDirection:null, season:null, cooldownMonths:0, prerequisites:{ mood:null, notWithin:null, requires:'contributions' }, regimeEffect:null, companyEffect:null, durationMonths:0, informationTiming:null, decisionRequired:false, variants:null },
+    { id:'E23', kind:'explain', chapterMin:6, headline:'Familiar things cost a little more', shortExplanation:'The same coins buy a little less than last year.', visualCue:'price-labels', accessibilityText:'Price labels on everyday goods have gone up.', keeperLine:null, learningPoint:'Purchasing power changes.', eligibleAssets:null, expectedDirection:null, season:null, cooldownMonths:0, prerequisites:{ mood:null, notWithin:null, requires:'inflation' }, regimeEffect:null, companyEffect:null, durationMonths:0, informationTiming:null, decisionRequired:false, variants:null },
+    { id:'E24', kind:'lab', chapterMin:6, headline:'Two baskets charge different fees', shortExplanation:'Same six shops. One basket charges 0.2% a year, the other 1.5%.', visualCue:'two-cost-cards', accessibilityText:'Two matched cost cards.', keeperLine:null, learningPoint:'A cost leaves less money growing for you.', eligibleAssets:{ BASKET_A:1.0, BASKET_B:1.0 }, expectedDirection:null, season:null, cooldownMonths:0, prerequisites:{ mood:null, notWithin:null, requires:null }, regimeEffect:null, companyEffect:null, durationMonths:0, informationTiming:null, decisionRequired:true, variants:null }
+  ],
+  poolA: ['E01','E02','E03','E04','E05','E06','E07','E08','E09','E10','E11','E16'],
+  negativeSet: ['E02','E03','E06','E08','E10'],
+  goals: { 'art-supplies':'Art supplies', 'nature-trip':'A nature trip', 'bicycle':'A bicycle', 'project-kit':'A project kit', 'camp-week':'A week at camp', 'big-project':'A big project' },
+  townNames: {
+    adj: ['Maple','Pebble','Willow','Sunny','Cedar','Harbor','Meadow','Clover','Brook','Lantern','Orchard','Bramble','Sparrow','Copper','Fern','Thistle','Juniper','Marigold','Heron','Birch','Hazel','Ember','Wren','Tumble'],
+    noun: ['Hollow','Creek','Bend','Crossing','Green','Lane','Hill','Landing','Corner','Field','Ridge','Row','Square','Walk','Point','Glen','Yard','Market','Mill','Ford','Grove','Gate','Harbor','Common']
+  },
+  flags: { freePlayAfterChapter3:false }
+};
+
+globalThis.STRINGS = {
+  buttons: ['Start exploring','Next season','Next year','Continue year','Go to year {n}','Go to summer','More','Add to plan','Undo','Clear plan','Back to town','Keep my plan','Change my plan','Review my plan','Put 30 in my Jar','Fund it from my Buffer','Change amount','Postpone my goal','Continue','Skip','Watch again','Show numbers','Show details','Show more','Try one change','Try {name}’s plan','Save and stop','Choose a decoration','Pick a discovery','New town','Replay this town','Type a town name','Grown-ups','← All Sky Wolf games'],
+  core: {
+    share:'A share is a tiny piece of a business.', dividend:'Some businesses share money with their owners. These payments can change or stop.', price:'This is what someone would pay for a share right now.', investing:'Your money might grow. It can also shrink.', spread:'Spread your money so one problem matters less. Outcomes are still uncertain.', time:'More time gives a plan more room to grow and recover. It is not a promise.', cash:'Money for soon needs to be ready when you need it.', inflation:'The same coins may buy less when prices rise.', fees:'A cost leaves less money growing for you.', reinvest:'Use a payment to buy more shares.', selling:'Check your goal and what changed before you decide.', outcomes:'A careful plan can still have a disappointing result.', spending:'Money is also for things you need and enjoy.', basket:'Six shops in one town. Spread out, but still one town.', slump:'Many families are spending less this year. Most shops feel it.', neighbors:'Here are your neighbors’ plans on the same town. Plans can grow or shrink in different years.'
+  },
+  lines: {
+    ch1Start:'This first year is a practice run. Prices here follow a story, not a real market.', dropStop:'Prices fell. Check when you need this money.', reserve:'This would use {n} coins you set aside for your goal.', goalFunded:'Your {goal} are here. You planned for this!', goalShort:'Not enough yet. You can move the date, change the amount, or sell some shares. All three are allowed.', chapterEnd:'Your town is saved! Pick one decoration for the square.', discoveryA:'Your investments have now earned as much as you added.', discoveryB:'Your investments have now earned more than a whole year of practice coins.', moneyPanel:'You added {added}. Your investments added {result}. Your goal used {spent}.', observation:'The Gazette said {headline}. {shop} still had a {kind} year. Lots of things move prices at once.', busiest:'Busiest shop this year: {shop}, with {n} busy months.', practice:'These are pretend coins. Let’s see what owning a share means.', someSoon:'Some for soon. Some to try growing.', jar30:'Your art supplies cost 30. They stay ready in the Jar.', tinyPiece:'A share is one tiny piece of this business.', buyOne:'Buy 1 share for 10 coins. You keep 60 in your wallet.', planOne:'Your plan: buy 1 Bakery share for 10 coins.', youOwn:'You own 1 share.', samePrice:'Same share. A different price.'
+  },
+  neighborIntro: { ada:'This is Ada. She spreads her money out and leaves it alone.', bo:'This is Bo. He keeps his money in his jar.', cass:'This is Cass. She follows the news and moves her money when a story lands.', dev:'This is Dev. He picks one shop he believes in and holds on.' },
+  neighborSentence: { held:'{name} kept {his} {what} all year. It {grew}.', jarSame:'{name} kept {his} jar. It stayed the same.', moved:'{name} moved {his} money to {shop} after the {news} news. {shop} had a {kind} year.', bigYear:'{name}’s shop had a big year.', paidCost:'{name} paid the surprise cost from {his} jar.', soldForCost:'{name} sold part of {his} basket to pay the cost.', toJar:'{name} moved everything to {his} jar when the slump began.', backIn:'{name} bought the basket again when deliveries returned.' },
+  discoveries: ['My Jar paid for the surprise.','One shop had a bigger year than my basket.','My basket had a bigger year than one shop.','I checked my plan when prices fell.','The news did not tell me what the price would do.','I reached my goal on the day I planned.','I moved my goal date and that was fine.','Cass changed her mind four times this chapter.','Bo’s jar stayed exactly the same.'],
+  keepers: {
+    lou:     { name:'Lou',     animal:'lemur',    temperament:'excitable, weather watcher', busy:'Did you SEE the sun today? Three lines out the door.', normal:'Lemons are in. Sky is so-so. We will see.', quiet:'Rainy week. I squeezed a lot of lemons for nobody.' },
+    bram:    { name:'Bram',    animal:'badger',   temperament:'calm, proverbs',             busy:'Every tray gone by ten. Good day for bread.', normal:'Slow and steady. The ovens do not hurry.', quiet:'Quiet morning. More time to get the crust right.' },
+    ottilie: { name:'Ottilie', animal:'otter',    temperament:'trend spotter',              busy:'Everyone wants the spinning thing this month. I cannot keep them on the shelf.', normal:'Kids like what they like. This week it is kites.', quiet:'The spinning thing is so last month. Quiet aisles.' },
+    hop:     { name:'Hop',     animal:'hare',     temperament:'energetic',                  busy:'Bells ringing all day. Fixed eleven flats.', normal:'Nice day for a ride. A few tune-ups.', quiet:'Rain means no rides. I oiled every chain in the shop twice.' },
+    hazel:   { name:'Hazel',   animal:'hedgehog', temperament:'gentle',                     busy:'Full house today. Eight dogs, one very grumpy cat.', normal:'A calm day. Two baths and a nail trim.', quiet:'Only one booking. I read to the rabbit.' },
+    fen:     { name:'Fen',     animal:'fox',      temperament:'dreamer',                    busy:'The new gadget works. Mostly. It sorted the muffins by color.', normal:'Tinkering. Next year is the year, you will see.', quiet:'Back to the drawing board. The robot folded itself.' }
+  },
+  decoder: [
+    ['Share','Share (stock)','One tiny piece of a business'], ['Town Basket Fund','Fund','A bundle that holds many shares at once'], ['Payment','Dividend','Money a business shares with its owners'], ['Reinvest','Reinvest','Use a payment to buy more shares'], ['Savings Jar','Savings','Money kept ready, not invested'], ['Soon','Goal savings','Money set aside for one planned thing'], ['Buffer','Emergency fund','Money kept for surprise costs'], ['Rising prices','Inflation','When the same things cost more over time'], ['Cost card','Expense ratio','What a fund charges each year'], ['Spread out','Diversify','Own different things so one problem matters less'], ['Slump','Downturn','A time when many prices fall together'], ['Neighbor’s plan','Strategy','A rule someone follows for their money'], ['Town name','Seed','The code that makes this town’s years happen the same way every time']
+  ]
+};
 </script>
 
-<script id="content">
-/* CONTENT (M1). PARAMS, CONTENT, STRINGS. Data only. See HANDOFF sections 3, 6, 7, 9. */
+<script id="engine">
+/* ENGINE (M1). Pure: no DOM, Date, Math.random, fetch, localStorage, timers, Math.pow/exp/log/sqrt. See HANDOFF 4, 5, 14. */
+(function () {
+'use strict';
+const PR = globalThis.PARAMS, CT = globalThis.CONTENT;
+if (!PR || !CT) throw new Error('content must load before the engine');
+
+/* ---------- PRNG: cyrb128 seed hash -> sfc32 stream. Integer-exact across engines. ---------- */
+function cyrb128(s){let a=1779033703,b=3144134277,c=1013904242,d=2773480762;
+  for(let i=0,k;i<s.length;i++){k=s.charCodeAt(i);a=b^Math.imul(a^k,597399067);b=c^Math.imul(b^k,2869860233);
+  c=d^Math.imul(c^k,951274213);d=a^Math.imul(d^k,2716044179);}
+  a=Math.imul(c^(a>>>18),597399067);b=Math.imul(d^(b>>>22),2869860233);
+  c=Math.imul(a^(c>>>17),951274213);d=Math.imul(b^(d>>>19),2716044179);
+  return[(a^b^c^d)>>>0,(b^a)>>>0,(c^a)>>>0,(d^a)>>>0];}
+function sfc32(a,b,c,d){return()=>{a|=0;b|=0;c|=0;d|=0;const t=(a+b|0)+d|0;d=d+1|0;a=b^b>>>9;
+  b=c+(c<<3)|0;c=c<<21|c>>>11;c=c+t|0;return(t>>>0)/4294967296;};}
+const stream = (id, name) => sfc32(...cyrb128(id + '|' + name));
+const gauss = r => (r()+r()+r()+r()+r()+r()-3)*PR.IH_SCALE;
+const uniformInt = (r, lo, hi) => lo + Math.floor(r()*(hi-lo+1));
+const pick = (r, arr) => arr[Math.floor(r()*arr.length)];
+
+/* ---------- money helpers (HANDOFF 5) ---------- */
+const quote = p => Math.max(1, Math.round(p*100));
+const posValue = (msh, q) => { const prod = msh * q; return prod <= 1125899906842624 ? Math.floor(prod / 1000) : Number(BigInt(msh)*BigInt(q)/1000n); };
+const mshForCash = (X, q) => Math.floor(X*1000/q);
+const cal = t => ((t-1)%12)+1;
+const isInt = x => typeof x === 'number' && Number.isSafeInteger(x);
+const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+
+/* ---------- scenario resolution ---------- */
+function resolveScenario(scenarioId, presetId) {
+  const base = CT.chapters.find(c => c.id === scenarioId);
+  if (!base) throw new Error('unknown scenario ' + scenarioId);
+  const sc = JSON.parse(JSON.stringify(base));
+  sc.presetId = presetId || 'standard';
+  sc.driftAdj = 0; sc.boomProb = null; sc.inflationFixed = null; sc.authoredThenChain = false; sc.closure = sc.closure || null;
+  if (presetId && presetId !== 'standard') {
+    const pr = CT.presets[presetId];
+    if (!pr) throw new Error('unknown preset ' + presetId);
+    if (pr.slumpStart) { sc.moodMode = 'authored'; sc.slump = { startSpan: pr.slumpStart, lenSpan: [8, 18] }; sc.authoredThenChain = true; }
+    if (pr.boomProb !== undefined) sc.boomProb = pr.boomProb;
+    if (pr.driftAdj) sc.driftAdj = pr.driftAdj;
+    if (pr.inflationFixed !== undefined) sc.inflationFixed = pr.inflationFixed;
+    if (pr.jarRate !== undefined) sc.jarRate = pr.jarRate;
+    if (pr.closure) sc.closure = { yearSpan: PR.freePlay.closureYears, candidates: ['TOYS', 'ROBO'] };
+  }
+  sc.assetIdx = {}; PR.assets.forEach((a, i) => { sc.assetIdx[a.id] = i; });
+  sc.ids = sc.shops.concat(sc.funds);
+  return sc;
+}
+function prepAssets(sc) {
+  return PR.assets.map(a => ({ ...a, driftM: (a.drift + sc.driftAdj) / 12, yieldM: a.yield / 12, volM: a.vol / PR.SQRT12 }));
+}
+
+/* ---------- market generation ---------- */
+const NAME_RE = /^[A-Z][a-z]+ [A-Z][a-z]+( [1-9][0-9]?)?$/;
+function randomTownName(u1, u2, u3) {
+  const tn = CT.townNames;
+  return tn.adj[(u1 >>> 0) % tn.adj.length] + ' ' + tn.noun[(u2 >>> 0) % tn.noun.length] + ' ' + (2 + ((u3 >>> 0) % 98));
+}
+function normalizeTownName(s) {
+  const words = String(s).replace(/[^A-Za-z0-9 ]/g, '').trim().split(/\s+/).filter(Boolean)
+    .map(w => /^[0-9]+$/.test(w) ? w : w[0].toUpperCase() + w.slice(1).toLowerCase());
+  return words.join(' ');
+}
+
+function createMarket(opts) {
+  const sc = resolveScenario(opts.scenarioId, opts.preset);
+  const TEST = opts._test || null; if (TEST && TEST.noEvents) { sc.eventSlots = 'none'; sc.lifeCost = null; sc.setback = null; sc.e18 = null; sc.closure = null; }
+  const seed = String(opts.seed);
+  const id = PR.ENGINE_VERSION + '|' + PR.CONTENT_VERSION + '|' + sc.id + (sc.presetId !== 'standard' ? ':' + sc.presetId : '') + '|' + seed;
+  const T = sc.months, A = prepAssets(sc), n = A.length, M = PR.moods;
+  const rMood = stream(id, 'mood'), rEv = stream(id, 'events'), rPx = stream(id, 'prices'), rNb = stream(id, 'neighbors'), rCos = stream(id, 'cosmetic');
+
+  /* moods */
+  const moods = new Array(T + 1).fill('N');
+  const chain = sc.moodMode === 'full' || sc.moodMode === 'noSlump' || (sc.moodMode === 'authored' && sc.authoredThenChain);
+  if (chain) {
+    let m = 'N';
+    for (let t = 1; t <= T; t++) {
+      const to = M[m].to, u = rMood(); let acc = 0, next = m;
+      for (const k of M.order) { if (k === m || to[k] === undefined) continue;
+        let p = to[k]; if (k === 'S' && sc.moodMode === 'noSlump') p = 0; if (k === 'B' && sc.boomProb === 0) p = 0;
+        acc += p; if (u < acc) { next = k; break; } }
+      m = next; moods[t] = m;
+    }
+  }
+  let authored = null;
+  if (sc.moodMode === 'authored') {
+    const s = uniformInt(rMood, sc.slump.startSpan[0], sc.slump.startSpan[1]);
+    const len = uniformInt(rMood, sc.slump.lenSpan[0], sc.slump.lenSpan[1]);
+    authored = { start: s, len };
+    for (let t = s; t < s + len && t <= T; t++) moods[t] = 'S';
+    if (!sc.authoredThenChain) for (let t = 1; t <= T; t++) if (t < s || t >= s + len) moods[t] = 'N';
+  }
+  if (TEST && TEST.flatMood) for (let t = 1; t <= T; t++) moods[t] = 'N';
+  const slumps = [];
+  for (let t = 1; t <= T; t++) { if (moods[t] === 'S' && moods[t - 1] !== 'S') slumps.push({ start: t, end: null }); if (moods[t] !== 'S' && moods[t - 1] === 'S') slumps[slumps.length - 1].end = t; }
+
+  /* events */
+  const shock = A.map(() => new Float64Array(T + 2));
+  const cards = [], lastFire = {}, liveShock = new Uint8Array(T + 2);
+  const cardById = {}; CT.cards.forEach(c => { cardById[c.id] = c; });
+  const chN = sc.n;
+  const shopsAvail = sc.shops.slice();
+  const yieldShops = shopsAvail.filter(s => A[sc.assetIdx[s]].yield > 0);
+  function assetsFor(card, forShop) { const out = {}; for (const k in card.eligibleAssets) { const key = k === 'ANY' ? forShop : k; if (shopsAvail.includes(key)) out[key] = card.eligibleAssets[k]; } return out; }
+  function overlaps(t, dur) { for (let k = Math.max(1, t - 1); k <= Math.min(T, t + dur - 1); k++) if (liveShock[k]) return true; return false; }
+  function eligible(card, t) {
+    if (card.chapterMin > chN) return false;
+    if (card.season && !card.season.includes(cal(t))) return false;
+    if (lastFire[card.id] !== undefined && t - lastFire[card.id] < card.cooldownMonths) return false;
+    const pr = card.prerequisites || {};
+    if (pr.mood && !pr.mood.includes(moods[t])) return false;
+    if (pr.requires === 'dividends' && !sc.dividends) return false;
+    if (pr.requires === 'buffer' && !sc.buffer) return false;
+    if (pr.notWithin) for (const c of cards) if (c.id === pr.notWithin.card && Math.abs(c.t - t) < pr.notWithin.months) return false;
+    for (const c of cards) { const o = cardById[c.id].prerequisites && cardById[c.id].prerequisites.notWithin; if (o && o.card === card.id && Math.abs(c.t - t) < o.months) return false; }
+    if (card.kind === 'shock' && overlaps(t, card.durationMonths)) return false;
+    return true;
+  }
+  function realize(card) {
+    const e = card.companyEffect; let mag = e.mean + e.sd * gauss(rEv);
+    mag = clamp(mag, e.mean - 3 * e.sd, e.mean + 3 * e.sd);
+    if (e.flip > 0 && rEv() < e.flip) mag = -mag;
+    return mag;
+  }
+  function placeShock(card, t, forShop) {
+    const assets = assetsFor(card, forShop); const mag = realize(card); const dur = Math.max(1, card.durationMonths);
+    const chatter = (t - 1 >= 1 && card.informationTiming) ? card.informationTiming.pricedIn : 0;
+    const kSum = dur * (dur + 1) / 2;
+    for (const aid in assets) { const i = sc.assetIdx[aid], total = assets[aid] * mag;
+      if (chatter) shock[i][t - 1] += chatter * total;
+      for (let k = 0; k < dur && t + k <= T; k++) shock[i][t + k] += (1 - chatter) * total * (dur - k) / kSum; }
+    for (let k = Math.max(1, t - 1); k <= Math.min(T, t + dur - 1); k++) liveShock[k] = 1;
+    lastFire[card.id] = t;
+    const first = Object.keys(assets)[0] || null;
+    cards.push({ id: card.id, kind: 'shock', t, assets, mag, dur, forShop: first, negative: first ? (assets[first] * mag) < 0 : false, stops: card.id === 'E12' });
+  }
+  const lifeCosts = []; let e18 = null, closure = null;
+  function addCost(t, lo, hi, variant) { lifeCosts.push({ t, cc: uniformInt(rEv, lo, hi) * 100, variant }); }
+  function addClosure(t, candidates) { closure = { id: pick(rEv, candidates), announceT: t, liqFrac: 0.25 + 0.25 * rEv() }; }
+  function addE18(t) { if (!yieldShops.length) return; e18 = { t, id: pick(rEv, yieldShops), factor: rEv() < 0.5 ? 0.5 : 0 }; lastFire.E18 = t; cards.push({ id: 'E18', kind: 'decision', t, forShop: e18.id, factor: e18.factor, stops: true }); }
+
+  if (sc.eventSlots === 'yearly') {
+    if (sc.setback) { const u = rEv(); const w = sc.setback.span;
+      if (u < sc.setback.e12) placeShock(cardById.E12, uniformInt(rEv, w[0], w[1]), null);
+      else if (u < sc.setback.e12 + sc.setback.e19) addClosure(uniformInt(rEv, w[0], w[1]), sc.setback.candidates); }
+    if (sc.e18 && sc.e18.span) addE18(uniformInt(rEv, sc.e18.span[0], sc.e18.span[1]));
+    if (sc.lifeCost) { if (sc.lifeCost.count || (sc.lifeCost.prob !== undefined && rEv() < sc.lifeCost.prob)) addCost(uniformInt(rEv, sc.lifeCost.span[0], sc.lifeCost.span[1]), sc.lifeCost.range[0], sc.lifeCost.range[1], sc.lifeCost.variant); }
+    for (const s of slumps) { cards.push({ id: 'E13', kind: 'explain', t: s.start, stops: true });
+      const e14 = cardById.E14, end = s.end ? s.end - 1 : T; const t14 = uniformInt(rEv, s.start, Math.max(s.start, end));
+      if (eligible(e14, t14)) placeShock(e14, t14, null);
+      if (s.end) cards.push({ id: 'E15', kind: 'explain', t: s.end, stops: false }); }
+    const years = Math.floor(T / 12), chosen = [];
+    const liveTmp = (t, dur) => chosen.some(c => { const d = cardById[c.id].durationMonths; return !(t + dur - 1 < c.t - 1 || t - 1 > c.t + d - 1); });
+    const pool = CT.poolA.map(i => cardById[i]);
+    for (let y = 0; y < years; y++) {
+      let placed = null;
+      for (let attempt = 0; attempt < 4 && !placed; attempt++) {
+        const m = uniformInt(rEv, y * 12 + 1, y * 12 + 12);
+        const cands = pool.filter(c => eligible(c, m) && !liveTmp(m, c.durationMonths) && !chosen.some(x => x.id === c.id && m - x.t < c.cooldownMonths));
+        if (cands.length) placed = { id: pick(rEv, cands).id, t: m };
+      }
+      if (placed) chosen.push(placed);
+    }
+    if (sc.negativeRule && chosen.length && !chosen.some(c => CT.negativeSet.includes(c.id))) {
+      const last = chosen[chosen.length - 1]; const negs = CT.negativeSet.map(i => cardById[i]).filter(c => c.chapterMin <= chN && (!c.season || c.season.includes(cal(last.t))));
+      if (negs.length) last.id = pick(rEv, negs).id;
+    }
+    chosen.sort((a, b) => a.t - b.t);
+    for (const c of chosen) { const card = cardById[c.id]; const forShop = card.eligibleAssets.ANY ? pick(rEv, shopsAvail) : null; placeShock(card, c.t, forShop); }
+  } else if (sc.eventSlots === 'free') {
+    const F = PR.freePlay;
+    if (sc.closure) { const y = uniformInt(rEv, sc.closure.yearSpan[0], sc.closure.yearSpan[1]); addClosure(uniformInt(rEv, y * 12 - 11, y * 12), sc.closure.candidates); }
+    const years = Math.floor(T / 12);
+    for (let y = 0; y < years; y++) {
+      if (sc.e18 && rEv() < sc.e18.yearly) { const t = uniformInt(rEv, y * 12 + 1, y * 12 + 12); if (eligible(cardById.E18, t)) addE18(t); }
+      if (sc.lifeCost && rEv() < sc.lifeCost.yearly) addCost(uniformInt(rEv, y * 12 + 1, y * 12 + 12), sc.lifeCost.range[0], sc.lifeCost.range[1], sc.lifeCost.variants[y % sc.lifeCost.variants.length]);
+    }
+    const slumpE14 = {}; for (const s of slumps) { slumpE14[s.start] = uniformInt(rEv, s.start, Math.max(s.start, (s.end ? s.end - 1 : T))); }
+    const pool = CT.poolA.map(i => cardById[i]);
+    for (let t = 1; t <= T; t++) {
+      const s = slumps.find(x => x.start === t); if (s) cards.push({ id: 'E13', kind: 'explain', t, stops: true });
+      const se = slumps.find(x => x.end === t); if (se) cards.push({ id: 'E15', kind: 'explain', t, stops: false });
+      for (const st in slumpE14) if (slumpE14[st] === t && eligible(cardById.E14, t)) placeShock(cardById.E14, t, null);
+      if (rEv() < F.e12Monthly && eligible(cardById.E12, t)) placeShock(cardById.E12, t, null);
+      if (rEv() < F.poolAMonthly) { const cands = pool.filter(c => eligible(c, t)); if (cands.length) { const card = pick(rEv, cands); placeShock(card, t, card.eligibleAssets.ANY ? pick(rEv, shopsAvail) : null); } }
+    }
+  }
+  if (closure) cards.push({ id: 'E19', kind: 'decision', t: closure.announceT, forShop: closure.id, stops: true });
+  for (const lc of lifeCosts) cards.push({ id: 'E20', kind: 'decision', t: lc.t, cc: lc.cc, variant: lc.variant, stops: true, required: true });
+  cards.push({ id: 'E21', kind: 'decision', t: sc.goal.due, stops: true, required: true });
+  cards.sort((a, b) => a.t - b.t);
+
+  /* prices */
+  const prices = A.map(a => { const f = new Float64Array(T + 1); f[0] = a.start; return f; });
+  const G = A.map(() => new Float64Array(T + 1));
+  const quotes = A.map(a => { const q = new Int32Array(T + 1); q[0] = quote(a.start); return q; });
+  const divCC = A.map(() => new Int32Array(T + 1));
+  const divF = A.map(() => new Float64Array(T + 1));
+  const index = new Float64Array(T + 1); index[0] = 1;
+  const closedFrom = A.map(() => Infinity);
+  if (closure) closedFrom[sc.assetIdx[closure.id]] = closure.announceT;
+  const zS = new Float64Array(5), zO = new Float64Array(n);
+  for (let t = 1; t <= T; t++) {
+    const mood = M[moods[t]];
+    let zM = 0;
+    if (sc.moodMode !== 'scripted') { zM = gauss(rPx); for (let k = 0; k < 5; k++) zS[k] = gauss(rPx); for (let i = 0; i < n; i++) zO[i] = gauss(rPx); if (TEST && TEST.noNoise) { zM = 0; zS.fill(0); zO.fill(0); } }
+    const divMonth = sc.dividends && PR.divMonths.includes(cal(t));
+    for (let i = 0; i < n; i++) {
+      const a = A[i], pOpen = prices[i][t - 1];
+      if (t > closedFrom[i]) { prices[i][t] = pOpen; G[i][t] = 1; quotes[i][t] = quotes[i][t - 1]; continue; }
+      if (t === closedFrom[i]) { prices[i][t] = pOpen * closure.liqFrac; G[i][t] = closure.liqFrac; quotes[i][t] = quote(prices[i][t]); continue; }
+      let g, Gt;
+      if (sc.moodMode === 'scripted' && sc.script && sc.script[a.id]) { const q = sc.script[a.id][t]; prices[i][t] = q / 100; G[i][t] = prices[i][t] / pOpen; quotes[i][t] = q; continue; }
+      g = a.driftM + a.yieldM + (((TEST && TEST.flatMood) ? 0 : mood.driftY) / 12) * (a.mkt / 0.5) + a.volM * mood.volMul * (a.mkt * zM + a.sec * zS[a.sector] + a.own * zO[i]) + shock[i][t];
+      Gt = Math.max(1 + g, PR.floorG);
+      let factor = 1; if (e18 && e18.id === a.id && t >= e18.t && t < e18.t + 12) factor = e18.factor;
+      const pays = divMonth && Gt >= PR.divSuspendG && a.yield > 0 && factor > 0;
+      const D = pays ? pOpen * a.yield * factor / 4 : 0;
+      prices[i][t] = pOpen * Gt - D; G[i][t] = Gt; quotes[i][t] = quote(prices[i][t]);
+      divF[i][t] = D; divCC[i][t] = pays ? Math.round(quotes[i][t - 1] * a.yield * factor / 4) : 0;
+    }
+    const inflY = sc.inflation ? (sc.inflationFixed !== null ? sc.inflationFixed : mood.inflY) : 0;
+    index[t] = index[t - 1] * (1 + inflY / 12);
+  }
+  if (closure) closure.liqQuote = quotes[sc.assetIdx[closure.id]][closure.announceT];
+
+  /* funds */
+  const funds = {};
+  for (const f of PR.funds) {
+    const h = A.map((a, i) => (f.startNav / n) / prices[i][0]);
+    const nav = new Float64Array(T + 1), navQ = new Int32Array(T + 1), feeEst = new Float64Array(T + 1), w = [];
+    nav[0] = f.startNav; navQ[0] = quote(f.startNav); w[0] = h.map((x, i) => x * prices[i][0] / f.startNav);
+    for (let t = 1; t <= T; t++) {
+      if (closure && t === closure.announceT + 1) { const c = sc.assetIdx[closure.id]; const proceeds = h[c] * prices[c][t]; h[c] = 0;
+        const alive = []; for (let i = 0; i < n; i++) if (t <= closedFrom[i]) alive.push(i);
+        for (const j of alive) h[j] += (proceeds / alive.length) / prices[j][t]; }
+      let navEx = 0, divCash = 0; for (let i = 0; i < n; i++) { navEx += h[i] * prices[i][t]; divCash += h[i] * divF[i][t]; if (divF[i][t] > 0 && prices[i][t] > 0) h[i] *= (1 + divF[i][t] / prices[i][t]); }
+      feeEst[t] = (navEx + divCash) * f.expense / 12;
+      for (let i = 0; i < n; i++) h[i] *= (1 - f.expense / 12);
+      if (cal(t) === 1 && t > 1) { let v = 0; const alive = []; for (let i = 0; i < n; i++) { v += h[i] * prices[i][t]; if (t <= closedFrom[i]) alive.push(i); }
+        for (let i = 0; i < n; i++) h[i] = 0; for (const j of alive) h[j] = (v / alive.length) / prices[j][t]; }
+      let v = 0; for (let i = 0; i < n; i++) v += h[i] * prices[i][t];
+      nav[t] = v; navQ[t] = quote(v); w[t] = h.map((x, i) => v > 0 ? x * prices[i][t] / v : 0);
+    }
+    funds[f.id] = { id: f.id, expense: f.expense, nav, navQ, feeEst, w };
+  }
+
+  const stopAt = new Uint8Array(T + 2); for (const c of cards) if (c.stops && c.t <= T) stopAt[c.t] = 1;
+  const devPick = pick(rNb, shopsAvail);
+  const townName = NAME_RE.test(seed) ? seed : randomTownName(Math.floor(rCos() * 4294967296), Math.floor(rCos() * 4294967296), Math.floor(rCos() * 4294967296));
+  return { id, scenarioId: sc.id, preset: sc.presetId, seed, townName, T, scenario: sc, assets: A, moods, slumps, authored, index, prices, G, quotes, divCC, shock, cards, stopAt, lifeCosts, e18, closure, closedFrom, funds, devPick };
+}
+
+/* ---------- ledger (HANDOFF 5) ---------- */
+const BANDS = ['soon', 'buffer', 'saved'];
+const jarTotal = s => s.jar.soon + s.jar.buffer + s.jar.saved;
+const availableIds = sc => sc.ids;
+const posIds = (s, sc) => availableIds(sc).filter(id => (s.pos[id] || 0) > 0);
+function quoteAt(m, id, t) { if (m.funds[id]) return m.funds[id].navQ[t]; const i = m.scenario.assetIdx[id]; return m.quotes[i][t]; }
+function isClosed(m, id, t) { const i = m.scenario.assetIdx[id]; return i !== undefined && t >= m.closedFrom[i]; }
+function invested(s, m, t) { let v = 0; const ids = m.scenario.ids; for (let k = 0; k < ids.length; k++) { const msh = s.pos[ids[k]]; if (msh > 0) v += posValue(msh, quoteAt(m, ids[k], t)); } return v; }
+const goalNominal = (s, m, t) => s.goal.indexed ? Math.round(s.goal.amount * m.index[t]) : s.goal.amount;
+const freshStop = t => ({ t, planOpened: false, allocated: false, goalRevised: false, costViews: {}, caPass: null, reasons: [], sleeveAtArrival: 0, costFromBuffer: 0 });
+const weatherFor = c => { const W = PR.weather; for (const k in W) if (W[k].includes(c)) return k; return 'sun'; };
+const newFlow = () => ({ buy: {}, sell: {}, reinv: {}, liq: {} });
+function addFlow(s, kind, id, msh) { s.flow[kind][id] = (s.flow[kind][id] || 0) + msh; }
+function snap(s, m) { const inv = invested(s, m, s.t); const out = { t: s.t, nw: s.wallet + jarTotal(s) + inv, wallet: s.wallet, jar: jarTotal(s), inv, idx: m.index[s.t], mood: m.moods[s.t], tot: { ...s.totals }, pos: { ...s.pos }, flow: s.flow }; s.flow = newFlow(); return out; }
+
+function createRun(opts) {
+  const m = opts.market, sc = m.scenario;
+  const s = { scenarioId: sc.id, marketId: m.id, presentation: opts.presentation || 'guided', t: 0, ended: false,
+    wallet: sc.start * 100, jar: { soon: 0, buffer: 0, saved: 0 }, pos: {}, reinvest: false, route: 'wallet', basket: sc.feeLab ? null : (sc.funds[0] || null),
+    goal: { slug: sc.goal.slug, amount: sc.goal.amount * 100, due: sc.goal.due, indexed: !!sc.goal.indexed, status: 'open', revised: false, fundedAt: null, paid: 0, postponed: 0 },
+    totals: { contributionsIn: 0, jarInterest: 0, dividendsCash: 0, sellProceeds: 0, liquidationPaid: 0, buySpend: 0, reinvestSpend: 0, goalSpending: 0, costSpending: 0, costUnmet: 0, fundFeesEstimate: 0 },
+    history: [], queue: [], stop: freshStop(0), opps: {}, lastStopT: 0, sleeveBase: 0, ftSeen: {}, meta: {}, flow: newFlow() };
+  if (sc.feeLab) s.queue.push({ id: 'E24', t: 0, required: true, resolved: false });
+  s.history.push(snap(s, m));
+  return s;
+}
+
+const ERR = (code, detail) => ({ ok: false, code, detail: detail || null });
+function fundingPlan(s, m, t, need, order) {
+  let rem = need; const steps = [];
+  for (const src of order) {
+    if (rem <= 0) break;
+    if (src === 'wallet') { const x = Math.min(rem, s.wallet); if (x > 0) { steps.push({ source: 'wallet', cc: x }); rem -= x; } }
+    else if (BANDS.includes(src)) { const x = Math.min(rem, s.jar[src]); if (x > 0) { steps.push({ source: src, cc: x }); rem -= x; } }
+    else if (src === 'sell') {
+      const total = invested(s, m, t); if (total <= 0) continue;
+      const frac = Math.min(1, rem / total); const sells = []; let got = 0;
+      for (const id of posIds(s, m.scenario)) { if (isClosed(m, id, t)) continue; const msh = s.pos[id]; const sm = Math.min(msh, Math.ceil(msh * frac)); if (sm <= 0) continue; const pr = posValue(sm, quoteAt(m, id, t)); sells.push({ id, msh: sm, proceeds: pr }); got += pr; }
+      if (sells.length) { const used = Math.min(rem, got); steps.push({ source: 'sell', cc: used, sells, proceeds: got }); rem -= used; }
+    }
+  }
+  return { need, paid: need - rem, steps };
+}
+function validateAction(s, a, m) {
+  if (!a || typeof a !== 'object') return ERR('BAD_ACTION');
+  if (s.ended) return ERR('ENDED');
+  const sc = m.scenario, t = s.t;
+  const pending = id => s.queue.find(q => q.id === id && !q.resolved);
+  switch (a.type) {
+    case 'BUY': {
+      if (!availableIds(sc).includes(a.id)) return ERR('NO_SUCH_ASSET');
+      if (isClosed(m, a.id, t)) return ERR('CLOSED');
+      const q = quoteAt(m, a.id, t); if (!(q >= 1)) return ERR('ZERO_QUOTE');
+      const msh = a.msh !== undefined ? a.msh : (isInt(a.cc) && a.cc > 0 ? mshForCash(a.cc, q) : -1);
+      if (!isInt(msh) || msh <= 0) return ERR('BAD_AMOUNT');
+      const spend = posValue(msh, q);
+      if (spend > s.wallet) return ERR('INSUFFICIENT_CASH', { spend, wallet: s.wallet });
+      if ((s.pos[a.id] || 0) + msh > PR.maxCC || spend > PR.maxCC) return ERR('CAP');
+      return { ok: true, preview: { msh, spend, quote: q, walletAfter: s.wallet - spend } };
+    }
+    case 'SELL': {
+      if (!isInt(a.msh) || a.msh <= 0) return ERR('BAD_AMOUNT');
+      const held = s.pos[a.id] || 0; if (held <= 0) return ERR('NO_HOLDING');
+      if (a.msh > held) return ERR('OVERSELL', { held });
+      if (isClosed(m, a.id, t)) return ERR('CLOSED');
+      const q = quoteAt(m, a.id, t), proceeds = posValue(a.msh, q);
+      return { ok: true, preview: { msh: a.msh, proceeds, quote: q, walletAfter: s.wallet + proceeds } };
+    }
+    case 'JAR_IN': if (!BANDS.includes(a.band) || (a.band === 'buffer' && !sc.buffer)) return ERR('BAD_BAND'); if (!isInt(a.cc) || a.cc <= 0) return ERR('BAD_AMOUNT'); if (a.cc > s.wallet) return ERR('INSUFFICIENT_CASH'); return { ok: true, preview: { walletAfter: s.wallet - a.cc } };
+    case 'JAR_OUT': if (!BANDS.includes(a.band)) return ERR('BAD_BAND'); if (!isInt(a.cc) || a.cc <= 0) return ERR('BAD_AMOUNT'); if (a.cc > s.jar[a.band]) return ERR('INSUFFICIENT_BAND'); return { ok: true, preview: { walletAfter: s.wallet + a.cc } };
+    case 'EARMARK': if (!BANDS.includes(a.from) || !BANDS.includes(a.to) || a.from === a.to) return ERR('BAD_BAND'); if (!isInt(a.cc) || a.cc <= 0) return ERR('BAD_AMOUNT'); if (a.cc > s.jar[a.from]) return ERR('INSUFFICIENT_BAND'); return { ok: true, preview: {} };
+    case 'ROUTE': if (!(a.to === 'wallet' || a.to === 'saved' || availableIds(sc).includes(a.to))) return ERR('BAD_ROUTE'); return { ok: true, preview: {} };
+    case 'REINVEST': if (!sc.dividends) return ERR('NO_DIVIDENDS'); return { ok: true, preview: {} };
+    case 'GOAL_REVISE': if (s.goal.status === 'funded') return ERR('GOAL_DONE'); if (a.amount === undefined && a.due === undefined) return ERR('BAD_ACTION'); if (a.amount !== undefined && (!isInt(a.amount) || a.amount < 0)) return ERR('BAD_AMOUNT'); if (a.due !== undefined && (!isInt(a.due) || a.due <= t)) return ERR('BAD_DUE'); return { ok: true, preview: {} };
+    case 'POSTPONE': if (!pending('E21')) return ERR('NO_DECISION'); return { ok: true, preview: { due: s.goal.due + (a.months || 12) } };
+    case 'FUND_GOAL': { if (!pending('E21')) return ERR('NO_DECISION'); const need = goalNominal(s, m, t); const plan = fundingPlan(s, m, t, need, a.order || ['soon', 'wallet', 'saved', 'buffer', 'sell']); if (plan.paid < need) return ERR('GOAL_SHORT', { need, available: plan.paid }); return { ok: true, preview: plan }; }
+    case 'FUND_COST': { const q = pending('E20'); if (!q) return ERR('NO_DECISION'); return { ok: true, preview: fundingPlan(s, m, t, q.cc, a.order || ['wallet', 'buffer', 'saved', 'soon', 'sell']) }; }
+    case 'CHOOSE_BASKET': if (!sc.feeLab) return ERR('NO_LAB'); if (s.basket) return ERR('ALREADY_CHOSEN'); if (!sc.funds.includes(a.id)) return ERR('NO_SUCH_ASSET'); return { ok: true, preview: {} };
+    case 'VIEW_PLAN': case 'VIEW_COST': case 'DECORATE': case 'DISCOVERY': return { ok: true, preview: {} };
+    default: return ERR('UNKNOWN_TYPE');
+  }
+}
+function resolveQ(s, id) { const q = s.queue.find(q => q.id === id && !q.resolved); if (q) q.resolved = true; }
+function payPlan(s, pv) {
+  for (const st of pv.steps) {
+    if (st.source === 'wallet') s.wallet -= st.cc;
+    else if (BANDS.includes(st.source)) s.jar[st.source] -= st.cc;
+    else if (st.source === 'sell') { for (const sl of st.sells) { s.pos[sl.id] -= sl.msh; if (s.pos[sl.id] === 0) delete s.pos[sl.id]; s.wallet += sl.proceeds; s.totals.sellProceeds += sl.proceeds; addFlow(s, 'sell', sl.id, sl.msh); } s.wallet -= st.cc; }
+  }
+}
+function applyMut(s, a, m) {
+  const v = validateAction(s, a, m);
+  if (!v.ok) { const e = new Error('invalid action ' + a.type + ': ' + v.code); e.code = v.code; e.detail = v.detail; throw e; }
+  const t = s.t, pv = v.preview;
+  switch (a.type) {
+    case 'BUY': s.wallet -= pv.spend; s.pos[a.id] = (s.pos[a.id] || 0) + pv.msh; s.totals.buySpend += pv.spend; s.stop.allocated = true; addFlow(s, 'buy', a.id, pv.msh); break;
+    case 'SELL': s.wallet += pv.proceeds; s.pos[a.id] -= pv.msh; if (s.pos[a.id] === 0) delete s.pos[a.id]; s.totals.sellProceeds += pv.proceeds; s.stop.allocated = true; addFlow(s, 'sell', a.id, pv.msh); break;
+    case 'JAR_IN': s.wallet -= a.cc; s.jar[a.band] += a.cc; break;
+    case 'JAR_OUT': s.jar[a.band] -= a.cc; s.wallet += a.cc; break;
+    case 'EARMARK': s.jar[a.from] -= a.cc; s.jar[a.to] += a.cc; break;
+    case 'ROUTE': s.route = a.to; s.stop.allocated = true; break;
+    case 'REINVEST': s.reinvest = !!a.on; s.stop.allocated = true; break;
+    case 'GOAL_REVISE': if (a.amount !== undefined) s.goal.amount = a.amount; if (a.due !== undefined) { s.goal.due = a.due; resolveQ(s, 'E21'); } s.goal.revised = true; s.goal.status = 'revised'; s.stop.goalRevised = true; break;
+    case 'POSTPONE': s.goal.due += (a.months || 12); s.goal.status = 'postponed'; s.goal.postponed += 1; resolveQ(s, 'E21'); break;
+    case 'FUND_GOAL': payPlan(s, pv); s.totals.goalSpending += pv.need; s.goal.status = 'funded'; s.goal.fundedAt = t; s.goal.paid = pv.need; resolveQ(s, 'E21'); break;
+    case 'FUND_COST': { payPlan(s, pv); s.totals.costSpending += pv.paid; s.totals.costUnmet += pv.need - pv.paid; for (const st of pv.steps) if (st.source === 'buffer') s.stop.costFromBuffer += st.cc; const q = s.queue.find(x => x.id === 'E20' && !x.resolved); q.resolved = true; q.paid = pv.paid; break; }
+    case 'CHOOSE_BASKET': s.basket = a.id; s.stop.caPass = !!(s.stop.costViews.BASKET_A && s.stop.costViews.BASKET_B); resolveQ(s, 'E24'); break;
+    case 'VIEW_PLAN': s.stop.planOpened = true; break;
+    case 'VIEW_COST': s.stop.costViews[a.id] = true; break;
+    case 'DECORATE': s.meta.decoration = { family: a.family, n: a.n }; break;
+    case 'DISCOVERY': s.meta.discovery = a.text; break;
+  }
+  return s;
+}
+
+/* one month, HANDOFF 5 tick order. Step 1 (execute) already happened: actions mutate the draft at the stop and are committed by advance(). */
+function tickMut(s, m) {
+  const sc = m.scenario, t = s.t, nt = t + 1;
+  if (sc.contrib > 0) { const cc = sc.contrib * 100; s.wallet += cc; s.totals.contributionsIn += cc;
+    if (s.route === 'saved') { s.jar.saved += cc; s.wallet -= cc; }
+    else if (s.route !== 'wallet' && availableIds(sc).includes(s.route) && !isClosed(m, s.route, t)) { const q = quoteAt(m, s.route, t); const msh = mshForCash(cc, q); if (msh > 0) { const spend = posValue(msh, q); s.wallet -= spend; s.pos[s.route] = (s.pos[s.route] || 0) + msh; s.totals.buySpend += spend; addFlow(s, 'buy', s.route, msh); } } }
+  const snapIds = [], snapMsh = []; for (let k = 0; k < sc.shops.length; k++) { const id = sc.shops[k], msh = s.pos[id]; if (msh > 0) { snapIds.push(id); snapMsh.push(msh); } }
+  if (sc.jarRate > 0) { const intr = Math.floor(jarTotal(s) * sc.jarRate / 12); if (intr > 0) { s.jar.saved += intr; s.totals.jarInterest += intr; } }
+  for (let k = 0; k < snapIds.length; k++) { const id = snapIds[k], i = sc.assetIdx[id], d = m.divCC[i][nt]; if (d <= 0) continue;
+    const cash = Number(BigInt(snapMsh[k]) * BigInt(d) / 1000n); if (cash <= 0) continue;
+    s.wallet += cash; s.totals.dividendsCash += cash;
+    if (s.reinvest && !isClosed(m, id, nt)) { const q = m.quotes[i][nt]; const m2 = mshForCash(cash, q); if (m2 > 0) { const spend = posValue(m2, q); s.wallet -= spend; s.pos[id] += m2; s.totals.reinvestSpend += spend; addFlow(s, 'reinv', id, m2); } } }
+  for (let k = 0; k < sc.funds.length; k++) { const id = sc.funds[k], msh = s.pos[id]; if (msh > 0) s.totals.fundFeesEstimate += msh / 1000 * m.funds[id].feeEst[nt] * 100; }
+  if (m.closure && nt === m.closure.announceT + 1) { const c = m.closure.id, msh = s.pos[c] || 0; if (msh > 0) { const paid = posValue(msh, m.closure.liqQuote); s.wallet += paid; s.totals.liquidationPaid += paid; delete s.pos[c]; addFlow(s, 'liq', c, msh); } if (s.route === c) s.route = 'wallet'; }
+  for (const lc of m.lifeCosts) if (lc.t === nt) s.queue.push({ id: 'E20', t: nt, cc: lc.cc, variant: lc.variant, required: true, resolved: false });
+  if (s.goal.status !== 'funded' && s.goal.due === nt) s.queue.push({ id: 'E21', t: nt, required: true, resolved: false });
+  s.t = nt; s.history.push(snap(s, m));
+}
+function exposure(s, m, t) {
+  const n = m.assets.length, w = new Array(n).fill(0); let tot = 0;
+  for (const id of posIds(s, m.scenario)) { const v = posValue(s.pos[id], quoteAt(m, id, t)); tot += v;
+    if (m.funds[id]) { const fw = m.funds[id].w[t]; for (let i = 0; i < n; i++) w[i] += v * fw[i]; } else w[m.scenario.assetIdx[id]] += v; }
+  if (tot <= 0) return null;
+  const comp = w.map(x => x / tot), sect = new Array(PR.sectors.length).fill(0); m.assets.forEach((a, i) => { sect[a.sector] += comp[i]; });
+  return { company: comp, sector: sect, maxCompany: Math.max(...comp), maxSector: Math.max(...sect), total: tot };
+}
+function frame(s, m, t) {
+  const act = {}; m.assets.forEach((a, i) => { let st = 'normal';
+    if (t >= m.closedFrom[i]) st = 'closed'; else if (m.cards.some(c => c.t === t && c.kind === 'shock' && c.forShop === a.id)) st = 'special';
+    else if (m.G[i][t] >= PR.activity.busyG) st = 'busy'; else if (m.G[i][t] <= PR.activity.quietG) st = 'quiet'; act[a.id] = st; });
+  const q = {}; for (const id of availableIds(m.scenario)) q[id] = quoteAt(m, id, t);
+  return { t, cal: cal(t), weather: weatherFor(cal(t)), mood: m.moods[t], activity: act, cards: m.cards.filter(c => c.t === t).map(c => c.id), quotes: q, nw: s.history[t].nw };
+}
+const nextStop = (s, sc) => Math.min(sc.months, (Math.floor(s.t / sc.stopEvery) + 1) * sc.stopEvery);
+const hasRequired = s => s.queue.some(q => q.required && !q.resolved);
+const stopsHere = (s, m, t) => hasRequired(s) || m.stopAt[t] === 1;
+function arriveStop(s, m) {
+  const t = s.t, st = freshStop(t), inv = invested(s, m, t);
+  if (s.sleeveBase > 0 && inv < s.sleeveBase * (1 - PR.dropPct)) st.reasons.push('drop');
+  if (s.queue.some(q => q.id === 'E20' && !q.resolved)) st.reasons.push('cost');
+  for (const c of m.cards) if (c.t === t) { if (c.id === 'E13') st.reasons.push('slumpStart'); if (c.id === 'E12' || c.id === 'E19') st.reasons.push('setback'); if (c.id === 'E18') st.reasons.push('e18'); }
+  st.sleeveAtArrival = inv; s.stop = st;
+}
+function oppRules(s, m, t) {
+  const sc = m.scenario;
+  if (Array.isArray(sc.opportunities)) return sc.opportunities;
+  if (t % sc.stopEvery !== 0) return [];
+  const rules = [{ id: 'SP@' + t, dim: 'spread', at: t }, { id: 'FTdx', dim: 'followThrough', kind: 'drop' }, { id: 'FTcx', dim: 'followThrough', kind: 'cost' }, { id: 'FTsx', dim: 'followThrough', kind: 'slumpStart' }, { id: 'FTbx', dim: 'followThrough', kind: 'setback' }];
+  if (t > 0) rules.push({ id: 'RD@' + t, dim: 'readiness', at: t, min: sc.readinessMin || 0 });
+  if (s.goal.status !== 'funded' && s.goal.due - t <= 12 && s.goal.due > t) rules.push({ id: 'GF@' + t, dim: 'goalFit', at: t });
+  return rules;
+}
+function commitStop(s, m) {
+  const t = s.t, st = s.stop;
+  for (const r of oppRules(s, m, t)) {
+    let app = false, pass = false, id = r.id;
+    if (r.dim === 'followThrough') {
+      if (r.kind === 'scripted') { if (r.at !== t) continue; app = true; }
+      else { if (!st.reasons.includes(r.kind)) continue; if (/x$/.test(r.id)) id = r.id + '@' + t; else { if (s.ftSeen[r.id]) continue; s.ftSeen[r.id] = true; } app = true; }
+      pass = st.planOpened;
+    } else {
+      if (r.at !== t) continue;
+      if (r.dim === 'goalFit') { app = true; pass = s.jar.soon >= goalNominal(s, m, t) || st.goalRevised || s.goal.status === 'funded'; }
+      else if (r.dim === 'readiness') { app = true; pass = s.jar.buffer + st.costFromBuffer >= r.min * 100; }
+      else if (r.dim === 'spread') { const ex = exposure(s, m, t); app = st.allocated && ex !== null; pass = app && ex.maxCompany <= PR.spread.company + 1e-12 && ex.maxSector <= PR.spread.sector + 1e-12; }
+      else if (r.dim === 'costAwareness') { app = true; pass = st.caPass === true; }
+    }
+    if (app) s.opps[id] = { dim: r.dim, t, passed: !!pass };
+  }
+  s.sleeveBase = invested(s, m, t); s.lastStopT = t;
+}
+function advanceMut(s, m, to, light) {
+  const sc = m.scenario;
+  if (s.ended) { const e = new Error('run has ended'); e.code = 'ENDED'; throw e; }
+  if (hasRequired(s)) { const e = new Error('unresolved decision'); e.code = 'DECISION_PENDING'; throw e; }
+  if (sc.feeLab && !s.basket) { const e = new Error('choose a basket first'); e.code = 'BASKET_REQUIRED'; throw e; }
+  to = Math.min(to === undefined ? nextStop(s, sc) : to, m.T);
+  if (to <= s.t) { const e = new Error('nothing to advance'); e.code = 'AT_END'; throw e; }
+  commitStop(s, m);
+  const frames = []; let reason = 'scheduled';
+  while (s.t < to) { tickMut(s, m); if (!light) frames.push(frame(s, m, s.t)); if (s.t < to && stopsHere(s, m, s.t)) { reason = 'decision'; break; } }
+  arriveStop(s, m);
+  return { stopped: s.t < to, reason, frames, queue: s.queue.filter(q => !q.resolved) };
+}
+function finishMut(s, m) {
+  if (s.ended) return s;
+  if (s.t !== m.T) { const e = new Error('not at the end'); e.code = 'NOT_AT_END'; throw e; }
+  if (hasRequired(s)) { const e = new Error('unresolved decision'); e.code = 'DECISION_PENDING'; throw e; }
+  commitStop(s, m); s.ended = true; return s;
+}
+const INTRO = { goalFit: 1, followThrough: 1, spread: 2, readiness: 3, costAwareness: 6 };
+function scorePlanPractice(s, m) {
+  const sc = m.scenario, W = PR.rubric.weights, stamps = []; let num = 0, den = 0;
+  for (const dim in W) {
+    if (INTRO[dim] > sc.n) { stamps.push({ dim, status: 'coming' }); continue; }
+    const keys = Object.keys(s.opps).filter(k => s.opps[k].dim === dim);
+    if (!keys.length) { stamps.push({ dim, status: s.ended ? 'na' : 'soFar', passed: 0, applicable: 0 }); continue; }
+    const passed = keys.filter(k => s.opps[k].passed).length, credit = passed / keys.length;
+    num += W[dim] * credit; den += W[dim]; stamps.push({ dim, status: 'credit', passed, applicable: keys.length, credit });
+  }
+  return { stamps, total: den > 0 ? Math.round(100 * num / den) : null, final: s.ended, rubricVersion: PR.RUBRIC_VERSION };
+}
+
+/* ---------- policies: neighbors and harness bots (HANDOFF 5, Neighbor plans) ---------- */
+function ctxFor(s, m) {
+  const t = s.t, last = s.lastStopT, since = m.cards.filter(c => c.t > last && c.t <= t);
+  return { s, m, sc: m.scenario, t, since, slumpStarted: m.slumps.some(x => x.start > last && x.start <= t), slumpEnded: m.slumps.some(x => x.end && x.end > last && x.end <= t) };
+}
+function tryApply(s, a, m) { const v = validateAction(s, a, m); if (v.ok) { applyMut(s, a, m); return true; } return false; }
+const minCost = sc => sc.lifeCost && sc.lifeCost.range ? sc.lifeCost.range[0] * 100 : (sc.readinessMin || 0) * 100;
+const soonNeeded = (s, m, t) => s.goal.status !== 'funded' && s.goal.due - t <= 12 && s.goal.due >= t && s.jar.soon < goalNominal(s, m, t);
+function refillBuffer(c, s) { const { sc, m, t } = c; if (!sc.buffer) return; let need = minCost(sc) - s.jar.buffer; if (need <= 0) return;
+  let x = Math.min(need, s.wallet); if (x > 0 && tryApply(s, { type: 'JAR_IN', band: 'buffer', cc: x }, m)) need -= x;
+  x = Math.min(need, s.jar.saved); if (x > 0 && tryApply(s, { type: 'EARMARK', from: 'saved', to: 'buffer', cc: x }, m)) need -= x;
+  if (need > 0) { const plan = fundingPlan(s, m, t, need, ['sell']); for (const st of plan.steps) for (const sl of st.sells) tryApply(s, { type: 'SELL', id: sl.id, msh: sl.msh }, m); x = Math.min(need, s.wallet); if (x > 0) tryApply(s, { type: 'JAR_IN', band: 'buffer', cc: x }, m); } }
+function commonStart(c, s) { const { sc, m, t } = c;
+  if (s.goal.due - t <= 12) { const x = Math.min(s.wallet, goalNominal(s, m, t)); if (x > 0) tryApply(s, { type: 'JAR_IN', band: 'soon', cc: x }, m); }
+  if (sc.buffer) { const mc = Math.min(s.wallet, minCost(sc)); if (mc > 0) tryApply(s, { type: 'JAR_IN', band: 'buffer', cc: mc }, m); } }
+function topUpSoon(c, s) { const { m, t } = c; refillBuffer(c, s); if (!soonNeeded(s, m, t)) return; let need = goalNominal(s, m, t) - s.jar.soon;
+  let x = Math.min(need, s.wallet); if (x > 0 && tryApply(s, { type: 'JAR_IN', band: 'soon', cc: x }, m)) need -= x;
+  x = Math.min(need, s.jar.saved); if (x > 0 && tryApply(s, { type: 'EARMARK', from: 'saved', to: 'soon', cc: x }, m)) need -= x;
+  if (need > 0) { const plan = fundingPlan(s, m, t, need, ['sell']); for (const st of plan.steps) for (const sl of st.sells) tryApply(s, { type: 'SELL', id: sl.id, msh: sl.msh }, m); x = Math.min(need, s.wallet); if (x > 0) tryApply(s, { type: 'JAR_IN', band: 'soon', cc: x }, m); } }
+function decideCommon(c, s, q) { const { m } = c;
+  if (q.id === 'E24') return tryApply(s, { type: 'CHOOSE_BASKET', id: 'BASKET_A' }, m);
+  if (q.id === 'E20') return tryApply(s, { type: 'FUND_COST', order: ['wallet', 'buffer', 'saved', 'soon', 'sell'] }, m);
+  if (q.id === 'E21') { if (tryApply(s, { type: 'FUND_GOAL', order: ['soon', 'wallet'] }, m)) return true; return tryApply(s, { type: 'POSTPONE', months: 12 }, m); }
+  return false; }
+function buyAll(s, m, id) { if (s.wallet <= 0 || isClosed(m, id, s.t)) return false; const q = quoteAt(m, id, s.t), msh = mshForCash(s.wallet, q); return msh > 0 && tryApply(s, { type: 'BUY', id, msh }, m); }
+function largestHolding(s, m) { let best = null, bv = -1; for (const id of posIds(s, m.scenario)) { const v = posValue(s.pos[id], quoteAt(m, id, s.t)); if (v > bv) { bv = v; best = id; } } return best; }
+const spare = (c, s) => s.wallet > 0 && !soonNeeded(s, c.m, c.t);
+const POLICIES = {
+  ada: { atStop(c, s) { const { sc, m, t } = c, target = sc.funds[0] || sc.shops[0];
+      if (t === 0) { commonStart(c, s); if (sc.dividends) tryApply(s, { type: 'REINVEST', on: true }, m); buyAll(s, m, target); tryApply(s, { type: 'ROUTE', to: target }, m); }
+      else { topUpSoon(c, s); if (spare(c, s)) buyAll(s, m, target); } }, decide: decideCommon },
+  bo: { atStop(c, s) { const { m, t } = c;
+      if (t === 0) commonStart(c, s); else topUpSoon(c, s);
+      if (s.wallet > 0) tryApply(s, { type: 'JAR_IN', band: 'saved', cc: s.wallet }, m); if (t === 0) tryApply(s, { type: 'ROUTE', to: 'saved' }, m); }, decide: decideCommon },
+  dev: { atStop(c, s) { const { sc, m, t } = c, pickId = m.devPick, fund = sc.funds[0] || null;
+      if (t === 0) { commonStart(c, s); if (sc.dividends) tryApply(s, { type: 'REINVEST', on: true }, m); buyAll(s, m, pickId); tryApply(s, { type: 'ROUTE', to: pickId }, m); return; }
+      topUpSoon(c, s);
+      if (isClosed(m, pickId, t)) { if (fund) { if (spare(c, s)) buyAll(s, m, fund); if (s.route !== fund) tryApply(s, { type: 'ROUTE', to: fund }, m); } }
+      else if (spare(c, s)) buyAll(s, m, pickId); }, decide: decideCommon },
+  cass: { atStop(c, s) { const { sc, m, t, since } = c, fund = sc.funds[0] || null;
+      if (t === 0) { commonStart(c, s); if (sc.dividends) tryApply(s, { type: 'REINVEST', on: true }, m); if (fund) { buyAll(s, m, fund); tryApply(s, { type: 'ROUTE', to: fund }, m); } s.meta.cass = { soldAt: null }; return; }
+      topUpSoon(c, s); let moved = null; const cm = s.meta.cass || (s.meta.cass = { soldAt: null }); const inv = invested(s, m, t);
+      const fell = s.stop.reasons.includes('drop');
+      if (inv > 0 && fell) { for (const id of posIds(s, sc)) if (!isClosed(m, id, t)) tryApply(s, { type: 'SELL', id, msh: s.pos[id] }, m); if (s.wallet > 0) tryApply(s, { type: 'JAR_IN', band: 'saved', cc: s.wallet }, m); cm.soldAt = fund ? m.funds[fund].navQ[t] : t; moved = { kind: 'toJar' }; }
+      else if (inv === 0 && s.jar.saved > 0 && fund && cm.soldAt !== null && (m.funds[fund].navQ[t] >= cm.soldAt * 1.15 || t - (cm.soldT || t) >= 24)) { tryApply(s, { type: 'JAR_OUT', band: 'saved', cc: s.jar.saved }, m); buyAll(s, m, fund); cm.soldAt = null; moved = { kind: 'backIn' }; }
+      else if (inv > 0) { const pos = since.filter(x => x.kind === 'shock' && x.forShop && !x.negative && sc.shops.includes(x.forShop) && !isClosed(m, x.forShop, t));
+        const neg = since.filter(x => x.kind === 'shock' && x.forShop && x.negative && (s.pos[x.forShop] || 0) > 0);
+        if (pos.length) { const X = pos[pos.length - 1].forShop; for (const id of posIds(s, sc)) { if (id === X || isClosed(m, id, t)) continue; const half = Math.floor(s.pos[id] / 2); if (half > 0) tryApply(s, { type: 'SELL', id, msh: half }, m); } buyAll(s, m, X); moved = { kind: 'moved', shop: X, card: pos[pos.length - 1].id }; }
+        else if (neg.length && fund) { const X = neg[neg.length - 1].forShop; tryApply(s, { type: 'SELL', id: X, msh: s.pos[X] }, m); buyAll(s, m, fund); moved = { kind: 'sold', shop: X, card: neg[neg.length - 1].id }; } }
+      if (moved && moved.kind === 'toJar') cm.soldT = t;
+      const lg = largestHolding(s, m) || (s.jar.saved > 0 && invested(s, m, t) === 0 ? 'saved' : (fund || 'wallet')); if (s.route !== lg) tryApply(s, { type: 'ROUTE', to: lg }, m);
+      if (moved) s.meta.lastMove = { t, ...moved }; }, decide: decideCommon },
+  random: { atStop(c, s) { const { sc, m } = c, r = c.rng, ids = availableIds(sc), k = Math.floor(r() * 4);
+      for (let i = 0; i < k; i++) { if (r() < 0.5) { const id = ids[Math.floor(r() * ids.length)], cc = Math.floor(r() * s.wallet); if (cc > 0) tryApply(s, { type: 'BUY', id, cc }, m); }
+        else { const held = posIds(s, sc); if (held.length) { const id = held[Math.floor(r() * held.length)], msh = Math.floor(r() * s.pos[id]); if (msh > 0) tryApply(s, { type: 'SELL', id, msh }, m); } } }
+      if (r() < 0.3) tryApply(s, { type: 'VIEW_PLAN' }, m);
+      if (r() < 0.3 && s.wallet > 0) tryApply(s, { type: 'JAR_IN', band: (sc.buffer && r() < 0.5) ? 'buffer' : 'soon', cc: Math.floor(r() * s.wallet) }, m); },
+    decide(c, s, q) { const { m } = c, r = c.rng;
+      if (q.id === 'E24') return tryApply(s, { type: 'CHOOSE_BASKET', id: r() < 0.5 ? 'BASKET_A' : 'BASKET_B' }, m);
+      if (q.id === 'E20') return tryApply(s, { type: 'FUND_COST' }, m);
+      if (q.id === 'E21') { if (tryApply(s, { type: 'FUND_GOAL' }, m)) return true; return tryApply(s, { type: 'POSTPONE' }, m); }
+      return false; } },
+  planner: { atStop(c, s) { tryApply(s, { type: 'VIEW_PLAN' }, c.m); if (c.sc.feeLab && c.t === 0) { tryApply(s, { type: 'VIEW_COST', id: 'BASKET_A' }, c.m); tryApply(s, { type: 'VIEW_COST', id: 'BASKET_B' }, c.m); } POLICIES.ada.atStop(c, s); }, decide: decideCommon }
+};
+function runPolicy(m, policyId, opts) {
+  const pol = typeof policyId === 'string' ? POLICIES[policyId] : policyId; if (!pol) throw new Error('unknown policy ' + policyId);
+  const s = createRun({ market: m }), moves = [], rng = opts && opts.rng;
+  for (let guard = 0; guard < 100000; guard++) {
+    const c = ctxFor(s, m); c.rng = rng;
+    pol.atStop(c, s);
+    for (const q of s.queue) if (q.required && !q.resolved) pol.decide(c, s, q);
+    if (s.meta.lastMove && s.meta.lastMove.t === s.t) moves.push(s.meta.lastMove);
+    if (hasRequired(s)) throw new Error('policy ' + policyId + ' left a decision unresolved at t=' + s.t);
+    if (s.t >= m.T) { finishMut(s, m); break; }
+    advanceMut(s, m, nextStop(s, m.scenario), true);
+  }
+  return { state: s, moves, nw: s.history.map(h => h.nw) };
+}
+function neighborLedgers(m) {
+  if (!m._nb) { m._nb = {}; for (const id of m.scenario.neighbors) m._nb[id] = runPolicy(m, id); }
+  return m._nb;
+}
+
+/* ---------- summaries ---------- */
+function summarizeRun(s, m) {
+  const t = s.t, inv = invested(s, m, t), nw = s.wallet + jarTotal(s) + inv, start = s.history[0].nw;
+  const strip = []; for (let y = 1; y * 12 <= t; y++) { const a = s.history[(y - 1) * 12].nw, b = s.history[y * 12].nw; strip.push({ y, start: a, end: b, up: b >= a }); }
+  const spent = s.totals.goalSpending + s.totals.costSpending;
+  const money = { start, added: s.totals.contributionsIn, result: nw - start - s.totals.contributionsIn + spent, spent, end: nw, interest: s.totals.jarInterest, fees: Math.round(s.totals.fundFeesEstimate) };
+  return { t, year: Math.floor(t / 12), netWorth: nw, invested: inv, cash: s.wallet + jarTotal(s), wallet: s.wallet, jar: { ...s.jar }, real: nw / m.index[t], money, strip,
+    goal: { ...s.goal, nominal: goalNominal(s, m, t) }, exposure: exposure(s, m, t), score: scorePlanPractice(s, m), townName: m.townName, stop: s.stop, queue: s.queue.filter(q => !q.resolved) };
+}
+function yearPanel(s, m, y) {
+  const t0 = (y - 1) * 12, t1 = Math.min(y * 12, s.t);
+  const cards = m.cards.filter(c => c.t > t0 && c.t <= t1 && c.id !== 'E21');
+  const busy = m.assets.map((a, i) => { let n = 0; for (let t = t0 + 1; t <= t1; t++) if (t < m.closedFrom[i] && m.G[i][t] >= PR.activity.busyG) n++; return { id: a.id, n }; }).sort((a, b) => b.n - a.n);
+  const h0 = s.history[t0], h1 = s.history[t1];
+  const added = h1.tot.contributionsIn - h0.tot.contributionsIn, spent = (h1.tot.goalSpending + h1.tot.costSpending) - (h0.tot.goalSpending + h0.tot.costSpending);
+  const shocks = cards.filter(c => c.kind === 'shock' && c.forShop); let observation = null;
+  if (shocks.length) { const c = shocks.reduce((a, b) => Math.abs(b.mag) > Math.abs(a.mag) ? b : a), i = m.scenario.assetIdx[c.forShop];
+    const p0 = m.prices[i][Math.max(0, c.t - 1)], p1 = m.prices[i][Math.min(m.T, c.t + c.dur - 1)];
+    observation = { card: c.id, shop: c.forShop, suggested: (c.assets[c.forShop] * c.mag) > 0 ? 'up' : 'down', happened: p1 >= p0 ? 'up' : 'down', change: p1 / p0 - 1 }; }
+  return { y, t0, t1, cards: cards.map(c => ({ id: c.id, t: c.t, forShop: c.forShop || null, variant: c.variant || null, cc: c.cc || null })), busiest: busy[0] || null,
+    weather: Array.from({ length: t1 - t0 }, (_, k) => weatherFor(cal(t0 + k + 1))), moods: Array.from(m.moods.slice(t0 + 1, t1 + 1)),
+    money: { start: h0.nw, added, result: h1.nw - h0.nw - added + spent, spent, end: h1.nw }, observation, index: m.index[t1] };
+}
+
+/* ---------- pure wrappers and exports ---------- */
+const clone = x => JSON.parse(JSON.stringify(x));
+function applyAction(s, a, m) { const s2 = clone(s); applyMut(s2, a, m); return s2; }
+function replayPending(checkpoint, pending, m) { const s = clone(checkpoint); for (const a of pending) applyMut(s, a, m); return s; }
+function advance(s, m, to) { const s2 = clone(s); const r = advanceMut(s2, m, to); return { state: s2, ...r }; }
+function finishChapter(s, m) { const s2 = clone(s); finishMut(s2, m); return s2; }
+function replaySave(save, m) { return replayPending(save.checkpoint, save.pending || [], m); }
+function comparePlan(m, policyId, opts) { return runPolicy(m, policyId, opts); }
+
+globalThis.ENGINE = {
+  VERSION: { engine: PR.ENGINE_VERSION, content: PR.CONTENT_VERSION, rubric: PR.RUBRIC_VERSION },
+  createMarket, resolveScenario, createRun, validateAction, applyAction, replayPending, advance, finishChapter,
+  summarizeRun, yearPanel, scorePlanPractice, replaySave, comparePlan, runPolicy, neighborLedgers, exposure,
+  quote, posValue, mshForCash, quoteAt, invested, goalNominal, randomTownName, normalizeTownName, frame, nextStop,
+  _mut: { applyMut, advanceMut, finishMut, tickMut, commitStop },
+  _internals: { cyrb128, sfc32, gauss, stream, fundingPlan, POLICIES, cal, weatherFor }
+};
+})();
 </script>
 
 <script id="app">

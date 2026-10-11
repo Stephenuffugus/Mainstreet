@@ -1,0 +1,38 @@
+{
+ "id": "ch1",
+ "seed": "Maple Hollow 7",
+ "preset": "standard",
+ "marketId": "MS1|DECK1|ch1|Maple Hollow 7",
+ "versions": {
+  "engine": "MS1",
+  "content": "DECK1",
+  "rubric": "PLAN1"
+ },
+ "townName": "Maple Hollow 7",
+ "quoteHash": "2753239695-808648141-2994581128-643058122",
+ "moods": "NNNNNNNNNNNNN",
+ "cards": [
+  "E21@12"
+ ],
+ "devPick": "BAKE",
+ "closure": null,
+ "index": 1000000000,
+ "totals": {
+  "planner": {
+   "contributionsIn": 0,
+   "jarInterest": 0,
+   "dividendsCash": 0,
+   "sellProceeds": 0,
+   "liquidationPaid": 0,
+   "buySpend": 7000,
+   "reinvestSpend": 0,
+   "goalSpending": 3000,
+   "costSpending": 0,
+   "costUnmet": 0,
+   "fundFeesEstimate": 0,
+   "nw": 7350,
+   "goal": "funded",
+   "score": 100
+  }
+ }
+}

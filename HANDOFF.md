@@ -315,13 +315,13 @@ share law:  for every holding h:  msh_t = msh_{t−1} + bought + reinvested − 
 
 Four policies run on the same market with the same starting coins, contributions, costs, goal, rates and quotes as the child. They are computed, not saved; `comparePlan(save, policy)` rebuilds any of them. Shown in fixed order Ada, Bo, Cass, Dev. They never read the child's holdings and never affect the child's score.
 
-**Shared rules.** Month 0: Soon receives the goal amount if the goal is due within 12 months, Buffer receives the chapter's published minimum cost when the chapter has a Buffer. At every yearly stop: if the goal is due within 12 months and Soon is short, top Soon up from the wallet, then Saved, then a pro-rata sale of holdings. Expense funding order: wallet, Buffer, Soon, Saved, pro-rata sale. An expense that still cannot be paid is recorded as unmet and the comparison is flagged as differing in goal completion. Goal day: pay from Soon, then wallet; if short, postpone. Reinvest is on where it applies. No trade fees. Trades happen at the same frozen quotes at the same stops as the child's.
+**Shared rules.** Month 0: Soon receives the goal amount if the goal is due within 12 months, Buffer receives the chapter's published minimum cost when the chapter has a Buffer. At every yearly stop: if the goal is due within 12 months and Soon is short, top Soon up from the wallet, then Saved, then a pro-rata sale of holdings. Expense funding order: wallet, Buffer, Saved, Soon, pro-rata sale (general savings before goal money, so a surprise cost never raids the goal while savings exist). An expense that still cannot be paid is recorded as unmet and the comparison is flagged as differing in goal completion. Goal day: pay from Soon, then wallet; if short, postpone. Reinvest is on where it applies. No trade fees. Trades happen at the same frozen quotes at the same stops as the child's.
 
 | Neighbor | Plan, in the child's words | Policy |
 | --- | --- | --- |
 | **Ada** | "I spread it out and leave it alone." | Month 0: the rest buys the Basket (Basket A in chapter 6). Contributions buy the Basket. Holds |
 | **Bo** | "I keep it all in my jar." | Everything goes to Saved. Contributions go to Saved. Never invests |
-| **Cass** | "I follow the news." | Month 0: the rest buys the Basket. At each stop, the first rule that applies, one move per stop: (1) a Slump began since the last stop: sell all holdings into Saved; (2) a Slump ended since the last stop: buy the Basket with all of Saved; (3) a positive shock card landed for shop X: move half the invested sleeve into X, selling pro rata from the rest; (4) a negative shock card hit a shop she holds directly: sell that shop into the Basket. "Positive" and "negative" are the sign of weight × realized magnitude for the card's first-listed asset. Contributions follow her current largest holding |
+| **Cass** | "I follow the news." | Month 0: the rest buys the Basket. At each stop, the first rule that applies, one move per stop: (1) she is invested and this is a drop stop (her sleeve fell 10% or more since the last stop): sell all holdings into Saved; (2) she is in cash and the Basket's quote is 15% above where she sold, or 24 months have passed: buy the Basket with all of Saved; (3) a positive shock card landed for shop X: move half the invested sleeve into X, selling pro rata from the rest; (4) a negative shock card hit a shop she holds directly: sell that shop into the Basket. "Positive" and "negative" are the sign of weight × realized magnitude for the card's first-listed asset. She reacts to losses after they happen and to headlines after the chatter is in the price, never to the slump announcement itself. Contributions follow her current largest holding |
 | **Dev** | "I pick one shop I believe in." | Month 0: the rest buys one shop drawn uniformly from the available shops by the `|neighbors` stream. Contributions buy that shop. Holds. If the shop closes (E19), the liquidation sits in the wallet until the next stop, then buys the Basket |
 
 Ada is the plan-following bot the abuse tests use; Bo is the cash-only bot that can score 100 in chapter 3.
@@ -808,7 +808,7 @@ One authored `index.html` with three script sections and no build step, plus the
 ### Repository layout
 
 ```
-index.html               <style>, <svg id="sprite">, <script id="engine">, <script id="content">, <script id="app">
+index.html               <style>, <svg id="sprite">, <script id="content">, <script id="engine">, <script id="app">  (content before engine: the engine captures PARAMS and CONTENT at load)
 sw.js                    cache-first service worker, versioned cache name, skipped when embedded
 manifest.webmanifest     name, start_url ".", display standalone, icons
 icons/icon-192.png  icons/icon-512.png
