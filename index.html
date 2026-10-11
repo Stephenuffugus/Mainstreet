@@ -1040,6 +1040,8 @@ globalThis.ENGINE = {
     try{ parent.postMessage({sws:'ready'},'*'); }catch(e){}
     window.addEventListener('load',function(){ try{ parent.postMessage({sws:'ready'},'*'); }catch(e){} });
   }
+  /* BETA GATE, arcade only: while the portal card is beta:true, a direct url on lucidwinds.com gets the studio's tester gate too. Loads nothing anywhere else. Remove at v1.0.0. */
+  if(/(^|\.)lucidwinds\.com$/.test(location.hostname)){ try{ var g=document.createElement('script'); g.src='/dev-gate.js'; g.defer=true; (document.head||document.documentElement).appendChild(g); }catch(e){} }
 })();
 /* ===== APP (M2). Store, persistence, art slots, flow. UI only: the money model lives in ENGINE. ===== */
 (function () {

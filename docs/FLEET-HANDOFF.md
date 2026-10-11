@@ -12,19 +12,21 @@ Modeled on the Blooming Words handoff per `NEW_SATELLITE_BRIEF.md`; the contract
 
 Deployable: `index.html`, `sw.js`, `manifest.webmanifest`, `icons/`, `art/` (sprites plus `art/manifest.json`). Everything else is dev only and can be dropped when vendoring: `tools/`, `docs/`, `package.json`, `package-lock.json`, `playwright.config.mjs`, `HANDOFF.md`, `STATUS.md`, `README.md`, `.gitignore`.
 
-Suggested `MANIFEST` entry in `scripts/vendor_satellites.mjs`:
+`MANIFEST` entry in `scripts/vendor_satellites.mjs` (the script's `--selftest` counts entries and cards; bump both when adding):
 
 ```js
 { slug:"mainstreet", repo:"Mainstreet", ref:"main", card:"MAINSTREET", drop:["tools/","docs/","package.json","package-lock.json","playwright.config.mjs","HANDOFF.md","STATUS.md"] },
 ```
 
-The vendor step may remove `sw.js` (the root worker owns caching on lucidwinds.com); the page registers it only when not embedded and only over http(s), so leaving it in place is also safe.
+The clone the script reads must sit at `/workspaces/Mainstreet` and it resolves `origin/main`, so push upstream before re-vendoring. `sw.js` stays in the vendored copy: it registers at `/satellites/mainstreet/` scope, deletes only `mainstreet-*` caches, and passes `node scripts/sw_cache_scope_check.mjs`.
+
+**Beta gate.** While the card is `beta:true`, the embed block loads `/dev-gate.js` only when the hostname is lucidwinds.com, so a direct url is gated like the card. Nothing loads on GitHub Pages, in a Codespace or under `file:`. Remove that line at v1.0.0 together with `beta:true`.
 
 ## 3. Card copy
 
 - Hook: **Own little pieces of a town. Make a plan. See what time changes.**
 - Description: A free, offline, kid-safe investing game for ages 8 to 11. Kids own tiny pieces of six paper-town shops, keep money for soon in a jar, make a plan for a goal, and watch what a year of news and weather changes on the street. Four neighbors with plans of their own play the same market beside them. Six short chapters, then twenty years of free play in named towns. Earns no sunbeams, by design.
-- Portal entry (`portal/index.html`, `FEATURED` or `GAMES`): `{nm:"MAINSTREET", ds:"Own little pieces of a town. Make a plan. See what time changes.", url:"https://stephenuffugus.github.io/Mainstreet/", ic:"🏘️", thumb:"/portal-assets/thumbs/mainstreet.png", beta:true}`
+- Portal entry (`portal/index.html`, `FEATURED`, carded by the vendored path with the mandatory `?v=` stamp): `{nm:"MAINSTREET", ds:"Own little pieces of a town. Make a plan. See what time changes.", cat:"math", url:"/satellites/mainstreet/?v=20261011a", ic:"🏘️", thumb:"/portal-assets/thumbs/mainstreet.png", beta:true, fresh:true}` plus a search keyword entry. A relative `/satellites/` url opens top level, not framed, so the referrer exit is the one that runs.
 - Keep `beta:true` until the M6 playtest closes.
 
 ## 4. Earn moments
