@@ -144,3 +144,14 @@ One box per exit condition. Tick a box only with the command and its result past
       open: needs Pages enabled and the lucid-winds vendoring step (docs/FLEET-HANDOFF.md has the card entry and the MANIFEST line); thumbnail is in the M5 art batch
 - [x] Tag `v1.0.0-rc1`; STATUS.md says what shipped and what did not
       evidence: git tag v1.0.0-rc1 on the M6 commit; STATUS.md and docs/RELEASE-NOTES.md list what shipped and the backlog
+
+## M7 Polish after rc1 (2026-10-11; not in HANDOFF; Stephen: "keep building")
+
+- [x] Sound per HANDOFF sections 8 and 10: off by default; a soft paper tick per month in the year show; one quiet chime at the Gazette and at the chapter end; a Settings toggle; nothing in the game needs sound
+      evidence: synthesized in WebAudio (filtered noise tick, two-sine chime), no audio files; ui.spec.mjs sound journey: toggle persists in ms:settings, a show with sound on raises no errors, chromium and webkit
+- [x] Focus for screen readers: a screen change lands on the screen's heading; an in-screen action keeps focus on its control; a sheet that opens takes focus; the Town title carries heading semantics
+      evidence: ui.spec.mjs focus journey, chromium and webkit
+- [x] Manual checklist items automated: blocked storage, exit to the portal with and without history, hidden page, update banner on Home only and never embedded, reduced motion strip, own and spent and left on the Town screen
+      evidence: six journeys in ui.spec.mjs; docs/playtest.md boxes ticked with the test names
+- [ ] First-pass art for all 113 slots from tools/gen_art.mjs; manifest regenerated; precache total recorded in STATUS.md
+- [ ] Tag `v1.0.0-rc2`

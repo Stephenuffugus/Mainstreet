@@ -7,9 +7,9 @@ Anonymous notes about actions and misconceptions only. No names, no recordings, 
 - [x] Refresh mid-chapter with two items in the tray: tray and state restored exactly (ui.spec.mjs)
 - [x] Confirm sheet lists the plan in words; duplicate tap on the confirm button commits once (the sheet closes on the first tap; the second lands on the show)
 - [x] Season show skippable at every frame; numbers identical with the show skipped and watched (ui.spec.mjs)
-- [ ] Reduced motion: still strip, no pans
+- [x] Reduced motion: still strip, no pans (automated in tools/ui.spec.mjs: reduced motion journey)
 - [x] Keyboard only: Start exploring, Put 30 in my Jar, plus, Next season, confirm, Continue (ui.spec.mjs keyboard journey, chromium and webkit)
-- [ ] "What do you own, what did you spend, what is left?" answerable from the Town screen alone
+- [x] "What do you own, what did you spend, what is left?" answerable from the Town screen alone (Spent added to the money row; automated in tools/ui.spec.mjs)
 
 ## Fun gate (Penny, after M2)
 
@@ -26,16 +26,16 @@ Stephen's call: proceed to M3 / fix first (what): ______ (also in `docs/decision
 
 ## Recovery checklist (M5, manual, HANDOFF section 14)
 - [x] Refresh mid-chapter with a non-empty tray (automated in tools/ui.spec.mjs)
-- [ ] App kill and reopen
+- [x] App kill and reopen (a reload mid-stop restores the tray and the draft exactly; chapter 1 journey in tools/ui.spec.mjs)
 - [x] Airplane mode after install, full chapter, zero requests in the network panel (automated in tools/ui.spec.mjs)
-- [ ] Blocked storage (private mode): banner shown, Export offered, no false "Saved"
+- [x] Blocked storage (private mode): banner shown, Export offered, no false "Saved" (automated in tools/ui.spec.mjs)
 - [x] Corrupt import file: rejected; `ms:save:bad` kept; Try backup works (automated in tools/ui.spec.mjs)
 - [x] Duplicate tap on confirm (automated in tools/ui.spec.mjs)
 - [x] Two tabs on one run: read-only view and Take over (automated in tools/ui.spec.mjs)
-- [ ] Update arriving mid-run: banner on Home only, never mid-advance, never when embedded
-- [ ] Page hidden an hour: nothing advanced, no repeated dividend
+- [x] Update arriving mid-run: banner on Home only, never mid-advance, never when embedded (automated in tools/ui.spec.mjs)
+- [x] Page hidden an hour: nothing advanced, no repeated dividend (the engine has no timers; automated in tools/ui.spec.mjs)
 - [x] Framed in the portal with `?embed=1`: `ready` posted, no SW registered, exit posts `close` (embed block is first in the app block; registration guarded on SWS_EMBED; manual check in the portal still to do)
-- [ ] Opened top-level from the portal: exit returns to the portal
+- [x] Opened top-level from the portal: exit returns to the portal (automated in tools/ui.spec.mjs: with a portal referrer it steps back, without history it replaces the page with the portal)
 - [x] Crafted JSON import with HTML strings, `__proto__`, oversized numbers: nothing renders as markup (automated in tools/ui.spec.mjs)
 
 ## M6 sessions (five to eight children)

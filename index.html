@@ -214,6 +214,9 @@ label.btn{display:inline-flex;align-items:center;justify-content:center;cursor:p
 .ribbon{display:flex;flex-wrap:wrap;gap:1px}
 .ribbon i{display:block;width:6px;height:14px;background:var(--rule)}
 .ribbon i.mB{background:var(--up)}.ribbon i.mS{background:var(--down)}
+/* M7 */
+[tabindex="-1"]:focus{outline:none}
+.money-row{flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -1211,6 +1214,7 @@ function moneyRow(s) {
   return el('div', { class: 'money-row' },
     el('div', { class: 'money' }, el('span', { class: 'lbl', text: 'Your money' }), el('strong', { text: coins(nwNow) }), el('span', { class: 'chg ' + (d >= 0 ? 'up' : 'down'), text: (d >= 0 ? '▲ ' : '▼ ') + signed(d) + ' this year' })),
     el('div', { class: 'money' }, el('span', { class: 'lbl', text: 'Wallet' }), el('strong', { text: coins(s.wallet) })),
+    el('div', { class: 'money' }, el('span', { class: 'lbl', text: 'Spent' }), el('strong', { text: coins(s.totals.goalSpending + s.totals.costSpending, { noAbout: true }) })),
     el('div', { class: 'money jar' }, el('span', { class: 'lbl', text: 'Jar' }), el('strong', { text: coins(s.jar.soon + s.jar.buffer + s.jar.saved) }),
       el('span', { class: 'bands' }, el('span', { class: 'band soon', text: 'Soon ' + coins(s.jar.soon) }), S.market.scenario.buffer ? el('span', { class: 'band buffer', text: 'Buffer ' + coins(s.jar.buffer) }) : null, s.jar.saved ? el('span', { class: 'band saved', text: 'Saved ' + coins(s.jar.saved) }) : null)));
 }
@@ -1261,7 +1265,7 @@ function townScreen() {
   const hint = tut === 1 ? { text: ST.lines.someSoon, button: 'Put 30 in my Jar', action: () => { queue({ type: 'JAR_IN', band: 'soon', cc: 3000 }); S.ui.tutorialStep = 3; S.ui.hint = { text: ST.lines.jar30 }; render(); } } : tut === 3 ? { text: ST.lines.jar30 + ' Now tap the Bakery.' } : tut === 4 ? { text: ST.lines.tinyPiece + ' Tap plus to buy one.' } : tut === 5 ? { text: ST.lines.buyOne } : S.ui.hint;
   S.ui.hint = hint;
   return el('main', { class: 'screen town' }, banner(),
-    el('header', { class: 'town-head' }, el('div', { class: 'town-title' }, el('strong', { text: m.townName }), el('span', { class: 'muted', text: sc.title + ' · ' + seasonLabel })), el('button', { type: 'button', class: 'btn small', onclick: () => go('home'), text: 'Home' })),
+    el('header', { class: 'town-head' }, el('div', { class: 'town-title', role: 'heading', 'aria-level': '2' }, el('strong', { text: m.townName }), el('span', { class: 'muted', text: sc.title + ' · ' + seasonLabel })), el('button', { type: 'button', class: 'btn small', onclick: () => go('home'), text: 'Home' })),
     goalChip(s), moneyRow(s), hintBar(),
     (() => { const ids = sc.ids; const selected = S.ui.openShop && ids.includes(S.ui.openShop) ? S.ui.openShop : (ids.length === 1 ? ids[0] : null); return el('section', { class: 'street', 'aria-label': 'The street' }, art('plate-sky', 'sky'), el('div', { class: 'shops' + (ids.length === 1 ? ' one' : '') }, sc.shops.map(id => shopTile(id, id === selected)), sc.funds.map(id => stallTile(id, id === selected))), selected ? (m.funds[selected] ? fundPanel(selected) : shopPanel(selected)) : el('p', { class: 'muted center', text: 'Tap a shop to see its shares.' })); })(),
     sc.neighbors.length ? neighborsRow() : null,
@@ -1298,6 +1302,7 @@ function settingsScreen() {
   const radio = (name, value, label, cur, set) => el('label', { class: 'radio' }, el('input', { type: 'radio', name, value, checked: cur === value ? true : null, onchange: () => { set(value); saveSettings(); save(); render(); } }), ' ' + label);
   return el('main', { class: 'screen settings' }, topbar('Settings', { label: '← Home', fn: () => go('home') }),
     el('section', { class: 'card' }, el('h3', { text: 'Reading level' }), radio('pres', 'guided', 'Guided: whole coins, fewer numbers', S.options.presentation, v => { S.options.presentation = v; }), radio('pres', 'explorer', 'Explorer: exact numbers, more details', S.options.presentation, v => { S.options.presentation = v; })),
+    el('section', { class: 'card' }, el('h3', { text: 'Sound' }), el('label', { class: 'radio' }, el('input', { type: 'checkbox', id: 'opt-sound', checked: S.options.sound ? true : null, onchange: e => { S.options.sound = e.target.checked; saveSettings(); if (S.options.sound) { audio(); tick(); } } }), ' Paper sounds'), el('p', { class: 'muted small', text: 'Soft paper ticks during the year show and one quiet chime at the Gazette. Off unless you turn it on. Nothing in the game needs sound.' })),
     el('section', { class: 'card' }, el('h3', { text: 'Motion' }), radio('motion', 'auto', 'Follow my device', S.options.motion, v => { S.options.motion = v; }), radio('motion', 'reduced', 'Still frames, no animation', S.options.motion, v => { S.options.motion = v; })),
     el('section', { class: 'card' }, el('h3', { text: 'Text size' }), radio('ts', 1, 'Normal', S.options.textSize, v => { S.options.textSize = v; }), radio('ts', 1.15, 'Larger', S.options.textSize, v => { S.options.textSize = v; }), radio('ts', 1.3, 'Largest', S.options.textSize, v => { S.options.textSize = v; })),
     el('section', { class: 'card' }, el('h3', { text: ST.readAloud.label }), localVoices().length ? el('label', { class: 'radio' }, el('input', { type: 'checkbox', checked: S.options.readAloud ? true : null, onchange: e => { S.options.readAloud = e.target.checked; saveSettings(); render(); } }), ' ' + ST.readAloud.label) : el('p', { class: 'muted', text: ST.readAloud.none }), el('p', { class: 'muted small', text: ST.readAloud.hint })),
@@ -1384,7 +1389,7 @@ function homeScreen() {
     return playable ? el('li', { class: 'chapter ' + (done ? 'done' : '') }, el('button', { type: 'button', class: 'chapter-btn', onclick: () => start(c.id), 'aria-label': (done ? 'Play again: ' : 'Start: ') + c.title }, row)) : el('li', { class: 'chapter locked' }, row); });
   const mainBtn = next && isBuilt(next) ? el('button', { type: 'button', class: 'btn ' + (cont ? '' : 'primary big'), onclick: () => start(next), text: (r && !S.draft.ended) ? (S.ui.resetArmed ? 'Start a new town and leave this one?' : 'New town') : 'Start chapter ' + CT.chapters.find(c => c.id === next).n }) : el('p', { class: 'muted', text: 'Chapters 4 to 6 are coming. Play a chapter again below.' });
   const albumCount = S.progress.album.shops.length + S.progress.album.cards.length + S.progress.album.neighbors.length + S.progress.album.goals.length;
-  return el('main', { id: 's-title', class: 'screen home' }, banner(), readOnlyBanner(), recoveryCard(), S.ui.notice ? el('p', { class: 'muted', role: 'status', text: S.ui.notice }) : null, S.ui.updateReady ? el('div', { class: 'banner', role: 'status' }, ST.update.ready + ' ', el('button', { type: 'button', class: 'btn small', onclick: () => { try { S.ui.updateReady.waiting && S.ui.updateReady.waiting.postMessage('skipWaiting'); } catch (e) {} }, text: ST.update.restart })) : null,
+  return el('main', { id: 's-title', class: 'screen home' }, banner(), readOnlyBanner(), recoveryCard(), S.ui.notice ? el('p', { class: 'muted', role: 'status', text: S.ui.notice }) : null, S.ui.updateReady && !window.SWS_EMBED ? el('div', { class: 'banner', role: 'status' }, ST.update.ready + ' ', el('button', { type: 'button', class: 'btn small', onclick: () => { try { S.ui.updateReady.waiting && S.ui.updateReady.waiting.postMessage('skipWaiting'); } catch (e) {} }, text: ST.update.restart })) : null,
     el('h1', { text: 'MAINSTREET', onpointerdown: () => { S.ui.pressAt = Date.now(); }, onpointerup: () => { if (S.ui.pressAt && Date.now() - S.ui.pressAt > 3000) { S.ui.debug = true; render(); } S.ui.pressAt = 0; } }), el('p', { class: 'tag', text: 'Own little pieces of a town. Make a plan. See what time changes.' }),
     el('div', { class: 'home-actions' }, cont, where, mainBtn, S.ui.resetArmed ? el('button', { type: 'button', class: 'btn ghost', onclick: () => { S.ui.resetArmed = false; render(); }, text: 'Keep my town' }) : null),
     el('ol', { class: 'chapters' }, chapters),
@@ -1486,6 +1491,7 @@ function showScreen() {
   let fast = false, timer = null, done = false;
   const speed = el('button', { type: 'button', class: 'btn ghost small', onclick: () => { fast = !fast; speed.textContent = fast ? '×1' : '×2'; }, text: '×2' });
   function paint(f) {
+    tick();
     monthLbl.textContent = MONTHS[f.cal - 1] + ', year ' + (Math.floor((f.t - 1) / 12) + 1);
     weatherLbl.textContent = cap(f.weather) + (f.mood === 'S' ? ' · many families are spending less' : f.mood === 'B' ? ' · a busy time in town' : '');
     stage.replaceChildren(art('weather-' + f.weather, 'weather', f.weather), el('div', { class: 'show-shops' }, sc.shops.map(id => { const a = assetById(id), st = f.activity[id], slot = 'shop-' + id.toLowerCase() + '-' + (st === 'closed' ? 'closed' : st === 'normal' ? 'open' : st); return el('div', { class: 'show-shop' }, art(slot, 'shop-art', a.name + ', ' + st), el('div', { class: 'mini-card' }, el('span', { text: a.name }), el('strong', { text: coins(f.quotes[id], { exact: !guided() }) }))); })));
@@ -1507,6 +1513,7 @@ function showScreen() {
 /* ---- The Gazette (year recap) ---- */
 function gazetteScreen() {
   const s = S.draft, m = S.market, y = S.ui.gazetteYear, p = E.yearPanel(s, m, y);
+  chimeOnce('g' + S.run.runId + ':' + y);
   const biggest = p.cards.filter(c => !['E20', 'E21', 'E22'].includes(c.id)).map(c => CT.cards.find(x => x.id === c.id)).filter(Boolean)[0];
   const busiest = p.busiest ? ST.lines.busiest.replace('{shop}', nameOf(p.busiest.id)).replace('{n}', p.busiest.n) : '';
   const moneyWords = ST.lines.moneyPanel.replace('{added}', coins(p.money.added, { noAbout: true })).replace('{result}', signed(p.money.result)).replace('{spent}', coins(p.money.spent, { noAbout: true }));
@@ -1545,6 +1552,7 @@ function comparisonCard(s, m) {
   return el('section', { class: 'card' }, el('h3', { text: 'Every plan on this town' }), el('ul', { class: 'cols' }, rows), el('p', { class: 'muted', text: ST.core.neighbors }));
 }
 function resultsScreen() {
+  chimeOnce('r' + (S.run ? S.run.runId : ''));
   const s = S.draft, m = S.market, sc = m.scenario, sum = E.summarizeRun(s, m), score = sum.score, g = s.goal;
   const goalStory = g.status === 'funded' ? ST.lines.goalFunded.replace('{funded}', CT.goalFunded[g.slug]) : g.status === 'postponed' ? 'Your ' + CT.goalNoun[g.slug] + ' can wait. You moved the date, and that is allowed.' : 'Your goal is still open.';
   const stamps = score.stamps.map(st => el('li', { class: 'stamp-row ' + st.status }, art('stamp-' + st.dim.replace('followThrough', 'follow-through').replace('goalFit', 'goal-fit').replace('costAwareness', 'cost'), 'stamp-art ' + (st.status === 'credit' && st.passed === st.applicable ? '' : 'dim'), DIM_NAMES[st.dim]), el('div', {}, el('strong', { text: DIM_NAMES[st.dim] }), el('p', { class: 'muted', text: st.status === 'coming' ? 'Coming later' : st.status === 'na' || st.status === 'soFar' ? 'Not part of this chapter' : stampEvidence(st.dim, s, sc) }))));
@@ -1588,7 +1596,9 @@ function render() {
   if (S.run && S.screen === 'town' && S.ui.intro) view = S.run.scenarioId === 'ch1' ? introScreen() : chapterIntroScreen();
   else view = ({ home: homeScreen, town: townScreen, plan: planScreen, decision: decisionScreen, show: showScreen, gazette: gazetteScreen, results: resultsScreen, settings: settingsScreen, grownups: grownupsScreen, scrapbook: scrapbookScreen, timemachine: timeMachineScreen, freeplay: freePlayScreen, debug: debugScreen })[S.screen]();
   if (S.screen !== 'home') { const rb = readButton(); if (rb) view.prepend(el('div', { class: 'read-row' }, rb)); if (S.readOnly) view.prepend(readOnlyBanner()); }
+  const prevFocus = captureFocus(root);
   root.replaceChildren(view);
+  restoreFocus(root, view, prevFocus);
 }
 function boot() {
   loadSettings();
@@ -1756,7 +1766,66 @@ function debugScreen() {
     el('section', { class: 'card' }, el('h3', { text: 'Export' }), el('button', { type: 'button', class: 'btn small', onclick: () => download('mainstreet-' + (m ? m.townName.replace(/\s+/g, '-').toLowerCase() : 'town') + '.json', exportText()), text: 'Export JSON' })));
 }
 
-globalThis.MS = { S, render, queue, undo, arrive, newRun, go, commitAndAdvance, finishChapter, exportText, importText, applyImport, BUILD };
+
+/* ---- M7: sound (optional, off by default; HANDOFF 8 and 10) and focus for screen readers ---- */
+const SFX = { ctx: null };
+function audio() {
+  if (!S.options.sound) return null;
+  try { if (!SFX.ctx) SFX.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (SFX.ctx.state === 'suspended') SFX.ctx.resume(); return SFX.ctx; } catch (e) { return null; }
+}
+/* one soft paper tick: a short burst of filtered noise, no pitch, no meaning */
+function tick() {
+  const c = audio(); if (!c) return;
+  try {
+    const n = Math.floor(c.sampleRate * 0.045), buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) { const env = 1 - i / n; d[i] = (Math.random() * 2 - 1) * env * env; }
+    const src = c.createBufferSource(); src.buffer = buf;
+    const f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1800; f.Q.value = 0.8;
+    const g = c.createGain(); g.gain.value = 0.1;
+    src.connect(f); f.connect(g); g.connect(c.destination); src.start();
+  } catch (e) {}
+}
+/* one quiet two-note chime, about a second, for the Gazette and the chapter end. Nothing like a payout. */
+function chime() {
+  const c = audio(); if (!c) return;
+  try {
+    const t = c.currentTime;
+    [[523.25, 0.05, 0], [784, 0.03, 0.14]].forEach(([hz, vol, at]) => {
+      const o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.value = hz;
+      g.gain.setValueAtTime(0.0001, t + at); g.gain.exponentialRampToValueAtTime(vol, t + at + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + at + 1.1);
+      o.connect(g); g.connect(c.destination); o.start(t + at); o.stop(t + at + 1.2);
+    });
+  } catch (e) {}
+}
+function chimeOnce(key) { if (S.ui.chimed === key) return; S.ui.chimed = key; chime(); }
+
+/* focus: a screen change lands on the screen's heading; an in-screen re-render keeps focus on the same control; a sheet that opens takes focus */
+const FOCUS = { view: '' };
+const FOCUSABLE = 'button, input, select, textarea, a[href], [tabindex]';
+function focusKey(e) { return e.tagName + '|' + (e.id || '') + '|' + (e.getAttribute('aria-label') || '') + '|' + (e.tagName === 'INPUT' ? (e.name || e.type) : (e.textContent || '').trim().slice(0, 40)); }
+function captureFocus(root) {
+  const a = document.activeElement; if (!a || !root.contains(a)) return null;
+  const key = focusKey(a), all = [...root.querySelectorAll(FOCUSABLE)].filter(x => focusKey(x) === key);
+  return { key, idx: Math.max(0, all.indexOf(a)) };
+}
+function restoreFocus(root, view, prev) {
+  const viewKey = S.screen + '|' + (S.run && S.screen === 'town' && S.ui.intro ? 'intro' : '') + '|' + (S.run ? S.run.runId : '');
+  const sheet = view.querySelector('[role="dialog"], [role="alertdialog"]');
+  if (viewKey !== FOCUS.view) {
+    FOCUS.view = viewKey;
+    const h = view.querySelector('h1, h2, [role="heading"]'); if (h) { h.setAttribute('tabindex', '-1'); try { h.focus({ preventScroll: true }); } catch (e) {} }
+    return;
+  }
+  if (sheet && !sheet.contains(document.activeElement)) {
+    const f = sheet.querySelector('h2, h3, button'); if (f) { if (/^H/.test(f.tagName)) f.setAttribute('tabindex', '-1'); try { f.focus({ preventScroll: true }); } catch (e) {} }
+    return;
+  }
+  if (!prev) return;
+  const cands = [...root.querySelectorAll(FOCUSABLE)].filter(x => focusKey(x) === prev.key);
+  const t = cands[Math.min(prev.idx, cands.length - 1)]; if (t) { try { t.focus({ preventScroll: true }); } catch (e) {} }
+}
+
+globalThis.MS = { S, render, queue, undo, arrive, newRun, go, commitAndAdvance, finishChapter, exportText, importText, applyImport, tick, chime, BUILD };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
 </script>

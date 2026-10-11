@@ -438,3 +438,97 @@ test("embed protocol: framed with ?embed=1 the game posts ready, registers no wo
   expect(msgs.filter(m => m === "close").length).toBe(1);
   expect(msgs.every(m => m === "ready" || m === "close")).toBe(true);                // nothing else leaves the frame: no earn messages
 });
+
+/* ---- M7 journeys: focus, sound, the remaining manual checklist items ---- */
+test("focus: a screen change lands on the heading, an in-screen action keeps focus on its control, a sheet takes focus", async ({ page }) => {
+  await page.goto(URL);
+  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click();
+  expect(await page.evaluate(() => /^H[12]$/.test(document.activeElement.tagName) || document.activeElement.getAttribute("role") === "heading")).toBe(true);
+  await page.getByRole("button", { name: "Put 30 in my Jar" }).click();
+  await page.locator(".shop-face").click();
+  const buy = page.locator(".steppers").getByRole("button", { name: "Buy 1 share" });
+  await buy.focus(); await page.keyboard.press("Enter");
+  await expect(page.locator(".own")).toContainText("1 share");
+  expect(await page.evaluate(() => document.activeElement.getAttribute("aria-label") || document.activeElement.textContent.trim())).toBe("Buy 1 share");
+  await page.getByRole("button", { name: "Next season" }).click();
+  expect(await page.evaluate(() => !!document.activeElement.closest('[role="dialog"]'))).toBe(true);
+});
+test("sound: off by default, the Settings toggle persists, a show with sound on raises no errors", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  expect(await page.evaluate(() => MS.S.options.sound)).toBe(false);
+  await page.getByRole("button", { name: "Settings" }).click();
+  await page.locator("#opt-sound").check();
+  expect(await page.evaluate(() => MS.S.options.sound)).toBe(true);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("ms:settings")).options.sound)).toBe(true);
+  await page.getByRole("button", { name: "Home" }).click();
+  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click(); await page.locator(".shop-face").click(); await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
+  await advanceOnce(page);
+  await expect(page.locator(".screen.town")).toBeVisible();
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("blocked storage: with localStorage throwing, Home says it is playing without saving, play continues, Export is still offered", async ({ page }) => {
+  await page.addInitScript(() => { const bad = { getItem() { throw new Error("blocked"); }, setItem() { throw new Error("blocked"); }, removeItem() { throw new Error("blocked"); }, key() { return null; }, clear() {}, get length() { return 0; } }; Object.defineProperty(window, "localStorage", { get: () => bad }); });
+  await page.goto(URL);
+  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click();
+  await expect(page.locator(".band.soon")).toContainText("Soon 30");
+  await expect(page.getByText("Playing without saving on this device.")).toBeVisible();      // the banner appears once a save has failed
+  await page.getByRole("button", { name: "Home" }).click(); await page.getByRole("button", { name: "Settings" }).click();
+  await expect(page.getByRole("button", { name: "Export my town" })).toBeVisible();
+});
+test("exit: with no history the title button replaces the page with the portal; with a portal referrer it steps back", async ({ page }) => {
+  await page.route("https://lucidwinds.com/**", r => r.fulfill({ status: 200, contentType: "text/html", body: "<!doctype html><title>Portal stub</title><h1>Portal</h1>" }));
+  await page.goto(base + "index.html");
+  await page.getByRole("button", { name: "← All Sky Wolf games" }).click();
+  await page.waitForURL("https://lucidwinds.com/portal/");
+  await page.goto("https://lucidwinds.com/portal/");
+  await page.goto(base + "index.html", { referer: "https://lucidwinds.com/portal/" });
+  await page.getByRole("button", { name: "← All Sky Wolf games" }).click();
+  await page.waitForURL("https://lucidwinds.com/portal/");
+  await expect(page.locator("h1")).toHaveText("Portal");
+});
+test("hidden page: nothing advances and nothing repeats while the page is hidden", async ({ page }) => {
+  await page.goto(URL);
+  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click(); await page.locator(".shop-face").click(); await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
+  await advanceOnce(page);
+  const before = await page.evaluate(() => JSON.stringify([MS.S.draft.t, MS.S.draft.wallet, MS.S.draft.totals]));
+  await page.evaluate(() => { Object.defineProperty(document, "visibilityState", { value: "hidden", configurable: true }); document.dispatchEvent(new Event("visibilitychange")); });
+  await page.waitForTimeout(1200);
+  await page.evaluate(() => { Object.defineProperty(document, "visibilityState", { value: "visible", configurable: true }); document.dispatchEvent(new Event("visibilitychange")); });
+  expect(await page.evaluate(() => JSON.stringify([MS.S.draft.t, MS.S.draft.wallet, MS.S.draft.totals]))).toBe(before);
+});
+test("update banner: shows on Home only, never on the Town, never when embedded", async ({ page }) => {
+  await page.goto(URL);
+  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click();
+  await page.evaluate(() => { MS.S.ui.updateReady = { waiting: { postMessage() {} } }; MS.render(); });
+  await expect(page.getByText("A new version is ready.")).toHaveCount(0);
+  await page.getByRole("button", { name: "Home" }).click();
+  await expect(page.getByText("A new version is ready.")).toBeVisible();
+  await page.goto(URL + "?embed=1");
+  await page.evaluate(() => { MS.S.ui.updateReady = { waiting: { postMessage() {} } }; MS.go("home"); });
+  await expect(page.getByText("A new version is ready.")).toHaveCount(0);
+});
+test("reduced motion: the year show is a strip of still frames stepped by tap, never on a timer", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(URL);
+  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click(); await page.locator(".shop-face").click(); await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
+  await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click();
+  await expect(page.locator(".screen.show")).toBeVisible();
+  const next = page.getByRole("button", { name: "Next month" }); await expect(next).toBeVisible();
+  const first = await page.locator(".screen.show h2.month").innerText();
+  await page.waitForTimeout(1300);
+  expect(await page.locator(".screen.show h2.month").innerText()).toBe(first);
+  await next.click();
+  expect(await page.locator(".screen.show h2.month").innerText()).not.toBe(first);
+  await page.getByRole("button", { name: "Skip" }).click();
+  await expect(page.locator(".screen.town")).toBeVisible();
+});
+test("town screen answers what you own, what you spent and what is left", async ({ page }) => {
+  await page.goto(URL);
+  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click();
+  await page.locator(".shop-face").click(); await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
+  await expect(page.locator(".money-row")).toContainText("Wallet");
+  await expect(page.locator(".money-row")).toContainText("Spent");
+  await expect(page.locator(".money-row")).toContainText("Jar");
+  await expect(page.locator(".own")).toContainText("1 share");
+});
