@@ -1,4 +1,4 @@
-From eb30f6dd05ff35b9782f3fd60bdf948b7944ff04 Mon Sep 17 00:00:00 2001
+From cc957993454a415b158e28b409c040a25e5b4943 Mon Sep 17 00:00:00 2001
 From: Stephenuffugus <99242197+Stephenuffugus@users.noreply.github.com>
 Date: Sun, 11 Oct 2026 13:54:58 +0000
 Subject: [PATCH] Add MAINSTREET to the arcade, vendored, beta
@@ -140,9 +140,10 @@ Claude-Session: https://claude.ai/code/session_016cH7LsegPyFfW3pQ9fQuJN
  satellites/mainstreet/icons/icon-512.png      |  Bin 0 -> 12184 bytes
  satellites/mainstreet/index.html              | 1892 +++++++++++++++++
  satellites/mainstreet/manifest.webmanifest    |   15 +
+ satellites/mainstreet/music/manifest.json     |   11 +
  satellites/mainstreet/sw.js                   |   33 +
  scripts/vendor_satellites.mjs                 |    8 +-
- 122 files changed, 2544 insertions(+), 2 deletions(-)
+ 123 files changed, 2555 insertions(+), 2 deletions(-)
  create mode 100644 portal-assets/thumbs/mainstreet.png
  create mode 100644 satellites/mainstreet/VENDORED.json
  create mode 100644 satellites/mainstreet/art/.gitkeep
@@ -262,6 +263,7 @@ Claude-Session: https://claude.ai/code/session_016cH7LsegPyFfW3pQ9fQuJN
  create mode 100644 satellites/mainstreet/icons/icon-512.png
  create mode 100644 satellites/mainstreet/index.html
  create mode 100644 satellites/mainstreet/manifest.webmanifest
+ create mode 100644 satellites/mainstreet/music/manifest.json
  create mode 100644 satellites/mainstreet/sw.js
 
 diff --git a/portal-assets/thumbs/mainstreet.png b/portal-assets/thumbs/mainstreet.png
@@ -31150,6 +31152,23 @@ index 0000000..0ce87b8
 +    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
 +    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
 +  ]
++}
+diff --git a/satellites/mainstreet/music/manifest.json b/satellites/mainstreet/music/manifest.json
+new file mode 100644
+index 0000000..055684c
+--- /dev/null
++++ b/satellites/mainstreet/music/manifest.json
+@@ -0,0 +1,11 @@
++{
++  "_readme": "See docs/MUSIC.md. A track is {\"file\":\"name.mp3\",\"title\":\"Name\",\"feel\":\"calm\",\"loop\":true,\"gain\":1}. The map assigns a feel to each moment; a moment with no track of its feel borrows any track; no tracks at all means no music and no music controls.",
++  "tracks": [],
++  "map": {
++    "default": "calm",
++    "home": "calm", "intro": "calm", "town": "calm", "town-slump": "quiet",
++    "show-sun": "bright", "show-rain": "rainy", "show-snow": "quiet", "show-slump": "quiet",
++    "gazette": "bright", "decision": "calm", "plan": "calm", "results": "celebration",
++    "timemachine": "calm", "scrapbook": "calm", "freeplay": "calm", "settings": "calm", "grownups": "calm"
++  }
 +}
 diff --git a/satellites/mainstreet/sw.js b/satellites/mainstreet/sw.js
 new file mode 100644

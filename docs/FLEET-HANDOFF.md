@@ -33,6 +33,8 @@ The clone the script reads must sit at `/workspaces/Mainstreet` and it resolves 
 
 When `music/manifest.json` lists tracks, add `ownMusic:true` to the card. The page honors `{sws:'host-music', on:true|false}` (mutes while the studio soundtrack plays). With no tracks, leave the flag off.
 
+The arcade's `.gitignore` ignores `music/` folders, so after any re-vendor run `git add -f satellites/mainstreet/music` before committing, or the manifest and the songs stay out of the commit while `VENDORED.json` lists them. The ready-made patch already carries the manifest.
+
 ## 4. Earn moments
 
 **None, by design (R01).** The game posts only `{sws:'ready'}` and `{sws:'close'}`. There is no `sws:'earn'`, no Sunbeam SDK, no `_sbCapEarn`. If `scripts/music_include.mjs --check` is run with MAINSTREET as a non-vendored satellite, add it to an allow-list; a vendored copy is already expected to carry no include.
