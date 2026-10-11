@@ -43,3 +43,11 @@ The sorting (fault / by design / taste) and the plan follow in docs/decisions.md
 - "Buildings disappearing and reappearing": the show swaps storefront images per month without preloading them; each swap blanks until the new image decodes.
 - "Out of money, no explanation, no way to correct": rc4 had no check-in and no pull card; those are in rc5 and later, which he never saw.
 - "No way to restart": Home has no replay for a finished chapter; reset is two taps deep in Settings.
+
+## Sixth note, chapter 1 at rc9 (verbatim)
+
+> It's honestly still pretty dry. The tutorial I couldn't hit my goal of thirty in a year. It says nothing about how well I'm really doing and it still just feels clunky and boring
+
+- Goal day in chapter 1 offers Buy it from my Jar, Postpone, Change amount, Review my plan. A player whose Jar is short (the walk skipped, or coins moved out on My Plan) has no one tap way to sell shares and buy the art supplies; "Review my plan" sends them away from the decision. That is "couldn't hit my goal".
+- Nothing on Town says how the plan is going. The five stamps exist only at Results, behind Show details in Guided. That is "says nothing about how well I'm really doing".
+- Sound is off by default and the Clerk never reacts to what the player just did. That is "dry".
