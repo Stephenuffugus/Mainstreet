@@ -217,6 +217,8 @@ label.btn{display:inline-flex;align-items:center;justify-content:center;cursor:p
 /* M7 */
 [tabindex="-1"]:focus{outline:none}
 .money-row{flex-wrap:wrap}
+.btn.music[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+input[type=range]{width:100%;max-width:320px;margin:4px 0 8px}
 </style>
 </head>
 <body>
@@ -380,6 +382,7 @@ globalThis.STRINGS = {
   stops: { e18:'{shop} is sharing less money with owners this year. The business is the same business.', e12:'Robo Lab is fixing a product problem. This is one shop\u2019s trouble, not the whole street\u2019s.', slump:'Many families are spending less this year. Most shops feel it. Check when you need this money.', closure:'{shop} is closing. Owners get {liq} coins a share back next month. {keeper}', closurePaid:'{shop} has closed. You got {paid} coins back for your shares.' },
   feeLab: { title:'Two baskets charge different fees', body:'Both baskets hold the same six shops in the same amounts. Only the yearly cost is different. Read both cards, then choose one for this chapter. Both stay available.', cardA:'Basket A keeps 0.2 of every 100 coins each year.', cardB:'Basket B keeps 1.5 of every 100 coins each year.', chooseA:'Choose Basket A', chooseB:'Choose Basket B', result:'On the same shops, Basket A ended at {a} a share and Basket B at {b}. The difference is the cost, nothing else.' },
   freePlay: { title:'Free play', pick:'Pick a town', random:'A random name', typed:'Or type a town name', nameHint:'Letters, spaces and a number. Two words and a number work best.', start:'Start this town', replay:'Replay this town', newTown:'New town', unlock:'Free play opens after chapter 6.', presetLabel:'What kind of twenty years' },
+  music: { label:'Music', hint:'Songs made by the studio, chosen by the feel of each screen. Off unless you turn it on. Nothing in the game needs music.', none:'No music files in this build yet.', volume:'Volume' },
   readAloud: { label:'Read aloud', hint:'Uses a voice already on this device. Nothing is sent anywhere.', none:'No voice on this device can read aloud. The text is complete without it.', read:'Read this screen' },
   backup: { export:'Export my town', exportHint:'Saves a file you control. It is the backup if this device clears its storage.', import:'Import a town file', confirm:'Replace my current town with the imported one?', yes:'Yes, replace it', no:'Keep my town', badFile:'That file is not a MAINSTREET town file.', badVersion:'That file was made by a different version of the game and cannot be read.', tooBig:'That file is too large to be a town file.', done:'Imported. Your town is loaded.' },
   tabLock: { title:'This town is open in another tab', body:'Play there, or take over here. Taking over stops the other tab.', take:'Take over' },
@@ -1075,7 +1078,7 @@ const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 /* ---- state ---- */
 const S = {
   screen: 'home', run: null, market: null, draft: null, saveOk: true, art: {},
-  options: { presentation: 'guided', motion: 'auto', textSize: 1, sound: false, readAloud: false, showSpeed: 1 }, readOnly: false, badSave: false,
+  options: { presentation: 'guided', motion: 'auto', textSize: 1, sound: false, readAloud: false, showSpeed: 1, music: false, musicVolume: 60 }, readOnly: false, badSave: false,
   progress: { completedChapters: [], decorations: {}, discoveries: {}, scrapbook: [], album: { shops: [], cards: [], neighbors: [], goals: [] }, towns: [] },
   ui: { tutorialStep: 0, intro: false, openShop: null, sheet: null, hint: null, seenGazetteAt: -1, gazetteYear: 1, showDetails: false, resetArmed: false, receipt: null, lastShow: null }
 };
@@ -1303,6 +1306,7 @@ function settingsScreen() {
   return el('main', { class: 'screen settings' }, topbar('Settings', { label: '← Home', fn: () => go('home') }),
     el('section', { class: 'card' }, el('h3', { text: 'Reading level' }), radio('pres', 'guided', 'Guided: whole coins, fewer numbers', S.options.presentation, v => { S.options.presentation = v; }), radio('pres', 'explorer', 'Explorer: exact numbers, more details', S.options.presentation, v => { S.options.presentation = v; })),
     el('section', { class: 'card' }, el('h3', { text: 'Sound' }), el('label', { class: 'radio' }, el('input', { type: 'checkbox', id: 'opt-sound', checked: S.options.sound ? true : null, onchange: e => { S.options.sound = e.target.checked; saveSettings(); if (S.options.sound) { audio(); tick(); } } }), ' Paper sounds'), el('p', { class: 'muted small', text: 'Soft paper ticks during the year show and one quiet chime at the Gazette. Off unless you turn it on. Nothing in the game needs sound.' })),
+    el('section', { class: 'card' }, el('h3', { text: ST.music.label }), MUSIC.manifest ? [el('label', { class: 'radio' }, el('input', { type: 'checkbox', id: 'opt-music', checked: S.options.music ? true : null, onchange: e => setMusic(e.target.checked) }), ' ' + ST.music.label), el('label', { for: 'opt-music-vol', class: 'muted small', text: ST.music.volume }), el('input', { type: 'range', id: 'opt-music-vol', min: 0, max: 100, step: 5, value: S.options.musicVolume == null ? 60 : S.options.musicVolume, 'aria-label': 'Music volume', oninput: e => setMusicVolume(+e.target.value) }), el('p', { class: 'muted small', id: 'now-playing', role: 'status', text: nowPlayingLine() })] : el('p', { class: 'muted', text: ST.music.none }), el('p', { class: 'muted small', text: ST.music.hint })),
     el('section', { class: 'card' }, el('h3', { text: 'Motion' }), radio('motion', 'auto', 'Follow my device', S.options.motion, v => { S.options.motion = v; }), radio('motion', 'reduced', 'Still frames, no animation', S.options.motion, v => { S.options.motion = v; })),
     el('section', { class: 'card' }, el('h3', { text: 'Text size' }), radio('ts', 1, 'Normal', S.options.textSize, v => { S.options.textSize = v; }), radio('ts', 1.15, 'Larger', S.options.textSize, v => { S.options.textSize = v; }), radio('ts', 1.3, 'Largest', S.options.textSize, v => { S.options.textSize = v; })),
     el('section', { class: 'card' }, el('h3', { text: ST.readAloud.label }), localVoices().length ? el('label', { class: 'radio' }, el('input', { type: 'checkbox', checked: S.options.readAloud ? true : null, onchange: e => { S.options.readAloud = e.target.checked; saveSettings(); render(); } }), ' ' + ST.readAloud.label) : el('p', { class: 'muted', text: ST.readAloud.none }), el('p', { class: 'muted small', text: ST.readAloud.hint })),
@@ -1393,7 +1397,7 @@ function homeScreen() {
     el('h1', { text: 'MAINSTREET', onpointerdown: () => { S.ui.pressAt = Date.now(); }, onpointerup: () => { if (S.ui.pressAt && Date.now() - S.ui.pressAt > 3000) { S.ui.debug = true; render(); } S.ui.pressAt = 0; } }), el('p', { class: 'tag', text: 'Own little pieces of a town. Make a plan. See what time changes.' }),
     el('div', { class: 'home-actions' }, cont, where, mainBtn, S.ui.resetArmed ? el('button', { type: 'button', class: 'btn ghost', onclick: () => { S.ui.resetArmed = false; render(); }, text: 'Keep my town' }) : null),
     el('ol', { class: 'chapters' }, chapters),
-    el('nav', { class: 'home-nav' }, freeUnlocked() ? el('button', { type: 'button', class: 'btn', onclick: () => { S.ui.fp = null; go('freeplay'); }, text: ST.freePlay.title }) : el('span', { class: 'muted small', text: ST.freePlay.unlock }), el('button', { type: 'button', class: 'btn', onclick: () => go('scrapbook'), text: 'Scrapbook (' + albumCount + ' of 40)' }), S.ui.debug ? el('button', { type: 'button', class: 'btn', onclick: () => go('debug'), text: 'Debug' }) : null, el('button', { type: 'button', class: 'btn', onclick: () => go('settings'), text: 'Settings' }), el('button', { type: 'button', class: 'btn', onclick: () => go('grownups'), text: 'Grown-ups' }), el('button', { type: 'button', class: 'btn', onclick: () => window.SWS_EXIT(), text: '← All Sky Wolf games' })),
+    el('nav', { class: 'home-nav' }, freeUnlocked() ? el('button', { type: 'button', class: 'btn', onclick: () => { S.ui.fp = null; go('freeplay'); }, text: ST.freePlay.title }) : el('span', { class: 'muted small', text: ST.freePlay.unlock }), el('button', { type: 'button', class: 'btn', onclick: () => go('scrapbook'), text: 'Scrapbook (' + albumCount + ' of 40)' }), S.ui.debug ? el('button', { type: 'button', class: 'btn', onclick: () => go('debug'), text: 'Debug' }) : null, musicControl(), el('button', { type: 'button', class: 'btn', onclick: () => go('settings'), text: 'Settings' }), el('button', { type: 'button', class: 'btn', onclick: () => go('grownups'), text: 'Grown-ups' }), el('button', { type: 'button', class: 'btn', onclick: () => window.SWS_EXIT(), text: '← All Sky Wolf games' })),
     el('p', { class: 'stamp', id: 'build-stamp', text: 'build ' + BUILD + ' · engine ' + E.VERSION.engine + ' · ' + (navigator.onLine === false ? 'offline' : 'loads once online, then works offline') }));
 }
 
@@ -1600,12 +1604,13 @@ function render() {
   const prevFocus = captureFocus(root);
   root.replaceChildren(view);
   restoreFocus(root, view, prevFocus);
+  musicTick();
 }
 function boot() {
   loadSettings();
   const params = new URLSearchParams(location.search);
   if (params.has('debug')) S.ui.debug = true;
-  startTabLock();
+  startTabLock(); startMusicSystem(); loadMusic().then(() => { if (S.screen === 'home' || S.screen === 'settings') render(); });
   const r = loadRun(); const had = r === 'ok'; S.badSave = r === 'bad';
   if ('serviceWorker' in navigator && !window.SWS_EMBED && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').then(reg => { const arm = () => { if (reg.waiting && navigator.serviceWorker.controller) { S.ui.updateReady = reg; if (S.screen === 'home') render(); } }; arm(); reg.addEventListener('updatefound', () => { const w = reg.installing; if (w) w.addEventListener('statechange', arm); }); }).catch(() => {});
   if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('controllerchange', () => { if (S.ui.updateReady) location.reload(); });
@@ -1763,6 +1768,7 @@ function debugScreen() {
   return el('main', { class: 'screen debug' }, topbar('Debug', { label: '← Home', fn: () => go('home') }),
     el('section', { class: 'card' }, el('h3', { text: 'Start a run' }), row(chapterSel, presetSel), row(nameIn, el('button', { type: 'button', class: 'btn small', onclick: () => { newRun(d.chapter, E.normalizeTownName(d.name) || d.name, d.preset); S.ui.intro = false; go('town'); }, text: 'Start' })), el('p', { class: 'stamp', text: m ? m.id : 'no run' })),
     m ? el('section', { class: 'card' }, el('h3', { text: 'This run' }), row(jumpIn, el('button', { type: 'button', class: 'btn small', onclick: () => { debugJump(+jumpIn.value); render(); }, text: 'Jump to month' }), el('button', { type: 'button', class: 'btn small', onclick: () => { S.options.showSpeed = S.options.showSpeed === 10 ? 1 : 10; saveSettings(); render(); }, text: 'Show speed ×' + (S.options.showSpeed === 10 ? '10 (on)' : '1') })), el('p', { class: 'muted', text: 'Month ' + s.t + ' of ' + m.T + ' · town ' + m.townName + ' · Dev picks ' + nameOf(m.devPick) + (m.closure ? ' · closure ' + nameOf(m.closure.id) + ' at month ' + m.closure.announceT : '') }), ribbon, el('h3', { text: 'Event log' }), log, nbTable ? el('h3', { text: 'Neighbor ledgers (coins at each year)' }) : null, nbTable) : null,
+    el('section', { class: 'card' }, el('h3', { text: 'Music' }), el('p', { class: 'muted', text: JSON.stringify(musicState()) }), musicControl()),
     el('section', { class: 'card' }, el('h3', { text: 'Measure' }), row(perfBtn, simsBtn), d.perf ? el('p', { class: 'muted', text: d.perf }) : null, d.sims ? el('p', { class: 'muted', text: d.sims }) : null),
     el('section', { class: 'card' }, el('h3', { text: 'Export' }), el('button', { type: 'button', class: 'btn small', onclick: () => download('mainstreet-' + (m ? m.townName.replace(/\s+/g, '-').toLowerCase() : 'town') + '.json', exportText()), text: 'Export JSON' })));
 }
@@ -1826,7 +1832,59 @@ function restoreFocus(root, view, prev) {
   const t = cands[Math.min(prev.idx, cands.length - 1)]; if (t) { try { t.focus({ preventScroll: true }); } catch (e) {} }
 }
 
-globalThis.MS = { S, render, queue, undo, arrive, newRun, go, commitAndAdvance, finishChapter, exportText, importText, applyImport, tick, chime, BUILD };
+
+/* ---- M8: music. Stephen's songs, assigned by the feel of each moment (docs/MUSIC.md). Optional, off by default, starts after the first tap. ---- */
+const MUSIC = { manifest: null, cur: null, el: null, armed: false, muted: false, fade: null };
+function loadMusic() {
+  if (location.protocol === 'file:') { MUSIC.manifest = null; return Promise.resolve(); }
+  return fetch('music/manifest.json').then(r => r.ok ? r.json() : null).then(j => { MUSIC.manifest = j && Array.isArray(j.tracks) && j.tracks.length ? j : null; }).catch(() => { MUSIC.manifest = null; });
+}
+function musicFeelKey() {
+  const sc = S.screen;
+  if (sc === 'show' && S.ui.lastShow && S.ui.lastShow.length) { const f = S.ui.lastShow[0]; return f.mood === 'S' ? 'show-slump' : 'show-' + f.weather; }
+  if (sc === 'town' && S.run && S.ui.intro) return 'intro';
+  if (sc === 'town' && S.run && S.market && S.draft && S.market.moods[S.draft.t] === 'S') return 'town-slump';
+  return sc;
+}
+function musicFeel() { const map = (MUSIC.manifest && MUSIC.manifest.map) || {}; const key = musicFeelKey(); return { key, feel: map[key] || map[key.split('-')[0]] || map.default || 'calm' }; }
+function musicVolume(track) { const v = S.options.musicVolume == null ? 60 : S.options.musicVolume; return Math.max(0, Math.min(1, v / 100 * (track && track.gain != null ? track.gain : 1))); }
+function pickTrack(feel) {
+  const all = MUSIC.manifest.tracks, pool = all.filter(t => t.feel === feel), use = pool.length ? pool : all;
+  if (!use.length) return null; if (MUSIC.cur && use.includes(MUSIC.cur)) return MUSIC.cur;
+  return use[Math.floor(Math.random() * use.length)];
+}
+function makeAudio(track) { const a = new Audio('music/' + track.file); a.loop = track.loop !== false; a.preload = 'auto'; a.volume = 0; a.addEventListener('ended', () => { if (MUSIC.el === a) { MUSIC.cur = null; musicTick(); } }); return a; }
+function playTrack(track) {
+  const prev = MUSIC.el, next = makeAudio(track); MUSIC.cur = track; MUSIC.el = next;
+  const target = musicVolume(track); const p = next.play(); if (p && p.catch) p.catch(() => {});
+  if (MUSIC.fade) clearInterval(MUSIC.fade);
+  const t0 = Date.now(), dur = 1200, pv = prev ? prev.volume : 0;
+  MUSIC.fade = setInterval(() => { const k = Math.min(1, (Date.now() - t0) / dur); next.volume = target * k; if (prev) prev.volume = pv * (1 - k); if (k >= 1) { clearInterval(MUSIC.fade); MUSIC.fade = null; if (prev) { prev.pause(); prev.removeAttribute('src'); } } }, 50);
+}
+function stopMusic() { if (MUSIC.fade) { clearInterval(MUSIC.fade); MUSIC.fade = null; } if (MUSIC.el) { MUSIC.el.pause(); MUSIC.el.removeAttribute('src'); } MUSIC.el = null; MUSIC.cur = null; }
+function musicTick() {
+  if (!MUSIC.manifest || !S.options.music || !MUSIC.armed || MUSIC.muted) return;
+  const track = pickTrack(musicFeel().feel); if (!track) return;
+  if (track === MUSIC.cur) { if (MUSIC.el && MUSIC.el.paused) { const p = MUSIC.el.play(); if (p && p.catch) p.catch(() => {}); } return; }
+  playTrack(track);
+}
+function setMusic(on) { S.options.music = !!on; saveSettings(); if (on) { MUSIC.armed = true; musicTick(); } else stopMusic(); render(); }
+function setMusicVolume(v) { S.options.musicVolume = Math.max(0, Math.min(100, Math.round(v))); saveSettings(); if (MUSIC.el && !MUSIC.fade) MUSIC.el.volume = musicVolume(MUSIC.cur); }
+function musicState() { const f = musicFeel(); return { available: !!MUSIC.manifest, on: !!S.options.music, armed: MUSIC.armed, muted: MUSIC.muted, key: f.key, feel: f.feel, track: MUSIC.cur ? (MUSIC.cur.title || MUSIC.cur.file) : null, playing: !!(MUSIC.el && !MUSIC.el.paused) }; }
+function musicControl() {
+  if (!MUSIC.manifest) return null;
+  return el('button', { type: 'button', class: 'btn music', 'aria-pressed': S.options.music ? 'true' : 'false', onclick: () => setMusic(!S.options.music), text: S.options.music ? '♫ Music on' : '♫ Music off' });
+}
+function nowPlayingLine() { const st = musicState(); return st.track ? 'Now playing: ' + st.track + ' (' + st.feel + ', for ' + st.key + ')' : 'Nothing playing yet. Music starts after your first tap.'; }
+function startMusicSystem() {
+  const arm = () => { if (MUSIC.armed) return; MUSIC.armed = true; musicTick(); };
+  document.addEventListener('pointerdown', arm, { capture: true, passive: true }); document.addEventListener('keydown', arm, { capture: true });
+  document.addEventListener('visibilitychange', () => { if (!MUSIC.el) return; if (document.hidden) MUSIC.el.pause(); else if (S.options.music && !MUSIC.muted) { const p = MUSIC.el.play(); if (p && p.catch) p.catch(() => {}); } });
+  /* the arcade's host-music handshake (lucid-winds SATELLITE_EMBED_GUIDE): the studio soundtrack playing means ours goes quiet */
+  window.addEventListener('message', e => { const d = e.data; if (!d || d.sws !== 'host-music') return; MUSIC.muted = !!d.on; if (MUSIC.muted) { if (MUSIC.el) MUSIC.el.pause(); } else musicTick(); });
+}
+
+globalThis.MS = { S, render, queue, undo, arrive, newRun, go, commitAndAdvance, finishChapter, exportText, importText, applyImport, tick, chime, music: { state: musicState, set: setMusic, volume: setMusicVolume }, BUILD };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
 </script>

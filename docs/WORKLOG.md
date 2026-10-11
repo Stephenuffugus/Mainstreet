@@ -160,3 +160,10 @@ One box per exit condition. Tick a box only with the command and its result past
       evidence: node tools/test.mjs 131 pass / 0 fail
 - [x] Tag `v1.0.0-rc2`
       evidence: git tag v1.0.0-rc2; build stamp 1.0.0-rc2; worker cache DECK2-MS1-1.0.0-rc2
+
+## M8 Music lane (2026-10-11; Stephen: songs assigned by feel once he hears the game)
+
+- [x] Music layer: music/manifest.json with tracks and a moment map; one song at a time with a crossfade; off by default; starts after the first tap; pauses when hidden; Home toggle; Settings toggle, volume and "Now playing"; debug panel state; the arcade's host-music handshake; songs cached on first play by the worker
+      evidence: ui.spec.mjs three music journeys with routed silent audio (toggle, feel follows the screen to the Gazette, no-tracks build shows no controls, host-music mutes and unmutes, volume and now-playing), chromium and webkit; node tools/music_check.mjs
+- [x] docs/MUSIC.md: the drop-in guide with the moment table and the rules
+- [ ] Stephen's songs in music/ with feels assigned; card flag ownMusic:true in the arcade patch

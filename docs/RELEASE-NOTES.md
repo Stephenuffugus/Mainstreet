@@ -1,5 +1,10 @@
 # MAINSTREET release notes
 
+## Unreleased (after rc2)
+
+- A music lane: drop mp3 files into `music/`, list them with a feel in `music/manifest.json`, and the game plays them by moment (town, slump, show by weather, Gazette, results and so on) with a crossfade. Off by default, starts after the first tap, pauses when hidden, mutes on the arcade's host-music message. Settings shows what is playing. See `docs/MUSIC.md`.
+- The engine tests now fail if any art slot the game can request is missing.
+
 ## v1.0.0-rc2 (2026-10-11)
 
 Polish after rc1, built while the arcade integration waits on a free Codespace.

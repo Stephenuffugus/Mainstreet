@@ -3,7 +3,7 @@
    On activate, delete ONLY caches whose name starts with "mainstreet-". Never touch another game's cache. */
 var VERSION = 'DECK2-MS1-1.0.0-rc2';
 var CACHE = 'mainstreet-' + VERSION;
-var CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
+var CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './music/manifest.json'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) {
     return Promise.all(CORE.map(function (u) { return c.add(u).catch(function () {}); })).then(function () {
@@ -26,7 +26,7 @@ self.addEventListener('fetch', function (e) {
   e.respondWith(caches.match(e.request, { ignoreSearch: true }).then(function (hit) {
     if (hit) return hit;
     return fetch(e.request).then(function (res) {
-      if (res && res.ok && url.pathname.indexOf('/art/') >= 0) { var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put(e.request, copy); }); }
+      if (res && res.ok && (url.pathname.indexOf('/art/') >= 0 || url.pathname.indexOf('/music/') >= 0)) { var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put(e.request, copy); }); }
       return res;
     });
   }));

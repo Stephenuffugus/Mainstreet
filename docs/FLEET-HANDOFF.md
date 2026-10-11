@@ -29,6 +29,10 @@ The clone the script reads must sit at `/workspaces/Mainstreet` and it resolves 
 - Portal entry (`portal/index.html`, `FEATURED`, carded by the vendored path with the mandatory `?v=` stamp): `{nm:"MAINSTREET", ds:"Own little pieces of a town. Make a plan. See what time changes.", cat:"math", url:"/satellites/mainstreet/?v=20261011a", ic:"🏘️", thumb:"/portal-assets/thumbs/mainstreet.png", beta:true, fresh:true}` plus a search keyword entry. A relative `/satellites/` url opens top level, not framed, so the referrer exit is the one that runs.
 - Keep `beta:true` until the M6 playtest closes.
 
+## 3b. Own music
+
+When `music/manifest.json` lists tracks, add `ownMusic:true` to the card. The page honors `{sws:'host-music', on:true|false}` (mutes while the studio soundtrack plays). With no tracks, leave the flag off.
+
 ## 4. Earn moments
 
 **None, by design (R01).** The game posts only `{sws:'ready'}` and `{sws:'close'}`. There is no `sws:'earn'`, no Sunbeam SDK, no `_sbCapEarn`. If `scripts/music_include.mjs --check` is run with MAINSTREET as a non-vendored satellite, add it to an allow-list; a vendored copy is already expected to carry no include.

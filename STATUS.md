@@ -2,6 +2,7 @@
 Updated: 2026-10-11  ·  Current milestone: M7 polish done, rc2 tagged; playtest and vendoring open (fun gate still open)  ·  Engine MS1 · Content DECK2 · Rubric PLAN1 · Art ART0
 
 ## Done since last note
+- M8: the music lane (docs/MUSIC.md): songs by feel per moment, crossfade, off by default, host-music handshake, three journeys; art-slot guard test. Waiting on Stephen's songs.
 - M7 (rc2): sound, focus for screen readers, Spent on the Town, six checklist journeys automated, first-pass art in all 110 sprite slots (1.3 MB), show news-card fix, plate sizing. 56 Playwright journeys green in chromium and webkit.
 - M6: content DECK2 (six drifts recalibrated on held-out seeds; every shop within 0.2 points of its design total), docs/calibration.md with an M6 reading, docs/FLEET-HANDOFF.md, docs/RELEASE-NOTES.md, the embed-protocol journey, Grown-ups copy current, build stamp 1.0.0-rc1, tag v1.0.0-rc1.
 - M5 complete: free play with presets and typed town names; scrapbook pages with the year strip, stamps and neighbors' notes; read-aloud with local voices; export and import with a confirm and a hardened parser; the real service worker (precache from art/manifest.json, update banner, embed guard) with an automated offline-after-install test; the two-tab lock; damaged-save recovery; the debug panel; an overflow sweep at 412, 375 and 320. 28 Playwright journeys green in chromium and webkit.
@@ -32,7 +33,7 @@ Updated: 2026-10-11  ·  Current milestone: M7 polish done, rc2 tagged; playtest
 3. Fleet: vendor per docs/FLEET-HANDOFF.md with the portal card beta:true; after the playtest, tag v1.0.0 and drop beta.
 
 ## Tests
-- node tools/test.mjs: 130 pass / 0 fail · npx playwright test: 56 passed (replay fixtures and twenty-three UI journeys incl. offline after install with the art precached, the embed protocol, two tabs, import, recovery, three overflow widths, focus, sound, blocked storage, exit, hidden page, reduced motion; chromium and webkit) · harness: free standard 10,000 held-out towns in about 60 s, all families and presets in about 7 min · harness ch5 2,000 seeds: 5.0 s · harness 10,000 seeds, four neighbors: 58.4 s
+- node tools/test.mjs: 131 pass / 0 fail · npx playwright test: 62 passed (replay fixtures and twenty-three UI journeys incl. offline after install with the art precached, the embed protocol, two tabs, import, recovery, three overflow widths, focus, sound, blocked storage, exit, hidden page, reduced motion; chromium and webkit) · harness: free standard 10,000 held-out towns in about 60 s, all families and presets in about 7 min · harness ch5 2,000 seeds: 5.0 s · harness 10,000 seeds, four neighbors: 58.4 s
 
 ## Measurements
 - Performance, headless Chromium at 4x CPU throttle (stand-in until the reference device is named): boot to title 385 ms; new run plus Town render 165 ms; queue an action and re-render 1 ms; advance 12 months 3 ms; full render 5 ms

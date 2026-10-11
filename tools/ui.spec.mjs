@@ -548,3 +548,56 @@ test("the year show renders news cards as elements: stepping twelve months under
   }
   expect(news).toBeGreaterThan(0);
 });
+
+/* ---- M8: music, assigned by feel; routed silent audio so no song needs to exist in the repo ---- */
+function silentWav(seconds = 1) { const rate = 8000, n = rate * seconds, b = Buffer.alloc(44 + n); b.write("RIFF", 0); b.writeUInt32LE(36 + n, 4); b.write("WAVE", 8); b.write("fmt ", 12); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22); b.writeUInt32LE(rate, 24); b.writeUInt32LE(rate, 28); b.writeUInt16LE(1, 32); b.writeUInt16LE(8, 34); b.write("data", 36); b.writeUInt32LE(n, 40); b.fill(128, 44); return b; }
+async function routeMusic(page) {
+  await page.route("**/music/manifest.json", r => r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ tracks: [{ file: "calm.wav", title: "Calm Street", feel: "calm", loop: true }, { file: "bright.wav", title: "Bright Morning", feel: "bright", loop: true }], map: { default: "calm", gazette: "bright", "show-sun": "bright" } }) }));
+  await page.route("**/music/*.wav", r => r.fulfill({ status: 200, contentType: "audio/wav", body: silentWav() }));
+}
+test("music: off by default, nothing plays before a tap, the Home toggle starts it, the feel follows the screen", async ({ page, browserName }) => {
+  const errors = watch(page); await routeMusic(page);
+  await page.goto(base + "index.html");
+  await expect(page.getByRole("button", { name: /Music off/ })).toBeVisible();
+  expect(await page.evaluate(() => MS.music.state())).toMatchObject({ available: true, on: false, track: null, playing: false });
+  await page.getByRole("button", { name: /Music off/ }).click();
+  await expect(page.getByRole("button", { name: /Music on/ })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => MS.music.state().track)).toBe("Calm Street");
+  if (browserName === "chromium") await expect.poll(() => page.evaluate(() => MS.music.state().playing)).toBe(true);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("ms:settings")).options.music)).toBe(true);
+  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click();
+  await page.locator(".shop-face").click(); await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
+  expect(await page.evaluate(() => MS.music.state().track)).toBe("Calm Street");               // same feel, no switch
+  for (let i = 0; i < 4; i++) { await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click(); await page.getByRole("button", { name: "Skip" }).click(); }
+  await expect(page.locator(".masthead")).toBeVisible();
+  await expect.poll(() => page.evaluate(() => MS.music.state().feel)).toBe("bright");
+  await expect.poll(() => page.evaluate(() => MS.music.state().track)).toBe("Bright Morning");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.locator(".screen.decision")).toBeVisible();
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("music: with no tracks there are no music controls and Settings says so", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(base + "index.html");
+  await expect(page.getByRole("button", { name: /Music/ })).toHaveCount(0);
+  await page.getByRole("button", { name: "Settings" }).click();
+  await expect(page.getByText("No music files in this build yet.")).toBeVisible();
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("music: the arcade's host-music message mutes and unmutes; Settings shows the volume and what is playing", async ({ page, browserName }) => {
+  await routeMusic(page);
+  await page.goto(base + "index.html");
+  await page.getByRole("button", { name: /Music off/ }).click();
+  await expect.poll(() => page.evaluate(() => MS.music.state().track)).toBe("Calm Street");
+  await page.evaluate(() => window.postMessage({ sws: "host-music", on: true }, "*"));
+  await expect.poll(() => page.evaluate(() => MS.music.state().muted)).toBe(true);
+  expect(await page.evaluate(() => MS.music.state().playing)).toBe(false);
+  await page.evaluate(() => window.postMessage({ sws: "host-music", on: false }, "*"));
+  await expect.poll(() => page.evaluate(() => MS.music.state().muted)).toBe(false);
+  if (browserName === "chromium") await expect.poll(() => page.evaluate(() => MS.music.state().playing)).toBe(true);
+  await page.getByRole("button", { name: "Settings" }).click();
+  await expect(page.locator("#opt-music")).toBeChecked();
+  await page.locator("#opt-music-vol").fill("20");
+  expect(await page.evaluate(() => MS.S.options.musicVolume)).toBe(20);
+  await expect(page.locator("#now-playing")).toContainText("Now playing: Calm Street");
+});

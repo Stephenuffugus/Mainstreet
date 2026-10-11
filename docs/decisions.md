@@ -6,6 +6,7 @@ Format: `YYYY-MM-DD · milestone · who · decision · why · what it affects`
 
 ## Entries
 
+- 2026-10-11 · M8 · Fable · Music is a plain-file layer assigned by feel: music/manifest.json lists tracks with a feel word and maps moments to feels; one track plays at a time, crossfading when the feel changes; off by default and started only after a tap; songs are runtime-cached, never precached · Stephen will assign his own songs by ear once he hears the screens; the spec's sound rules (optional, start off, nothing like a payout) carry over; R01 forbids music unlocks, not music · app7, docs/MUSIC.md
 - 2026-10-11 · M7 · Fable · The year show paints month one at once and never hands a null child to the native append (chapter 1 has no neighbor bars); art images get height auto so the square album cards keep their aspect ratio · Found in the art sweep: a visible "null" under the stage in chapter 1 and album rows five times too tall once real images loaded · showScreen, styles
 - 2026-10-11 · M7 · Fable · First-pass art for every slot is generated cut-paper SVG (tools/gen_art.mjs), shipped under the real names so Stephen's renders replace them file by file · R02 keeps the art lane his; placeholders with the right silhouettes make the fun gate a test of the game, not of dashed boxes · art/, docs/ART-BRIEF.md
 - 2026-10-11 · M7 · Fable · Sky plate uses object-fit cover in its 36 px strip; the weather plate keeps its 2:1 shape inside a 120 px box · Contained plates shrank to small floating boxes once real images arrived · styles
