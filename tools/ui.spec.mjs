@@ -87,6 +87,7 @@ test("an accidental tap on a stepper changes the tray, never the ledger; Clear p
   await expect(page.locator(".own")).toContainText("3 shares");
   const committed = await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).checkpoint.pos.BAKE || 0);
   expect(committed).toBe(0);
+  await page.getByRole("button", { name: "Show plan" }).click();                           // the tray is one line until opened (second play, 11 Oct)
   await page.getByRole("button", { name: "Undo +1 share Rise & Shine Bakery (−10)" }).first().click();
   await expect(page.locator(".own")).toContainText("2 shares");
   await page.getByRole("button", { name: "Clear plan" }).click();

@@ -11,3 +11,10 @@ Played on his own phone, rc3, through the arcade's tester gate. His words:
 - The art batch lands about three hours after these notes.
 
 The sorting (fault / by design / taste) and the plan follow in docs/decisions.md and the lead's plan.
+
+## Second play, after rc4 (verbatim)
+
+> okay we got the tutorial done and it wasnt very good. the first leve that is, now were on the next level that has more businesses but the "your plan" pops up over the whole screen as you build it to the point where you cant see anything. that was not well thought out
+
+- Chapter 1 after rc4: still "not very good". He has not yet said what was missing; the lead asks one question after the tray fix.
+- Chapter 2: the plan tray, pinned at the bottom with the buttons since rc4, grows with every queued trade on a six-shop street and covers the screen. Fault, the lead's own (the sticky footer); the team's original tray was also sticky and would have grown the same way.
