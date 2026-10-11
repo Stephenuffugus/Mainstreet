@@ -6,6 +6,12 @@ Format: `YYYY-MM-DD · milestone · who · decision · why · what it affects`
 
 ## Entries
 
+- 2026-10-11 · M2 · Fable · The street is a grid of compact storefront tiles (three per row on a phone) with one trading panel beneath for the selected shop; chapter 1 auto-selects the Bakery · One full-size card per shop made the six-shop street a long scroll; the panel keeps plus and minus one tap from any tile · HANDOFF 8 Town screen
+- 2026-10-11 · M2 · Fable · A reload resumes into the town (or the Results page) instead of Home · "Refresh mid-chapter resumes exactly"; Home stays one tap away · App boot
+- 2026-10-11 · M2 · Fable · Season labels follow the calendar: the chapter starts in January, so the first advance is "Go to spring" and the first show is winter weather · The packet's "Go to summer" was illustrative; the Gazette weather strip must match · App copy
+- 2026-10-11 · M2 · Fable · VIEW_PLAN and VIEW_COST are queued once per stop (duplicates ignored) and hidden from the plan tray · Opening the plan is not a trade · App queue()
+- 2026-10-11 · M2 · Fable · The art manifest fetch is skipped under file: (dev and tests) · Chromium logs a console error for a file fetch; over http it loads normally · App loadArt()
+- 2026-10-11 · M2 · Fable · Steppers are named "Buy 1 share" and "Sell 1 share" for assistive tech; tiles carry name, state, price and holding in their label · TalkBack reads the purpose, not a glyph · App
 - 2026-10-11 · M1 · Fable · `<script id="content">` precedes `<script id="engine">` in index.html; the engine captures PARAMS and CONTENT once at load · Reading a vm global on every call was 23% of harness time; capturing it needs the data loaded first · HANDOFF 11, index.html, tools/lib.mjs
 - 2026-10-11 · M1 · Fable · `posValue` uses float arithmetic when msh × quote is at most 2^50 and BigInt above that · Exact in IEEE 754 for that range (quotient spacing under 0.0005 against a worst remainder of 0.999) and three times faster; fixtures identical before and after · Engine, HANDOFF 5
 - 2026-10-11 · M1 · Fable · Cass sells after a 10% fall and re-enters 15% up or after 24 months, instead of acting on the slump start and end cards · Acting on the announcement gave her perfect regime timing: in 2,000 free-play seeds she beat Ada at the median, which would teach that following the news wins · HANDOFF 5 neighbor table, engine policy

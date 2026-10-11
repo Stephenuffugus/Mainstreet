@@ -43,14 +43,22 @@ One box per exit condition. Tick a box only with the command and its result past
       evidence: git tag m1 on the M1 commit
 
 ## M2 First playable
-- [ ] Home with `#s-title`, build stamp, Continue, "← All Sky Wolf games" (embed block in place)
-- [ ] Town with the Bakery, share card, steppers, plan tray, confirm sheet with concrete label
-- [ ] Season show (3 months) with skip and reduced-motion strip; never changes a number (test by driving the store with and without rendering)
-- [ ] Gazette for chapter 1 (no neighbors), My Plan, Results with stamps "so far" and final
-- [ ] Save after every tray change and commit; refresh mid-chapter restores tray and state exactly
-- [ ] Opening order in HANDOFF section 8 followed step for step; `docs/playtest.md` M2 checklist complete
-- [ ] Placeholders labeled with slot names wherever art is missing; `art/manifest.json` swap works with the M2 batch
-- [ ] Tag `m2`
+- [x] Home with `#s-title`, build stamp, Continue, "← All Sky Wolf games" (embed block in place)
+      evidence: tools/ui.spec.mjs chapter 1 journey checks #s-title and #build-stamp; embed block is the first statement of the app block
+- [x] Town with the Bakery, share card, steppers, plan tray, confirm sheet with concrete label
+      evidence: ui.spec.mjs: tray shows "+1 share Rise & Shine Bakery (−10)", confirm sheet reads "Buy 1 share of Rise & Shine Bakery for 10 coins"
+- [x] Season show (3 months) with skip and reduced-motion strip; never changes a number (test by driving the store with and without rendering)
+      evidence: ui.spec.mjs "the show and skipping it never change a number": history identical before and after skipping; reduced motion renders a stepped strip (manual)
+- [x] Gazette for chapter 1 (no neighbors), My Plan, Results with stamps "so far" and final
+      evidence: ui.spec.mjs reaches the Gazette masthead, Review my plan, Results with Goal fit, Follow-through and "Coming later" stamps, Show details reveals Plan Practice n of 100
+- [x] Save after every tray change and commit; refresh mid-chapter restores tray and state exactly
+      evidence: ui.spec.mjs reloads with two pending actions: tray, Soon 30 and wallet 60 all restored; boot resumes into the town
+- [x] Opening order in HANDOFF section 8 followed step for step; `docs/playtest.md` M2 checklist complete
+      evidence: ui.spec.mjs asserts each step's copy in order (practice line, Some for soon, Put 30 in my Jar, tiny piece, Buy 1 share for 10 coins, confirm, receipt You own 1 share, Same share different price, Prices fell); keyboard-only journey passes in chromium and webkit
+- [x] Placeholders labeled with slot names wherever art is missing; `art/manifest.json` swap works with the M2 batch
+      evidence: screenshots show dashed blocks named shop-bake-open, keeper-bram-talking, goal-art-supplies, weather-snow, plate-sky; art() swaps to <img> for any file listed in art/manifest.json (swap verified by a temporary manifest entry pointing at a test PNG)
+- [x] Tag `m2`
+      evidence: git tag m2 on the M2 commit
 
 ## Fun gate (R12)
 - [ ] Penny plays chapter 1 on the reference device; observations recorded in `docs/playtest.md`

@@ -7,26 +7,149 @@
 <title>MAINSTREET</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#F3EEE2">
+<meta name="description" content="A free, offline, kid-safe investing game. Own little pieces of a town. Make a plan. See what time changes.">
 <style>
-/* M0 stub. The real stylesheet lands in M2. Tokens only. */
-:root{--paper:#F3EEE2;--ink:#2B2420;--up:#0072B2;--down:#E69F00;}
-html,body{height:100%;margin:0;background:var(--paper);color:var(--ink);font:18px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;}
-#s-title{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;}
-h1{font-size:40px;margin:0;letter-spacing:.04em;}
-.stamp{font-family:ui-monospace,Menlo,monospace;font-size:13px;opacity:.7;}
-button{min-width:48px;min-height:48px;padding:0 20px;border:2px solid var(--ink);border-radius:8px;background:#fff;color:var(--ink);font:inherit;cursor:pointer;}
-button:focus-visible{outline:3px solid var(--up);outline-offset:2px;}
+/* MAINSTREET styles (M2). Paper town tokens; 48 px controls; blue up, orange down; no filters or heavy shadows. */
+:root{--paper:#F3EEE2;--paper-2:#EAE3D3;--card:#FBF8F1;--ink:#2B2420;--ink-2:#5E554E;--ink-3:#8A817A;--rule:#D9D0BE;--up:#0072B2;--down:#E69F00;--up-soft:#DCEBF5;--down-soft:#FBEFD2;--soon:#0072B2;--buffer:#6A994E;--saved:#8E7CC3;--ts:1;}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--paper);color:var(--ink)}
+body{font:calc(18px * var(--ts))/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:0 0 env(safe-area-inset-bottom,0px)}
+#app{min-height:100%}
+.screen{max-width:720px;margin:0 auto;padding:12px 16px 32px;display:flex;flex-direction:column;gap:12px}
+h1,h2,h3{margin:0;line-height:1.15;text-wrap:balance}
+h1{font-size:2.2em;letter-spacing:.04em}h2{font-size:1.5em}h3{font-size:1.1em;color:var(--ink-2)}
+p{margin:0}
+.muted{color:var(--ink-2)}.lbl{display:block;font-size:.8em;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em}
+.up{color:var(--up)}.down{color:var(--down)}
+.btn{min-height:48px;min-width:48px;padding:0 18px;border:2px solid var(--ink);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-weight:600;cursor:pointer;text-align:center}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.primary{background:var(--ink);color:var(--card)}
+.btn.big{font-size:1.1em;padding:0 24px}
+.btn.small{min-height:40px;padding:0 12px;font-size:.9em}
+.btn.ghost{border-color:var(--rule);background:transparent}
+.btn.step{width:52px;font-size:1.4em;padding:0}
+.btn.glow,.shop.glow .shop-face{outline:3px solid var(--up);outline-offset:3px}
+button:focus-visible,input:focus-visible{outline:3px solid var(--up);outline-offset:2px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+.actions.col{flex-direction:column;align-items:stretch}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.banner{background:var(--down-soft);border:1px solid var(--down);border-radius:8px;padding:8px 12px}
+.stamp{font-family:ui-monospace,Menlo,monospace;font-size:.75em;color:var(--ink-3)}
+.topbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
+.topbar h2{text-align:center;font-size:1.2em}
+/* placeholders and art */
+.ph{display:flex;align-items:center;justify-content:center;background:var(--paper-2);border:2px dashed var(--rule);border-radius:10px;color:var(--ink-3);font:.7em ui-monospace,Menlo,monospace;text-align:center;padding:4px;overflow:hidden}
+.art{display:block;border-radius:10px;object-fit:contain}
+.shop-art{width:100%;aspect-ratio:1;height:auto}
+.keeper-art{width:72px;height:72px;flex:none}
+.goal-art{width:56px;height:56px;flex:none}
+.goal-big{width:160px;height:160px;align-self:center}
+.sky{width:100%;height:36px;border-radius:10px 10px 0 0}
+.weather{width:100%;height:48px}
+.stamp-art{width:56px;height:56px;flex:none;border-radius:50%}
+.stamp-art.dim{opacity:.4}
+.deco-art{width:88px;height:88px}
+/* home */
+.home{text-align:center;padding-top:40px}
+.home .tag{font-size:1.1em;color:var(--ink-2)}
+.home-actions{display:flex;flex-direction:column;gap:10px;align-items:center}
+.chapters{list-style:none;padding:0;margin:8px 0;display:flex;flex-direction:column;gap:6px;text-align:left}
+.chapter{display:grid;grid-template-columns:32px 1fr auto;gap:8px;align-items:center;padding:8px 12px;background:var(--card);border:1px solid var(--rule);border-radius:10px}
+.chapter .num{font-weight:700;color:var(--ink-3)}
+.chapter.locked{opacity:.6}.chapter.done{border-color:var(--up)}
+.home-nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+/* town */
+.town-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.town-title{display:flex;flex-direction:column}
+.goal-chip{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:10px 12px}
+.goal-text{flex:1;display:flex;flex-direction:column;gap:4px}
+.bar{height:10px;background:var(--paper-2);border-radius:5px;overflow:hidden}
+.bar .fill{height:100%;background:var(--soon)}
+.money-row{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px}
+.money{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;font-variant-numeric:tabular-nums}
+.money strong{font-size:1.25em}
+.chg{font-size:.85em;font-weight:600}
+.bands{display:flex;flex-wrap:wrap;gap:4px;font-size:.78em}
+.band{padding:1px 6px;border-radius:6px;background:var(--paper-2)}
+.band.soon{border-left:4px solid var(--soon)}.band.buffer{border-left:4px solid var(--buffer)}.band.saved{border-left:4px solid var(--saved)}
+.hint{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--up-soft);border:1px solid var(--up);border-radius:12px;padding:10px 14px}
+.street{background:var(--paper-2);border-radius:12px;padding:0 0 12px}
+.shops{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px}
+.shops.one{grid-template-columns:minmax(150px,220px);justify-content:center}
+.tile{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:3px;align-items:center;background:var(--card);border:2px solid var(--rule);border-radius:12px;padding:6px;text-align:center;font-size:.9em}
+.tile.sel{border-color:var(--ink)}
+.tile.glow{outline:3px solid var(--up);outline-offset:3px}
+.tile:focus-visible{outline:3px solid var(--up)}
+.tile .shop-art{width:100%}
+.tile .tprice{font-variant-numeric:tabular-nums;font-weight:600}
+.tile .small{font-size:.8em}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:12px;margin:0 12px;overflow:hidden}
+.panel-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:10px 12px 0}
+.center{text-align:center;padding:0 12px}
+.share-card{display:flex;flex-direction:column;gap:6px;padding:8px 12px 12px;font-variant-numeric:tabular-nums}
+.price,.own{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.price strong{font-size:1.2em}
+.steppers{display:flex;gap:8px;align-items:center}
+.detail{padding:10px;border-top:1px solid var(--rule);display:flex;flex-direction:column;gap:8px;background:var(--paper)}
+.keeper{display:flex;gap:10px;align-items:center}
+.bubble{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:8px 12px;position:relative}
+.share-grid{display:grid;grid-template-columns:repeat(20,1fr);gap:2px}
+.share-grid i{display:block;aspect-ratio:1;background:var(--paper-2);border-radius:2px}
+.share-grid i.lit{background:var(--up)}
+.tray{background:var(--card);border:2px solid var(--ink);border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:6px;position:sticky;bottom:8px}
+.tray-head{display:flex;justify-content:space-between;align-items:center}
+.tray ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.tray li{display:flex;justify-content:space-between;align-items:center;gap:8px}
+/* sheets */
+.sheet-back{position:fixed;inset:0;background:rgba(43,36,32,.35);display:flex;align-items:flex-end;justify-content:center;z-index:10}
+.sheet{background:var(--card);border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));width:100%;max-width:720px;display:flex;flex-direction:column;gap:12px;max-height:90vh;overflow:auto}
+.num-in{min-height:48px;font:inherit;padding:0 12px;border:2px solid var(--ink);border-radius:10px;width:160px}
+/* plan */
+.bands-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.band-row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.band-ctl{display:flex;gap:6px;align-items:center}
+.goal-line{display:flex;gap:12px;align-items:center}
+.radio{display:block;padding:8px 0}
+/* decision */
+.decision{text-align:center;align-items:center}
+.decision .opts{justify-content:center}
+.frozen{font-size:.85em}
+/* show */
+.show{text-align:center}
+.receipt{min-height:1.4em;font-weight:600}
+.show-head{display:flex;flex-direction:column;gap:2px}
+.stage{background:var(--paper-2);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:12px}
+.show-shops{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.show-shop{display:flex;flex-direction:column;gap:6px}
+.mini-card{display:flex;justify-content:space-between;background:var(--card);border-radius:8px;padding:4px 8px;font-variant-numeric:tabular-nums}
+.news{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:10px 12px;text-align:left}
+.show .actions{justify-content:center}
+/* gazette */
+.masthead{border-bottom:3px double var(--ink);padding-bottom:10px;text-align:center}
+.eyebrow{font-size:.8em;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.money-story{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;font-variant-numeric:tabular-nums}
+.busiest{text-align:center;color:var(--ink-2)}
+/* results */
+.results .lead{font-size:1.2em}
+.stamps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.stamp-row{display:flex;gap:12px;align-items:center}
+.stamp-row.coming,.stamp-row.na,.stamp-row.soFar{opacity:.55}
+.decos{display:flex;gap:10px;flex-wrap:wrap}
+.deco{all:unset;cursor:pointer;border:2px solid transparent;border-radius:12px;padding:4px}
+.deco.chosen{border-color:var(--up)}.deco:focus-visible{outline:3px solid var(--up)}
+/* intro */
+.intro{text-align:center;align-items:center;padding-top:32px}
+.street-preview{display:flex;gap:16px;align-items:flex-end;justify-content:center}
+.street-preview .shop-art{width:180px}
+@media (max-width:420px){.money-row{grid-template-columns:1fr 1fr}.money:first-child{grid-column:1 / -1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <svg id="sprite" aria-hidden="true" style="display:none"><defs></defs></svg>
 
-<main id="s-title">
-  <h1>MAINSTREET</h1>
-  <p>Own little pieces of a town. Make a plan. See what time changes.</p>
-  <p class="stamp" id="build-stamp">build 0.0.0 · M0 stub</p>
-  <button type="button" id="exit-arcade">← All Sky Wolf games</button>
-</main>
+<div id="app"></div>
 
 <script id="content">
 /* CONTENT (M1). PARAMS, CONTENT, STRINGS. Data only: no functions, no DOM. See HANDOFF sections 3, 4, 6, 7, 9. */
@@ -183,6 +306,14 @@ globalThis.STRINGS = {
     hop:     { name:'Hop',     animal:'hare',     temperament:'energetic',                  busy:'Bells ringing all day. Fixed eleven flats.', normal:'Nice day for a ride. A few tune-ups.', quiet:'Rain means no rides. I oiled every chain in the shop twice.' },
     hazel:   { name:'Hazel',   animal:'hedgehog', temperament:'gentle',                     busy:'Full house today. Eight dogs, one very grumpy cat.', normal:'A calm day. Two baths and a nail trim.', quiet:'Only one booking. I read to the rabbit.' },
     fen:     { name:'Fen',     animal:'fox',      temperament:'dreamer',                    busy:'The new gadget works. Mostly. It sorted the muffins by color.', normal:'Tinkering. Next year is the year, you will see.', quiet:'Back to the drawing board. The robot folded itself.' }
+  },
+  shops: {
+    LEMN: { story:'Lemon Lane sells lemonade, iced tea and lemon ice from a stand with a striped awning. Lou squeezes every lemon by hand and watches the sky all day.' },
+    BAKE: { story:'Rise & Shine Bakery bakes bread and buns for the whole street. Bram has run it for twenty years and says the ovens do not hurry.' },
+    TOYS: { story:'Toy Box has a tall window full of whatever is popular this season. Ottilie can tell you what every kid in town wants this week.' },
+    BIKE: { story:'Spoke Bikes fixes flats, sells bikes and runs a repair bench out front. Hop rides to work, rain or shine.' },
+    PAWS: { story:'Paws Pet Care gives baths, trims and day care for the pets of the street. Hazel reads to the rabbits when it is quiet.' },
+    ROBO: { story:'Robo Lab invents gadgets. Some work, some fold themselves up. Fen says next year is the year.' }
   },
   decoder: [
     ['Share','Share (stock)','One tiny piece of a business'], ['Town Basket Fund','Fund','A bundle that holds many shares at once'], ['Payment','Dividend','Money a business shares with its owners'], ['Reinvest','Reinvest','Use a payment to buy more shares'], ['Savings Jar','Savings','Money kept ready, not invested'], ['Soon','Goal savings','Money set aside for one planned thing'], ['Buffer','Emergency fund','Money kept for surprise costs'], ['Rising prices','Inflation','When the same things cost more over time'], ['Cost card','Expense ratio','What a fund charges each year'], ['Spread out','Diversify','Own different things so one problem matters less'], ['Slump','Downturn','A time when many prices fall together'], ['Neighbor’s plan','Strategy','A rule someone follows for their money'], ['Town name','Seed','The code that makes this town’s years happen the same way every time']
@@ -807,8 +938,402 @@ globalThis.ENGINE = {
     window.addEventListener('load',function(){ try{ parent.postMessage({sws:'ready'},'*'); }catch(e){} });
   }
 })();
-/* APP (M2 onward). Store, screens, year show, chart, persistence, PWA registration guarded by SWS_EMBED. */
-document.getElementById('exit-arcade').addEventListener('click', function(){ window.SWS_EXIT(); });
+/* ===== APP (M2). Store, persistence, art slots, flow. UI only: the money model lives in ENGINE. ===== */
+(function () {
+'use strict';
+const E = globalThis.ENGINE, PR = globalThis.PARAMS, CT = globalThis.CONTENT, ST = globalThis.STRINGS;
+const BUILD = '0.2.0 M2';
+const KEYS = { save: 'ms:save', bak: 'ms:save:bak', bad: 'ms:save:bad', settings: 'ms:settings' };
+
+/* ---- tiny DOM builder ---- */
+function el(tag, attrs, ...kids) {
+  const n = document.createElement(tag);
+  if (attrs) for (const k in attrs) { const v = attrs[k]; if (v === null || v === undefined || v === false) continue;
+    if (k === 'class') n.className = v; else if (k === 'text') n.textContent = v; else if (k.slice(0, 2) === 'on') n.addEventListener(k.slice(2), v);
+    else if (k === 'dataset') Object.assign(n.dataset, v); else n.setAttribute(k, v === true ? '' : v); }
+  for (const kid of kids.flat(Infinity)) { if (kid === null || kid === undefined || kid === false) continue; n.append(kid.nodeType ? kid : document.createTextNode(String(kid))); }
+  return n;
+}
+const $ = sel => document.querySelector(sel);
+const SEASON = c => [12, 1, 2].includes(c) ? 'winter' : [3, 4, 5].includes(c) ? 'spring' : [6, 7, 8].includes(c) ? 'summer' : 'autumn';
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const cal = t => t <= 0 ? 1 : ((t - 1) % 12) + 1;
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+/* ---- state ---- */
+const S = {
+  screen: 'home', run: null, market: null, draft: null, saveOk: true, art: {},
+  options: { presentation: 'guided', motion: 'auto', textSize: 1, sound: false },
+  progress: { completedChapters: [], decorations: {}, discoveries: {}, scrapbook: [], album: { shops: [], cards: [], neighbors: [], goals: [] }, towns: [] },
+  ui: { tutorialStep: 0, openShop: null, sheet: null, hint: null, seenGazetteAt: -1, gazetteYear: 1, showDetails: false, resetArmed: false, receipt: null, lastShow: null }
+};
+const reducedMotion = () => S.options.motion === 'reduced' || (S.options.motion === 'auto' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+const guided = () => S.options.presentation !== 'explorer';
+
+/* ---- money formatting (HANDOFF 5 units) ---- */
+function coins(cc, opts) { const o = opts || {}; if (!guided() || o.exact) return (cc / 100).toFixed(2); const whole = Math.round(cc / 100); return (cc % 100 !== 0 && !o.noAbout ? 'about ' : '') + whole; }
+const signed = cc => (cc >= 0 ? '+' : '−') + coins(Math.abs(cc), { noAbout: true });
+const pct = x => (x >= 0 ? '+' : '−') + Math.abs(Math.round(x * 100)) + '%';
+function shares(msh) { if (msh === 0) return 'no shares'; if (msh % 1000 === 0) { const n = msh / 1000; return n + (n === 1 ? ' share' : ' shares'); } if (!guided()) return (msh / 1000).toFixed(3) + ' shares'; const n = Math.floor(msh / 1000); return n === 0 ? 'part of a share' : n + (n === 1 ? ' share' : ' shares') + ' and part of another'; }
+
+/* ---- art slots: a sprite when art/manifest.json lists it, a labeled placeholder when it does not ---- */
+function art(slot, cls, alt) {
+  const file = slot + '.webp';
+  if (S.art[file]) return el('img', { class: 'art ' + (cls || ''), src: 'art/' + file, alt: alt || '', width: 512, height: 512, decoding: 'async' });
+  return el('div', { class: 'ph ' + (cls || ''), role: alt ? 'img' : null, 'aria-label': alt || null, 'aria-hidden': alt ? null : 'true' }, el('span', { text: slot }));
+}
+function loadArt() { if (location.protocol === 'file:') { S.art = {}; return Promise.resolve(); } return fetch('art/manifest.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : { files: [] }).then(j => { S.art = {}; for (const f of (j.files || [])) S.art[f.name] = f.bytes; }).catch(() => { S.art = {}; }); }
+
+/* ---- persistence ---- */
+function storage(fn) { try { return fn(window.localStorage); } catch (e) { return undefined; } }
+function saveSettings() { storage(ls => ls.setItem(KEYS.settings, JSON.stringify({ options: S.options, progress: S.progress }))); }
+function loadSettings() { const raw = storage(ls => ls.getItem(KEYS.settings)); if (!raw) return; try { const j = JSON.parse(raw); if (j.options) Object.assign(S.options, j.options); if (j.progress) S.progress = Object.assign(S.progress, j.progress); } catch (e) { /* ignore a bad settings blob */ } }
+function serializeRun() { const r = S.run; return { schemaVersion: 1, engineVersion: E.VERSION.engine, contentVersion: E.VERSION.content, rubricVersion: E.VERSION.rubric, runId: r.runId, scenarioId: r.scenarioId, seed: r.seed, preset: r.preset, tick: r.checkpoint.t, lastSeq: r.lastSeq, checkpoint: r.checkpoint, pending: r.pending, options: S.options, progress: S.progress, ui: { tutorialStep: S.ui.tutorialStep, seenGazetteAt: S.ui.seenGazetteAt } }; }
+function save() {
+  if (!S.run) { storage(ls => ls.removeItem(KEYS.save)); return; }
+  const blob = JSON.stringify(serializeRun());
+  const ok = storage(ls => { const prev = ls.getItem(KEYS.save); if (prev) ls.setItem(KEYS.bak, prev); ls.setItem(KEYS.save, blob); return true; });
+  if (ok !== true && S.saveOk) { S.saveOk = false; render(); } else if (ok === true && !S.saveOk) { S.saveOk = true; }
+  saveSettings();
+}
+function validSave(j) { return j && j.schemaVersion === 1 && j.engineVersion === E.VERSION.engine && j.contentVersion === E.VERSION.content && typeof j.scenarioId === 'string' && typeof j.seed === 'string' && j.checkpoint && Array.isArray(j.pending); }
+function loadRun() {
+  const raw = storage(ls => ls.getItem(KEYS.save)); if (!raw) return false;
+  let j = null; try { j = JSON.parse(raw); } catch (e) { j = null; }
+  if (!validSave(j)) { storage(ls => { if (!ls.getItem(KEYS.bad)) ls.setItem(KEYS.bad, raw); }); return false; }
+  try {
+    const market = E.createMarket({ scenarioId: j.scenarioId, seed: j.seed, preset: j.preset !== 'standard' ? j.preset : undefined });
+    S.run = { runId: j.runId, scenarioId: j.scenarioId, seed: j.seed, preset: j.preset || 'standard', checkpoint: j.checkpoint, pending: j.pending, lastSeq: j.lastSeq || 0 };
+    S.market = market; if (j.options) Object.assign(S.options, j.options); if (j.progress) S.progress = Object.assign(S.progress, j.progress);
+    if (j.ui) { S.ui.tutorialStep = j.ui.tutorialStep || 0; S.ui.seenGazetteAt = j.ui.seenGazetteAt === undefined ? -1 : j.ui.seenGazetteAt; }
+    recomputeDraft(); return true;
+  } catch (e) { storage(ls => { if (!ls.getItem(KEYS.bad)) ls.setItem(KEYS.bad, raw); }); S.run = null; S.market = null; return false; }
+}
+function randomId(prefix) { const a = new Uint32Array(2); (window.crypto || {}).getRandomValues ? window.crypto.getRandomValues(a) : (a[0] = Date.now(), a[1] = 1); return prefix + a[0].toString(36) + a[1].toString(36); }
+function randomTownName() { const a = new Uint32Array(3); if (window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(a); else { a[0] = Date.now(); a[1] = Date.now() >>> 3; a[2] = Date.now() >>> 7; } return E.randomTownName(a[0], a[1], a[2]); }
+
+/* ---- run lifecycle ---- */
+function recomputeDraft() { S.draft = E.replayPending(S.run.checkpoint, S.run.pending, S.market); }
+function newRun(scenarioId, seed, preset) {
+  const market = E.createMarket({ scenarioId, seed, preset: preset && preset !== 'standard' ? preset : undefined });
+  S.market = market; S.run = { runId: randomId('r_'), scenarioId, seed, preset: preset || 'standard', checkpoint: E.createRun({ market, presentation: S.options.presentation }), pending: [], lastSeq: 0 };
+  S.ui.tutorialStep = scenarioId === 'ch1' ? 0 : -1; S.ui.seenGazetteAt = -1; S.ui.openShop = null; S.ui.sheet = null; S.ui.hint = null; S.ui.receipt = null;
+  if (!S.progress.towns.includes(seed)) S.progress.towns.push(seed);
+  recomputeDraft(); save();
+}
+function queue(action) {
+  const v = E.validateAction(S.draft, action, S.market);
+  if (!v.ok) return v;
+  if ((action.type === 'VIEW_PLAN' || action.type === 'VIEW_COST') && S.run.pending.some(p => p.type === action.type && p.id === action.id)) return { ok: true, preview: v.preview, duplicate: true };
+  S.run.lastSeq += 1; S.run.pending.push(Object.assign({ seq: S.run.lastSeq, t: S.draft.t }, action));
+  recomputeDraft(); save(); return v;
+}
+function undo(seq) { const i = seq === undefined ? S.run.pending.length - 1 : S.run.pending.findIndex(p => p.seq === seq); if (i < 0) return; S.run.pending.splice(i, 1); try { recomputeDraft(); } catch (e) { S.run.pending = []; recomputeDraft(); } save(); render(); }
+function clearTray() { S.run.pending = []; recomputeDraft(); save(); render(); }
+const hasRequired = s => s.queue.some(q => q.required && !q.resolved);
+function commitAndAdvance() {
+  const target = E.nextStop(S.draft, S.market.scenario);
+  let res; try { res = E.advance(S.draft, S.market, target); } catch (e) { S.ui.hint = { text: 'Something needs a decision first.' }; render(); return; }
+  const bought = S.run.pending.filter(p => p.type === 'BUY'); const sold = S.run.pending.filter(p => p.type === 'SELL');
+  S.run.checkpoint = res.state; S.run.pending = []; recomputeDraft(); save();
+  const own = res.state.pos.BAKE || 0;
+  S.ui.receipt = bought.length && S.run.scenarioId === 'ch1' ? 'You own ' + shares(own) + '.' : (bought.length || sold.length ? 'Your plan is in.' : null);
+  S.ui.lastShow = res.frames; S.ui.openShop = null; S.ui.sheet = null;
+  go('show');
+}
+function arrive() {
+  const s = S.draft, t = s.t, T = S.market.T;
+  if (t > 0 && t % 12 === 0 && S.ui.seenGazetteAt !== t) { S.ui.seenGazetteAt = t; S.ui.gazetteYear = t / 12; save(); go('gazette'); return; }
+  if (hasRequired(s)) { go('decision'); return; }
+  if (t >= T) { finishChapter(); return; }
+  if (S.run.scenarioId === 'ch1' && S.ui.tutorialStep >= 0) { if (t === 3) S.ui.hint = { text: ST.lines.samePrice }; else if (t === 6) S.ui.hint = { text: ST.lines.dropStop, button: 'Review my plan', action: () => openPlan() }; else S.ui.hint = null; }
+  else S.ui.hint = s.stop.reasons.includes('drop') ? { text: ST.lines.dropStop, button: 'Review my plan', action: () => openPlan() } : null;
+  go('town');
+}
+function finishChapter() {
+  if (!S.draft.ended) { S.run.checkpoint = E.finishChapter(S.draft, S.market); S.run.pending = []; recomputeDraft(); }
+  const id = S.run.scenarioId, s = S.draft, al = S.progress.album;
+  if (!S.progress.completedChapters.includes(id)) S.progress.completedChapters.push(id);
+  for (const k in s.pos) if (k.indexOf('BASKET') !== 0 && !al.shops.includes(k)) al.shops.push(k);
+  for (const c of S.market.cards) if (c.t <= s.t && ['shock', 'explain'].includes(c.kind) && !al.cards.includes(c.id)) al.cards.push(c.id);
+  for (const n of S.market.scenario.neighbors) if (!al.neighbors.includes(n)) al.neighbors.push(n);
+  if (s.goal.status === 'funded' && !al.goals.includes(s.goal.slug)) al.goals.push(s.goal.slug);
+  save(); go('results');
+}
+function openPlan() { if (S.run && !S.draft.ended) queue({ type: 'VIEW_PLAN' }); go('plan'); }
+function go(screen) { S.screen = screen; render(); window.scrollTo(0, 0); }
+
+/* ---- shared bits ---- */
+function topbar(title, back) { return el('header', { class: 'topbar' }, back ? el('button', { type: 'button', class: 'btn ghost', onclick: back.fn, text: back.label }) : el('span'), el('h2', { text: title }), el('span')); }
+function banner() { return S.saveOk ? null : el('div', { class: 'banner', role: 'status' }, 'Playing without saving on this device.'); }
+function stepper(label, onclick, disabled, extra) { return el('button', { type: 'button', class: 'btn step ' + (extra || ''), 'aria-label': label === 'minus' ? 'Sell 1 share' : 'Buy 1 share', onclick, disabled: disabled ? true : null }, label === 'minus' ? '−' : '+'); }
+const assetById = id => PR.assets.find(a => a.id === id);
+const keeperOf = id => ST.keepers[assetById(id).keeper];
+function activityNow(s, m) { const t = s.t; if (t === 0) return null; return E.frame(s, m, t).activity; }
+function keeperLineFor(id, act) { const k = keeperOf(id); const cards = S.market.cards.filter(c => c.t <= S.draft.t && c.t > S.draft.lastStopT && c.kind === 'shock'); const card = cards.find(c => c.assets && c.assets[id] !== undefined); if (card) { const def = CT.cards.find(c => c.id === card.id); const line = def.keeperLine && (def.keeperLine[id] || def.keeperLine.ANY || def.keeperLine.ALL); if (line) return line; } return k[act === 'busy' ? 'busy' : act === 'quiet' ? 'quiet' : 'normal']; }
+function temperament(a) { return a.vol <= 0.16 ? 'Calm. Prices here move slowly.' : a.vol <= 0.24 ? 'Steady. Prices here move a little each year.' : 'Wild. Prices here can jump or drop a lot.'; }
+function quoteAtStop(id) { const t = S.draft.t, lt = S.draft.lastStopT; return [E.quoteAt(S.market, id, t), E.quoteAt(S.market, id, Math.min(lt, t) === t ? Math.max(0, t - (S.market.scenario.stopEvery || 12)) : lt)]; }
+
+/* ---- Home ---- */
+function homeScreen() {
+  const r = S.run, sc = r ? S.market.scenario : null;
+  const cont = r && !S.draft.ended ? el('button', { type: 'button', class: 'btn primary big', onclick: () => arrive(), text: 'Continue' }) : null;
+  const where = r ? el('p', { class: 'muted', text: (S.draft.ended ? 'Finished: ' : '') + sc.title + ' · ' + cap(SEASON(cal(S.draft.t))) + ', year ' + (Math.floor(Math.max(0, S.draft.t - 1) / 12) + 1) + ' · ' + S.market.townName }) : null;
+  const chapters = CT.chapters.filter(c => c.id !== 'free').map(c => { const done = S.progress.completedChapters.includes(c.id); const built = c.id === 'ch1'; return el('li', { class: 'chapter ' + (done ? 'done' : '') + (built ? '' : ' locked') }, el('span', { class: 'num', text: c.n }), el('span', { text: c.title }), el('span', { class: 'muted', text: done ? 'finished' : built ? '' : 'coming soon' })); });
+  const albumCount = S.progress.album.shops.length + S.progress.album.cards.length + S.progress.album.neighbors.length + S.progress.album.goals.length;
+  return el('main', { id: 's-title', class: 'screen home' }, banner(),
+    el('h1', { text: 'MAINSTREET' }), el('p', { class: 'tag', text: 'Own little pieces of a town. Make a plan. See what time changes.' }),
+    el('div', { class: 'home-actions' }, cont, where,
+      el('button', { type: 'button', class: 'btn ' + (cont ? '' : 'primary big'), onclick: () => { if (r && !S.draft.ended && !S.ui.resetArmed) { S.ui.resetArmed = true; render(); return; } S.ui.resetArmed = false; newRun('ch1', randomTownName()); go('town'); }, text: r && !S.draft.ended ? (S.ui.resetArmed ? 'Start a new town and leave this one?' : 'New town') : 'Start chapter 1' }),
+      S.ui.resetArmed ? el('button', { type: 'button', class: 'btn ghost', onclick: () => { S.ui.resetArmed = false; render(); }, text: 'Keep my town' }) : null),
+    el('ol', { class: 'chapters' }, chapters),
+    el('p', { class: 'muted', text: 'Album: ' + albumCount + ' of 40 town cards' }),
+    el('nav', { class: 'home-nav' }, el('button', { type: 'button', class: 'btn', onclick: () => go('settings'), text: 'Settings' }), el('button', { type: 'button', class: 'btn', onclick: () => go('grownups'), text: 'Grown-ups' }), el('button', { type: 'button', class: 'btn', onclick: () => window.SWS_EXIT(), text: '← All Sky Wolf games' })),
+    el('p', { class: 'stamp', id: 'build-stamp', text: 'build ' + BUILD + ' · engine ' + E.VERSION.engine + ' · ' + (navigator.onLine === false ? 'offline' : 'loads once online, then works offline') }));
+}
+
+/* ---- Town ---- */
+function goalChip(s) {
+  const g = s.goal, nominal = E.goalNominal(s, S.market, s.t), due = g.due - s.t, fill = Math.min(1, nominal > 0 ? s.jar.soon / nominal : 1);
+  return el('div', { class: 'goal-chip' }, art('goal-' + g.slug, 'goal-art', CT.goals[g.slug]), el('div', { class: 'goal-text' },
+    el('strong', { text: CT.goals[g.slug] }), el('span', { class: 'muted', text: g.status === 'funded' ? 'done' : coins(nominal) + ' coins · ' + (due <= 0 ? 'today' : due === 1 ? 'next month' : 'in ' + due + ' months') }),
+    el('div', { class: 'bar', role: 'img', 'aria-label': 'Soon has ' + coins(s.jar.soon) + ' of ' + coins(nominal) }, el('div', { class: 'fill', style: 'width:' + Math.round(fill * 100) + '%' }))));
+}
+function moneyRow(s) {
+  const nwNow = E.summarizeRun(s, S.market).netWorth; const yStart = s.history[Math.max(0, s.t - ((s.t - 1 + 12) % 12) - 1)] || s.history[0]; const base = s.history[Math.floor(Math.max(0, s.t - 1) / 12) * 12] || s.history[0]; const d = nwNow - base.nw;
+  return el('div', { class: 'money-row' },
+    el('div', { class: 'money' }, el('span', { class: 'lbl', text: 'Your money' }), el('strong', { text: coins(nwNow) }), el('span', { class: 'chg ' + (d >= 0 ? 'up' : 'down'), text: (d >= 0 ? '▲ ' : '▼ ') + signed(d) + ' this year' })),
+    el('div', { class: 'money' }, el('span', { class: 'lbl', text: 'Wallet' }), el('strong', { text: coins(s.wallet) })),
+    el('div', { class: 'money jar' }, el('span', { class: 'lbl', text: 'Jar' }), el('strong', { text: coins(s.jar.soon + s.jar.buffer + s.jar.saved) }),
+      el('span', { class: 'bands' }, el('span', { class: 'band soon', text: 'Soon ' + coins(s.jar.soon) }), S.market.scenario.buffer ? el('span', { class: 'band buffer', text: 'Buffer ' + coins(s.jar.buffer) }) : null, s.jar.saved ? el('span', { class: 'band saved', text: 'Saved ' + coins(s.jar.saved) }) : null)));
+}
+function shopTile(id, sel) {
+  const s = S.draft, m = S.market, a = assetById(id), act = activityNow(s, m), state = act ? act[id] : 'open', [q, q0] = quoteAtStop(id), msh = s.pos[id] || 0, chg = q0 ? (q - q0) / q0 : 0, tut = S.ui.tutorialStep;
+  const slot = 'shop-' + id.toLowerCase() + '-' + (state === 'closed' ? 'closed' : state === 'normal' || state === 'open' ? 'open' : state);
+  return el('button', { type: 'button', class: 'tile shop-face' + (sel ? ' sel' : '') + (tut === 3 ? ' glow' : ''), 'aria-pressed': sel ? 'true' : 'false', 'aria-label': a.name + ', ' + state + ', share price ' + coins(q) + ', you own ' + shares(msh), onclick: () => { S.ui.openShop = sel && m.scenario.shops.length > 1 ? null : id; if (tut === 3) S.ui.tutorialStep = 4; render(); } },
+    art(slot, 'shop-art', ''), el('strong', { text: a.name }), el('span', { class: 'tprice' }, coins(q), s.t > 0 ? el('span', { class: 'chg ' + (chg >= 0 ? 'up' : 'down'), text: ' ' + (chg >= 0 ? '\u25B2' : '\u25BC') + pct(chg) }) : null), el('span', { class: 'muted small', text: msh ? shares(msh) : 'none yet' }));
+}
+function shopPanel(id) {
+  const s = S.draft, m = S.market, a = assetById(id), act = activityNow(s, m), state = act ? act[id] : 'open', [q, q0] = quoteAtStop(id), msh = s.pos[id] || 0, own = E.posValue(msh, q);
+  const tut = S.ui.tutorialStep, canTrade = (tut < 0 || tut >= 4) && !s.ended, chg = q0 ? (q - q0) / q0 : 0;
+  const plusV = E.validateAction(s, { type: 'BUY', id, msh: 1000 }, m), minusV = E.validateAction(s, { type: 'SELL', id, msh: Math.min(1000, msh) }, m);
+  return el('div', { class: 'panel', 'data-shop': id },
+    el('div', { class: 'panel-head' }, el('strong', { text: a.name }), el('span', { class: 'muted', text: keeperOf(id).name + ' the ' + keeperOf(id).animal })),
+    el('div', { class: 'share-card' },
+      el('div', { class: 'price' }, el('span', { class: 'lbl', text: 'Share price' }), el('strong', { text: coins(q, { exact: !guided() }) }), s.t > 0 ? el('span', { class: 'chg ' + (chg >= 0 ? 'up' : 'down'), text: (chg >= 0 ? '\u25B2 ' : '\u25BC ') + pct(chg) + ' since last stop' }) : null),
+      el('div', { class: 'own' }, el('span', { class: 'lbl', text: 'You own' }), el('strong', { text: shares(msh) }), msh ? el('span', { class: 'muted', text: '(' + coins(own) + ' coins)' }) : null),
+      el('div', { class: 'steppers' }, stepper('minus', () => { const v = queue({ type: 'SELL', id, msh: 1000 }); if (!v.ok && v.code === 'OVERSELL') queue({ type: 'SELL', id, msh }); render(); }, !canTrade || !minusV.ok || msh === 0), stepper('plus', () => { const v = queue({ type: 'BUY', id, msh: 1000 }); if (v.ok && S.ui.tutorialStep === 4) S.ui.tutorialStep = 5; if (!v.ok && v.code === 'INSUFFICIENT_CASH') S.ui.hint = { text: 'Not enough in your wallet for a whole share. Try More for part of a share, or use Jar money in My Plan.' }; render(); }, !canTrade || !plusV.ok, tut === 4 ? 'glow' : ''),
+        el('button', { type: 'button', class: 'btn small', disabled: !canTrade ? true : null, onclick: () => { S.ui.sheet = { kind: 'trade', id }; render(); }, text: 'More' }))),
+    shopDetail(id, state));
+}
+function shopDetail(id, state) {
+  const a = assetById(id), s = S.draft, msh = s.pos[id] || 0, info = ST.shops[id], owned = Math.min(100, Math.round(msh / 1000));
+  const grid = el('div', { class: 'share-grid', role: 'img', 'aria-label': 'This business is divided into many tiny shares. You own ' + shares(msh) + '.' }); for (let i = 0; i < 100; i++) grid.append(el('i', { class: i < owned ? 'lit' : '' }));
+  return el('div', { class: 'detail' }, el('div', { class: 'keeper' }, art('keeper-' + a.keeper + '-' + (state === 'busy' ? 'busy' : 'talking'), 'keeper-art', keeperOf(id).name), el('p', { class: 'bubble', text: keeperLineFor(id, state) })),
+    el('p', { text: info.story }), el('p', { class: 'muted', text: temperament(a) + (S.market.scenario.dividends && a.yield > 0 ? ' Shares money with owners four times a year.' : S.market.scenario.dividends ? ' Keeps its money in the business.' : '') }), el('p', { class: 'tiny-piece', text: ST.lines.tinyPiece }), grid);
+}
+function tray() {
+  const p = S.run.pending.filter(x => x.type !== 'VIEW_PLAN' && x.type !== 'VIEW_COST'); if (!p.length) return null; const s = S.draft;
+  const line = x => { const a = assetById(x.id); const name = a ? a.name : x.id;
+    if (x.type === 'BUY') { const v = E.validateAction(S.run.checkpoint, x, S.market); return (x.msh ? '+' + shares(x.msh) : 'Buy part of a share') + ' ' + name + ' (−' + coins(v.ok ? v.preview.spend : 0, { noAbout: true }) + ')'; }
+    if (x.type === 'SELL') return '−' + shares(x.msh) + ' ' + name; if (x.type === 'JAR_IN') return 'Put ' + coins(x.cc, { noAbout: true }) + ' in my Jar (' + cap(x.band) + ')'; if (x.type === 'JAR_OUT') return 'Take ' + coins(x.cc, { noAbout: true }) + ' from my Jar';
+    if (x.type === 'FUND_GOAL') return 'Buy my ' + CT.goals[s.goal.slug].toLowerCase(); if (x.type === 'POSTPONE') return 'Move my goal day'; if (x.type === 'GOAL_REVISE') return 'Change my goal'; return x.type.toLowerCase(); };
+  return el('section', { class: 'tray', 'aria-label': 'Your plan for this ' + (S.market.scenario.stopEvery === 3 ? 'season' : 'year') },
+    el('div', { class: 'tray-head' }, el('strong', { text: 'Your plan' }), el('button', { type: 'button', class: 'btn ghost small', onclick: clearTray, text: 'Clear plan' })),
+    el('ul', {}, p.map(x => el('li', {}, el('span', { text: line(x) }), el('button', { type: 'button', class: 'btn ghost small', onclick: () => undo(x.seq), 'aria-label': 'Undo ' + line(x), text: 'Undo' })))),
+    el('p', { class: 'muted', text: 'Wallet after: ' + coins(s.wallet) + ' · Jar: ' + coins(s.jar.soon + s.jar.buffer + s.jar.saved) }));
+}
+function hintBar() { const h = S.ui.hint; if (!h) return null; return el('div', { class: 'hint', role: 'status' }, el('p', { text: h.text }), h.button ? el('button', { type: 'button', class: 'btn small', onclick: h.action, text: h.button }) : null); }
+function townScreen() {
+  const s = S.draft, m = S.market, sc = m.scenario, tut = S.ui.tutorialStep;
+  const seasonLabel = s.t === 0 ? 'Start of year 1' : cap(SEASON(cal(s.t))) + ', year ' + (Math.floor((s.t - 1) / 12) + 1);
+  const haveJar = s.jar.soon >= 3000 || S.run.pending.some(p => p.type === 'JAR_IN'), haveShare = (s.pos.BAKE || 0) >= 1000;
+  const nextOk = !hasRequired(s) && (tut < 0 || tut >= 5 || (tut >= 2 && haveJar && haveShare));
+  const nextLabel = sc.stopEvery === 3 ? 'Next season' : 'Next year';
+  const hint = tut === 1 ? { text: ST.lines.someSoon, button: 'Put 30 in my Jar', action: () => { queue({ type: 'JAR_IN', band: 'soon', cc: 3000 }); S.ui.tutorialStep = 3; S.ui.hint = { text: ST.lines.jar30 }; render(); } } : tut === 3 ? { text: ST.lines.jar30 + ' Now tap the Bakery.' } : tut === 4 ? { text: ST.lines.tinyPiece + ' Tap plus to buy one.' } : tut === 5 ? { text: ST.lines.buyOne } : S.ui.hint;
+  S.ui.hint = hint;
+  return el('main', { class: 'screen town' }, banner(),
+    el('header', { class: 'town-head' }, el('div', { class: 'town-title' }, el('strong', { text: m.townName }), el('span', { class: 'muted', text: sc.title + ' · ' + seasonLabel })), el('button', { type: 'button', class: 'btn small', onclick: () => go('home'), text: 'Home' })),
+    goalChip(s), moneyRow(s), hintBar(),
+    (() => { const selected = S.ui.openShop && sc.shops.includes(S.ui.openShop) ? S.ui.openShop : (sc.shops.length === 1 ? sc.shops[0] : null); return el('section', { class: 'street', 'aria-label': 'The street' }, art('plate-sky', 'sky'), el('div', { class: 'shops' + (sc.shops.length === 1 ? ' one' : '') }, sc.shops.map(id => shopTile(id, id === selected))), selected ? shopPanel(selected) : el('p', { class: 'muted center', text: 'Tap a shop to see its shares.' })); })(),
+    tray(),
+    el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn', onclick: openPlan, text: 'My Plan' }), el('button', { type: 'button', class: 'btn primary big', disabled: nextOk ? null : true, onclick: () => { S.ui.sheet = { kind: 'confirm' }; render(); }, text: nextLabel })),
+    sheet());
+}
+
+/* ---- sheets: trade (More), confirm ---- */
+function sheet() {
+  const sh = S.ui.sheet; if (!sh) return null; const s = S.draft, m = S.market;
+  const close = () => { S.ui.sheet = null; render(); };
+  let body;
+  if (sh.kind === 'trade') {
+    const id = sh.id, q = E.quoteAt(m, id, s.t), a = assetById(id), msh = s.pos[id] || 0;
+    const opt = (label, action) => { const v = E.validateAction(s, action, m); return el('button', { type: 'button', class: 'btn', disabled: v.ok ? null : true, onclick: () => { queue(action); if (S.ui.tutorialStep === 4) S.ui.tutorialStep = 5; close(); }, text: label + (v.ok && action.type === 'BUY' ? ' (' + shares(v.preview.msh) + ' for ' + coins(v.preview.spend) + ')' : v.ok && action.type === 'SELL' ? ' (about ' + coins(v.preview.proceeds) + ' coins)' : '') }); };
+    body = el('div', {}, el('h3', { text: a.name }), el('p', { class: 'muted', text: 'Share price ' + coins(q, { exact: true }) + '. You own ' + shares(msh) + '. Wallet ' + coins(s.wallet) + '.' }),
+      el('div', { class: 'opts' }, opt('Buy 1 share', { type: 'BUY', id, msh: 1000 }), opt('Buy with 5 coins', { type: 'BUY', id, cc: 500 }), opt('Buy with 10 coins', { type: 'BUY', id, cc: 1000 }), opt('Buy with half my wallet', { type: 'BUY', id, cc: Math.floor(s.wallet / 2) }), opt('Buy with all my wallet', { type: 'BUY', id, cc: s.wallet })),
+      msh ? el('div', { class: 'opts' }, opt('Sell 1 share', { type: 'SELL', id, msh: Math.min(1000, msh) }), opt('Sell half', { type: 'SELL', id, msh: Math.floor(msh / 2) }), opt('Sell all', { type: 'SELL', id, msh })) : null,
+      !guided() ? (() => { const inp = el('input', { type: 'number', min: 1, step: 1, inputmode: 'numeric', 'aria-label': 'Coins to spend', class: 'num-in' }); return el('div', { class: 'opts' }, inp, el('button', { type: 'button', class: 'btn', onclick: () => { const cc = Math.round(Number(inp.value) * 100); if (cc > 0) { queue({ type: 'BUY', id, cc }); close(); } }, text: 'Buy with that many coins' })); })() : null);
+  } else if (sh.kind === 'confirm') {
+    const p = S.run.pending.filter(x => x.type !== 'VIEW_PLAN' && x.type !== 'VIEW_COST'); const target = E.nextStop(s, m.scenario), label = m.scenario.stopEvery === 3 ? 'Go to ' + SEASON(cal(target)) : 'Go to year ' + Math.ceil(target / 12);
+    const words = p.map(x => { if (x.type === 'BUY') { const v = E.validateAction(S.run.checkpoint, x, m); return 'buy ' + (v.ok ? shares(v.preview.msh) : 'shares') + ' of ' + assetById(x.id).name + ' for ' + coins(v.ok ? v.preview.spend : 0) + ' coins'; } if (x.type === 'SELL') return 'sell ' + shares(x.msh) + ' of ' + assetById(x.id).name; if (x.type === 'JAR_IN') return 'put ' + coins(x.cc, { noAbout: true }) + ' coins in your Jar'; if (x.type === 'JAR_OUT') return 'take ' + coins(x.cc, { noAbout: true }) + ' coins from your Jar'; return x.type.toLowerCase(); });
+    body = el('div', {}, el('h3', { text: 'Your plan for this ' + (m.scenario.stopEvery === 3 ? 'season' : 'year') }), p.length ? el('ul', {}, words.map(w => el('li', { text: cap(w) }))) : el('p', { class: 'muted', text: 'Keep everything as it is.' }),
+      el('p', { class: 'muted', text: 'Wallet after: ' + coins(s.wallet) + ' · Jar after: ' + coins(s.jar.soon + s.jar.buffer + s.jar.saved) }),
+      el('button', { type: 'button', class: 'btn primary big', id: 'go', onclick: () => { S.ui.sheet = null; if (S.ui.tutorialStep >= 0 && S.ui.tutorialStep < 6) S.ui.tutorialStep = 6; commitAndAdvance(); }, text: cap(label) }));
+  }
+  return el('div', { class: 'sheet-back', onclick: e => { if (e.target === e.currentTarget) close(); } }, el('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true' }, body, el('button', { type: 'button', class: 'btn ghost', onclick: close, text: 'Back to town' })));
+}
+
+/* ---- My Plan ---- */
+function planScreen() {
+  const s = S.draft, m = S.market, g = s.goal, nominal = E.goalNominal(s, m, s.t), inv = E.invested(s, m, s.t);
+  const move = (band, dir) => el('button', { type: 'button', class: 'btn small', disabled: E.validateAction(s, dir === 'in' ? { type: 'JAR_IN', band, cc: 500 } : { type: 'JAR_OUT', band, cc: 500 }, m).ok ? null : true, onclick: () => { queue(dir === 'in' ? { type: 'JAR_IN', band, cc: 500 } : { type: 'JAR_OUT', band, cc: 500 }); render(); }, text: dir === 'in' ? '+5 in' : '5 out' });
+  const bandRow = (band, label, note) => el('li', { class: 'band-row' }, el('div', {}, el('strong', { text: label }), el('span', { class: 'muted', text: ' ' + note })), el('div', { class: 'band-ctl' }, el('strong', { text: coins(s.jar[band]) }), s.ended ? null : move(band, 'out'), s.ended ? null : move(band, 'in')));
+  return el('main', { class: 'screen plan' }, topbar('My Plan', { label: '← Town', fn: () => go(s.ended ? 'results' : 'town') }),
+    el('section', { class: 'card' }, el('h3', { text: 'My goal' }), el('div', { class: 'goal-line' }, art('goal-' + g.slug, 'goal-art', CT.goals[g.slug]), el('div', {}, el('strong', { text: CT.goals[g.slug] }), el('p', { class: 'muted', text: coins(nominal) + ' coins, ' + (g.status === 'funded' ? 'bought' : g.due - s.t <= 0 ? 'due now' : 'due in ' + (g.due - s.t) + ' months') + (g.indexed ? ' (grows with prices)' : '') }))),
+      el('p', { text: ST.core.cash })),
+    el('section', { class: 'card' }, el('h3', { text: 'My money' }), el('ul', { class: 'bands-list' }, el('li', { class: 'band-row' }, el('div', {}, el('strong', { text: 'Wallet' }), el('span', { class: 'muted', text: ' everyday money' })), el('strong', { text: coins(s.wallet) })),
+      bandRow('soon', 'Soon', 'for my goal'), m.scenario.buffer ? bandRow('buffer', 'Buffer', 'for surprise costs') : null, bandRow('saved', 'Saved', 'plain savings' + (m.scenario.jarRate ? ', pays ' + Math.round(m.scenario.jarRate * 100) + '% a year' : '')),
+      el('li', { class: 'band-row' }, el('div', {}, el('strong', { text: 'Invested' }), el('span', { class: 'muted', text: ' in shares' })), el('strong', { text: coins(inv) })))),
+    el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn primary big', onclick: () => go(s.ended ? 'results' : 'town'), text: 'Keep my plan' })));
+}
+
+/* ---- Decision (E21 goal day; E20 costs arrive in M3) ---- */
+function decisionScreen() {
+  const s = S.draft, m = S.market, q = s.queue.find(x => x.required && !x.resolved); if (!q) { arrive(); return el('main'); }
+  const card = CT.cards.find(c => c.id === q.id);
+  if (q.id === 'E21') {
+    const need = E.goalNominal(s, m, s.t), v = E.validateAction(s, { type: 'FUND_GOAL' }, m), sells = v.ok && v.preview.steps.some(st => st.source === 'sell');
+    const after = () => { render(); arrive(); };
+    return el('main', { class: 'screen decision' }, el('p', { class: 'frozen muted', text: 'Time is stopped.' }), el('h2', { text: card.headline }), art('goal-' + s.goal.slug, 'goal-big', CT.goals[s.goal.slug]),
+      el('p', { text: CT.goals[s.goal.slug] + ' cost ' + coins(need) + ' coins. You have ' + coins(s.jar.soon) + ' in Soon and ' + coins(s.wallet) + ' in your wallet.' }),
+      v.ok ? el('button', { type: 'button', class: 'btn primary big', onclick: () => { queue({ type: 'FUND_GOAL' }); S.ui.receipt = ST.lines.goalFunded.replace('{goal}', CT.goals[s.goal.slug].toLowerCase()); after(); }, text: sells ? 'Buy it (sells some shares)' : 'Buy it from my Jar' })
+        : el('p', { text: ST.lines.goalShort }),
+      el('div', { class: 'opts' }, el('button', { type: 'button', class: 'btn', onclick: () => { queue({ type: 'POSTPONE', months: 12 }); after(); }, text: 'Postpone my goal' }),
+        el('button', { type: 'button', class: 'btn', onclick: () => { const afford = s.jar.soon + s.wallet; if (afford < need && afford > 0) { queue({ type: 'GOAL_REVISE', amount: afford }); queue({ type: 'FUND_GOAL' }); after(); } else { S.ui.hint = { text: 'Your goal already fits what you have.' }; render(); } }, text: 'Change amount to what I have' }),
+        el('button', { type: 'button', class: 'btn', onclick: openPlan, text: 'Review my plan' })));
+  }
+  return el('main', { class: 'screen decision' }, el('h2', { text: card ? card.headline : q.id }), el('p', { text: 'This decision arrives in a later milestone.' }), el('button', { type: 'button', class: 'btn', onclick: () => go('town'), text: 'Continue' }));
+}
+
+/* ---- Settings, Grown-ups ---- */
+function settingsScreen() {
+  const radio = (name, value, label, cur, set) => el('label', { class: 'radio' }, el('input', { type: 'radio', name, value, checked: cur === value ? true : null, onchange: () => { set(value); saveSettings(); save(); render(); } }), ' ' + label);
+  return el('main', { class: 'screen settings' }, topbar('Settings', { label: '← Home', fn: () => go('home') }),
+    el('section', { class: 'card' }, el('h3', { text: 'Reading level' }), radio('pres', 'guided', 'Guided: whole coins, fewer numbers', S.options.presentation, v => { S.options.presentation = v; }), radio('pres', 'explorer', 'Explorer: exact numbers, more details', S.options.presentation, v => { S.options.presentation = v; })),
+    el('section', { class: 'card' }, el('h3', { text: 'Motion' }), radio('motion', 'auto', 'Follow my device', S.options.motion, v => { S.options.motion = v; }), radio('motion', 'reduced', 'Still frames, no animation', S.options.motion, v => { S.options.motion = v; })),
+    el('section', { class: 'card' }, el('h3', { text: 'Text size' }), radio('ts', 1, 'Normal', S.options.textSize, v => { S.options.textSize = v; }), radio('ts', 1.15, 'Larger', S.options.textSize, v => { S.options.textSize = v; }), radio('ts', 1.3, 'Largest', S.options.textSize, v => { S.options.textSize = v; })),
+    el('section', { class: 'card' }, el('h3', { text: 'Start over' }), el('p', { class: 'muted', text: 'Removes the saved town on this device. Two taps.' }), el('button', { type: 'button', class: 'btn', onclick: () => { if (!S.ui.resetArmed) { S.ui.resetArmed = true; render(); return; } S.ui.resetArmed = false; S.run = null; S.market = null; S.draft = null; storage(ls => { ls.removeItem(KEYS.save); ls.removeItem(KEYS.bak); }); go('home'); }, text: S.ui.resetArmed ? 'Yes, remove my saved town' : 'Reset' }), S.ui.resetArmed ? el('button', { type: 'button', class: 'btn ghost', onclick: () => { S.ui.resetArmed = false; render(); }, text: 'Keep it' }) : null),
+    el('p', { class: 'stamp', text: 'engine ' + E.VERSION.engine + ' · content ' + E.VERSION.content + ' · rubric ' + E.VERSION.rubric + ' · build ' + BUILD }));
+}
+function grownupsScreen() {
+  const P = t => el('p', { text: t });
+  return el('main', { class: 'screen grownups' }, topbar('Grown-ups', { label: '← Home', fn: () => go('home') }),
+    P('MAINSTREET is a pretend-money game about planning: matching money to a goal, spreading it out, and understanding that outcomes are uncertain. It is not "always stay invested". Spending on a planned goal, keeping cash for something soon, and selling a damaged business can all be sensible.'),
+    P('The market is a simplified toy with six fictional shops, three market moods and bounded randomness. Nothing in it is a real price or a real company. There are no taxes, debt, bonds, leverage or real prices. The Town Basket is six shops in one town, not a broad index.'),
+    P('The neighbors are computed plans that run on the same pretend market, not other players and not advice. No plan is "the right one"; any of them can have a good or bad year.'),
+    P('The score measures planning habits inside this game (did the child keep goal money ready, keep a buffer, spread out, check the plan before deciding, read both cost cards). It never counts how much money was made, and it is not a measure of real-life skill.'),
+    P('Someone asked for a game like Crypto Parrot, a paper-trading app. This is the version we would hand a child: pretend money, a pretend market, real decisions, no real risk.'),
+    P('Privacy: no accounts, no data collection, no studio currency, no ads. Saves live only on this device. Browser storage can be cleared by the device, so an export is the backup (coming with the finished game). This game sends nothing; the website that hosts it has its own logs. On iPhone, installing to the home screen starts a separate save.'),
+    el('p', { class: 'stamp', text: 'engine ' + E.VERSION.engine + ' · content ' + E.VERSION.content + ' · rubric ' + E.VERSION.rubric }));
+}
+
+/* ---- The show: a playback of months the engine already committed. It can never change a number. ---- */
+function showScreen() {
+  const frames = S.ui.lastShow || [], m = S.market, s = S.draft, sc = m.scenario; let i = 0; const reduced = reducedMotion();
+  const wrap = el('main', { class: 'screen show' });
+  const receipt = S.ui.receipt; S.ui.receipt = null;
+  const cap1 = el('p', { class: 'receipt', role: 'status', text: receipt || '' });
+  const monthLbl = el('h2', { class: 'month' }), weatherLbl = el('p', { class: 'muted weather' });
+  const stage = el('div', { class: 'stage' }); const cards = el('div', { class: 'show-cards' });
+  const skip = el('button', { type: 'button', class: 'btn', onclick: () => finishShow(), text: 'Skip' });
+  const speed = el('button', { type: 'button', class: 'btn ghost small', onclick: () => { fast = !fast; speed.textContent = fast ? '×1' : '×2'; }, text: '×2' });
+  let fast = false, timer = null, done = false;
+  function paint(f) {
+    monthLbl.textContent = MONTHS[f.cal - 1] + ', year ' + (Math.floor((f.t - 1) / 12) + 1);
+    weatherLbl.textContent = cap(f.weather) + (f.mood === 'S' ? ' · many families are spending less' : f.mood === 'B' ? ' · a busy time in town' : '');
+    stage.replaceChildren(art('weather-' + f.weather, 'weather', f.weather), el('div', { class: 'show-shops' }, sc.shops.map(id => { const a = assetById(id); const st = f.activity[id]; const slot = 'shop-' + id.toLowerCase() + '-' + (st === 'closed' ? 'closed' : st === 'normal' ? 'open' : st); return el('div', { class: 'show-shop' }, art(slot, 'shop-art', a.name + ', ' + st), el('div', { class: 'mini-card' }, el('span', { text: a.name }), el('strong', { text: coins(f.quotes[id], { exact: !guided() }) }))); })));
+    cards.replaceChildren(f.cards.filter(id => id !== 'E21' && id !== 'E22').map(id => { const c = CT.cards.find(x => x.id === id); return el('div', { class: 'news', role: 'status' }, el('strong', { text: c.headline }), el('span', { class: 'muted', text: ' ' + c.shortExplanation })); }));
+  }
+  function finishShow() { if (done) return; done = true; if (timer) clearTimeout(timer); arrive(); }
+  function step() { if (done) return; if (i >= frames.length) { timer = setTimeout(finishShow, 600); return; } paint(frames[i]); i++; timer = setTimeout(step, fast ? 250 : 500); }
+  wrap.append(cap1, el('div', { class: 'show-head' }, monthLbl, weatherLbl), stage, cards);
+  if (!frames.length) { setTimeout(finishShow, 0); return wrap; }
+  if (reduced) {
+    const strip = el('div', { class: 'strip' }); paint(frames[0]); i = 1;
+    const next = el('button', { type: 'button', class: 'btn primary', onclick: () => { if (i < frames.length) { paint(frames[i]); i++; if (i >= frames.length) next.textContent = 'Continue'; } else finishShow(); }, text: frames.length > 1 ? 'Next month' : 'Continue' });
+    wrap.append(el('div', { class: 'actions' }, next, skip), strip);
+  } else { wrap.append(el('div', { class: 'actions' }, speed, skip)); timer = setTimeout(step, receipt ? 1100 : 200); }
+  return wrap;
+}
+
+/* ---- The Gazette (year recap) ---- */
+function gazetteScreen() {
+  const s = S.draft, m = S.market, y = S.ui.gazetteYear, p = E.yearPanel(s, m, y), sum = E.summarizeRun(s, m);
+  const biggest = p.cards.filter(c => c.id !== 'E20').map(c => CT.cards.find(x => x.id === c.id)).filter(Boolean)[0];
+  const busiest = p.busiest ? ST.lines.busiest.replace('{shop}', assetById(p.busiest.id).name).replace('{n}', p.busiest.n) : '';
+  const moneyWords = ST.lines.moneyPanel.replace('{added}', coins(p.money.added, { noAbout: true })).replace('{result}', signed(p.money.result)).replace('{spent}', coins(p.money.spent, { noAbout: true }));
+  const obs = p.observation ? ST.lines.observation.replace('{headline}', CT.cards.find(c => c.id === p.observation.card).headline.toLowerCase()).replace('{shop}', assetById(p.observation.shop).name).replace('{kind}', p.observation.happened === p.observation.suggested ? (p.observation.happened === 'up' ? 'better' : 'harder') : (p.observation.happened === 'up' ? 'better than the news suggested' : 'quieter')) : null;
+  const neighbors = m.scenario.neighbors.length ? el('section', { class: 'card' }, el('h3', { text: 'Your neighbors' }), el('p', { class: 'muted', text: 'Neighbors move in from chapter 2.' })) : null;
+  return el('main', { class: 'screen gazette' },
+    el('header', { class: 'masthead' }, el('p', { class: 'eyebrow', text: 'The ' + m.townName + ' Gazette' }), el('h2', { text: biggest ? biggest.headline : (y === 1 && m.scenario.id === 'ch1' ? 'A year of practice on the street' : 'A quiet year on the street') }), el('p', { class: 'muted', text: 'Year ' + y + ' · ' + p.weather.map(w => w === 'sun' ? '☀' : w === 'rain' ? '☂' : '❄').join(' ') })),
+    busiest ? el('p', { class: 'busiest', text: busiest }) : null,
+    el('section', { class: 'card' }, el('h3', { text: 'Your money' }), el('div', { class: 'money-story' }, el('div', {}, el('span', { class: 'lbl', text: 'Start of year' }), el('strong', { text: coins(p.money.start) })), p.money.added ? el('div', {}, el('span', { class: 'lbl', text: 'Added' }), el('strong', { text: '+' + coins(p.money.added, { noAbout: true }) })) : null, el('div', {}, el('span', { class: 'lbl', text: 'Investments' }), el('strong', { class: p.money.result >= 0 ? 'up' : 'down', text: signed(p.money.result) })), p.money.spent ? el('div', {}, el('span', { class: 'lbl', text: 'Spent' }), el('strong', { text: '−' + coins(p.money.spent, { noAbout: true }) })) : null, el('div', {}, el('span', { class: 'lbl', text: 'Now' }), el('strong', { text: coins(p.money.end) }))), el('p', { class: 'muted', text: moneyWords })),
+    neighbors,
+    el('section', { class: 'card' }, el('h3', { text: 'One thing to notice' }), el('p', { text: obs || (m.scenario.id === 'ch1' ? ST.lines.samePrice + ' ' + ST.core.price : ST.core.time) })),
+    el('div', { class: 'actions' }, S.ui.lastShow && S.ui.lastShow.length ? el('button', { type: 'button', class: 'btn', onclick: () => { S.ui.seenGazetteAt = s.t; go('show'); }, text: 'Watch again' }) : null, el('button', { type: 'button', class: 'btn primary big', onclick: () => arrive(), text: 'Continue' })));
+}
+
+/* ---- Results (chapter end) ---- */
+const DIM_NAMES = { goalFit: 'Goal fit', readiness: 'Readiness', spread: 'Spread', followThrough: 'Follow-through', costAwareness: 'Cost awareness' };
+function stampEvidence(dim, s) {
+  const g = s.goal; const name = CT.goals[g.slug].toLowerCase();
+  if (dim === 'goalFit') return g.status === 'funded' ? 'You kept money ready for your ' + name + ' and used it for that.' : 'Your goal money was ' + (s.jar.soon >= E.goalNominal(s, S.market, s.t) ? 'ready in Soon.' : 'not all in Soon when it was due.');
+  if (dim === 'followThrough') { const ks = Object.keys(s.opps).filter(k => s.opps[k].dim === dim); const passed = ks.filter(k => s.opps[k].passed).length; return passed === ks.length ? 'You checked your plan when prices fell.' : 'When prices fell, you decided before checking your plan ' + (ks.length - passed) + ' time' + (ks.length - passed === 1 ? '.' : 's.'); }
+  if (dim === 'readiness') return 'Your Buffer held enough for a surprise cost.'; if (dim === 'spread') return 'Your invested money was spread across shops.'; if (dim === 'costAwareness') return 'You read both cost cards before choosing.'; return '';
+}
+function resultsScreen() {
+  const s = S.draft, m = S.market, sc = m.scenario, sum = E.summarizeRun(s, m), score = sum.score, g = s.goal;
+  const goalStory = g.status === 'funded' ? ST.lines.goalFunded.replace('{goal}', CT.goals[g.slug].toLowerCase()) : g.status === 'postponed' ? 'Your ' + CT.goals[g.slug].toLowerCase() + ' can wait. You moved the date, and that is allowed.' : 'Your goal is still open.';
+  const stamps = score.stamps.map(st => el('li', { class: 'stamp-row ' + st.status }, art('stamp-' + st.dim.replace('followThrough', 'follow-through').replace('goalFit', 'goal-fit').replace('costAwareness', 'cost'), 'stamp-art ' + (st.status === 'credit' && st.passed === st.applicable ? '' : 'dim'), DIM_NAMES[st.dim]), el('div', {}, el('strong', { text: DIM_NAMES[st.dim] }), el('p', { class: 'muted', text: st.status === 'coming' ? 'Coming later' : st.status === 'na' || st.status === 'soFar' ? 'Not part of this chapter' : stampEvidence(st.dim, s) }))));
+  const decoFam = 'plants', chosen = S.progress.decorations[sc.id];
+  const decos = [1, 2, 3].map(n => el('button', { type: 'button', class: 'deco ' + (chosen === decoFam + '-' + n ? 'chosen' : ''), 'aria-pressed': chosen === decoFam + '-' + n ? 'true' : 'false', onclick: () => { S.progress.decorations[sc.id] = decoFam + '-' + n; saveSettings(); render(); } }, art('deco-' + decoFam + '-' + n, 'deco-art', 'Decoration ' + n)));
+  const offered = [g.status === 'funded' ? 'I reached my goal on the day I planned.' : 'I moved my goal date and that was fine.', Object.keys(s.opps).some(k => s.opps[k].dim === 'followThrough' && s.opps[k].passed) ? 'I checked my plan when prices fell.' : 'The same share had a different price every season.', ST.core.price];
+  const disc = S.progress.discoveries[sc.id];
+  return el('main', { class: 'screen results' }, banner(),
+    el('h2', { text: sc.title + ' is finished' }), el('p', { class: 'lead', text: goalStory }), el('p', { class: 'muted', text: ST.lines.chapterEnd }),
+    el('section', { class: 'card' }, el('h3', { text: 'Your money this chapter' }), el('p', { text: ST.lines.moneyPanel.replace('{added}', coins(sum.money.added, { noAbout: true })).replace('{result}', signed(sum.money.result)).replace('{spent}', coins(sum.money.spent, { noAbout: true })) }), el('p', { class: 'muted', text: 'Started with ' + coins(sum.money.start) + '. Now ' + coins(sum.money.end) + '.' })),
+    el('section', { class: 'card' }, el('h3', { text: 'How you planned' }), el('ul', { class: 'stamps' }, stamps), el('button', { type: 'button', class: 'btn ghost small', onclick: () => { S.ui.showDetails = !S.ui.showDetails; render(); }, text: S.ui.showDetails ? 'Hide details' : 'Show details' }), S.ui.showDetails ? el('p', { class: 'muted', text: score.total === null ? 'Exploring: nothing to grade yet.' : 'Plan Practice ' + score.total + ' of 100 (' + E.VERSION.rubric + '). It grades planning habits in this chapter, not how much money you made.' }) : null),
+    el('section', { class: 'card' }, el('h3', { text: 'Choose a decoration' }), el('div', { class: 'decos' }, decos)),
+    el('section', { class: 'card' }, el('h3', { text: 'Pick a discovery' }), el('div', { class: 'opts' }, offered.map(t => el('button', { type: 'button', class: 'btn ' + (disc === t ? 'primary' : ''), 'aria-pressed': disc === t ? 'true' : 'false', onclick: () => { S.progress.discoveries[sc.id] = t; saveSettings(); render(); }, text: t })))),
+    el('div', { class: 'actions col' }, el('button', { type: 'button', class: 'btn primary big', onclick: () => go('home'), text: 'Save and stop' }), el('button', { type: 'button', class: 'btn', onclick: () => { newRun('ch1', randomTownName()); go('town'); }, text: 'Replay chapter' }), el('button', { type: 'button', class: 'btn', disabled: true, text: 'Next chapter (coming soon)' }), el('button', { type: 'button', class: 'btn ghost', onclick: openPlan, text: 'My Plan' })));
+}
+
+/* ---- intro overlay (chapter 1, step 1) ---- */
+function introScreen() { return el('main', { class: 'screen intro' }, art('plate-sky', 'sky'), el('div', { class: 'street-preview' }, art('shop-bake-open', 'shop-art', 'Rise & Shine Bakery'), art('keeper-bram-neutral', 'keeper-art', 'Bram the badger')), el('h2', { text: ST.lines.practice }), el('p', { class: 'muted', text: ST.lines.ch1Start }), el('button', { type: 'button', class: 'btn primary big', onclick: () => { S.ui.tutorialStep = 1; save(); go('town'); }, text: 'Start exploring' })); }
+
+/* ---- router and boot ---- */
+function render() {
+  const root = document.getElementById('app'); if (!root) return;
+  document.documentElement.style.setProperty('--ts', String(S.options.textSize || 1));
+  let view;
+  if (!S.run && S.screen !== 'settings' && S.screen !== 'grownups') S.screen = 'home';
+  if (S.run && S.screen === 'town' && S.run.scenarioId === 'ch1' && S.ui.tutorialStep === 0) view = introScreen();
+  else view = ({ home: homeScreen, town: townScreen, plan: planScreen, decision: decisionScreen, show: showScreen, gazette: gazetteScreen, results: resultsScreen, settings: settingsScreen, grownups: grownupsScreen })[S.screen]();
+  root.replaceChildren(view);
+}
+function boot() {
+  loadSettings();
+  const had = loadRun();
+  const params = new URLSearchParams(location.search);
+  if (!had && params.get('seed')) { newRun('ch1', E.normalizeTownName(params.get('seed')) || randomTownName()); }
+  document.addEventListener('visibilitychange', () => { /* time only moves on a named advance; nothing to pause */ });
+  if (S.run && S.draft.ended) S.screen = 'results'; else if (S.run) { S.screen = 'town'; arrive(); return loadArt().then(render); }
+  render();
+  loadArt().then(render);
+}
+globalThis.MS = { S, render, queue, undo, arrive, newRun, go, commitAndAdvance, finishChapter, BUILD };
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
 </script>
 </body>
 </html>

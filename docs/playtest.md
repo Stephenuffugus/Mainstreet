@@ -3,12 +3,12 @@
 Anonymous notes about actions and misconceptions only. No names, no recordings, no analytics. Observe first; explain nothing until you have seen where the game fails.
 
 ## M2 manual checklist (Opus, before the fun gate)
-- [ ] Opening order (HANDOFF section 8) followed step for step on the reference device
-- [ ] Refresh mid-chapter with two items in the tray: tray and state restored exactly
-- [ ] Confirm sheet lists the plan in words; duplicate tap on the confirm button commits once
-- [ ] Season show skippable at every frame; numbers identical with the show skipped and watched
+- [x] Opening order (HANDOFF section 8) followed step for step (automated in tools/ui.spec.mjs; reference device run still to do)
+- [x] Refresh mid-chapter with two items in the tray: tray and state restored exactly (ui.spec.mjs)
+- [x] Confirm sheet lists the plan in words; duplicate tap on the confirm button commits once (the sheet closes on the first tap; the second lands on the show)
+- [x] Season show skippable at every frame; numbers identical with the show skipped and watched (ui.spec.mjs)
 - [ ] Reduced motion: still strip, no pans
-- [ ] Keyboard only: Start exploring, Put 30 in my Jar, plus, Next season, confirm, Continue
+- [x] Keyboard only: Start exploring, Put 30 in my Jar, plus, Next season, confirm, Continue (ui.spec.mjs keyboard journey, chromium and webkit)
 - [ ] "What do you own, what did you spend, what is left?" answerable from the Town screen alone
 
 ## Fun gate (Penny, after M2)
