@@ -74,3 +74,17 @@ Source image: `portal-thumb-source.png` in the asset list (M5 batch, Stephen's a
 - After an art drop: `node tools/art_manifest.mjs` (regenerates `art/manifest.json`; the worker precaches from it). Bump `VERSION` in `sw.js`.
 - After any parameter change: `node tools/test.mjs` (fixtures must stay identical unless a decision says otherwise, then `--write-fixtures`), `npx playwright test`, `node tools/harness.mjs --seeds 10000 --family all --heldout --report docs/calibration.md`.
 - Build stamp: `BUILD` constant at the top of `<script id="app">`.
+
+## 9. Ready-made patch for the arcade (2026-10-11)
+
+`docs/fleet/lucid-winds-add-mainstreet.patch` is the finished lucid-winds commit: the MANIFEST entry with selftest counts 13/14, the vendored `satellites/mainstreet/` at upstream `4236187`, the FEATURED card with `beta:true`, the search alias and the 480 px thumbnail. It applies cleanly on a fresh lucid-winds `main` (checked with `git am`) and `--check mainstreet` reports CLEAN afterwards. A Codespace scoped to the Mainstreet repo cannot push to lucid-winds (403), so apply it from a session that can:
+
+```bash
+cd /workspaces/lucid-winds
+git checkout -b add-mainstreet
+curl -fsSL https://raw.githubusercontent.com/Stephenuffugus/Mainstreet/main/docs/fleet/lucid-winds-add-mainstreet.patch | git am
+node scripts/vendor_satellites.mjs --check mainstreet      # CLEAN
+git push -u origin add-mainstreet && gh pr create --fill
+```
+
+If the patch ever stops applying because `main` moved, re-vendor instead: add the MANIFEST line from section 2, run `node scripts/vendor_satellites.mjs --vendor mainstreet` with `/workspaces/Mainstreet` cloned beside the arcade, and add the card from section 3.
