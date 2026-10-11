@@ -546,20 +546,42 @@ test("update banner: shows on Home only, never on the Town, never when embedded"
   await page.evaluate(() => { MS.S.ui.updateReady = { waiting: { postMessage() {} } }; MS.go("home"); });
   await expect(page.getByText("A new version is ready.")).toHaveCount(0);
 });
-test("reduced motion: the year show is a strip of still frames stepped by tap, never on a timer", async ({ page }) => {
+// rc9: records every month the show paints (its caption, its news cards, whether an object leaked into the text, and when), from the frame on screen now
+async function watchShow(page) {
+  await expect(page.locator(".screen.show")).toBeVisible();
+  await page.evaluate(() => {
+    const h = document.querySelector(".screen.show h2.month"), snap = () => ({ month: h.textContent, cap: document.querySelector(".show-cap").textContent, news: document.querySelectorAll(".screen.show .news strong").length, leak: document.body.innerText.includes("[object"), at: performance.now() });
+    const rec = window.__show = [snap()];
+    new MutationObserver(() => { if (h.textContent !== rec[rec.length - 1].month) rec.push(snap()); }).observe(h, { childList: true, characterData: true, subtree: true });
+  });
+}
+test("reduced motion: the year show steps by itself on a 900 ms timer (no per month button, no ×2), Skip still works, and the numbers are identical", async ({ page }) => {
+  const errors = watch(page);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(URL);
-  await walkCh1(page); await page.locator("#go").click();
-  await expect(page.locator(".screen.show")).toBeVisible();
-  const next = page.getByRole("button", { name: "Next month" }); await expect(next).toBeVisible();
-  const first = await page.locator(".screen.show h2.month").innerText();
-  await page.waitForTimeout(1300);
-  expect(await page.locator(".screen.show h2.month").innerText()).toBe(first);
-  await next.click();
-  expect(await page.locator(".screen.show h2.month").innerText()).not.toBe(first);
-  await page.getByRole("button", { name: "Skip" }).click();
-  await passRecap(page);
+  await walkCh1(page);
+  const before = await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).checkpoint.history.map(h => h.nw));
+  await page.locator("#go").click();
+  await watchShow(page);
+  await expect(page.getByRole("button", { name: "Next month" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "×2" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Skip" })).toBeVisible();
+  const during = await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).checkpoint.history.map(h => h.nw));
+  await expect(page.locator(".screen.recap")).toBeVisible({ timeout: 8000 });                    // nobody tapped: the three months played and the recap came
+  const rec = await page.evaluate(() => window.__show);
+  expect(rec.length).toBe(3);
+  for (let i = 2; i < rec.length; i++) { const gap = rec[i].at - rec[i - 1].at; expect(gap).toBeGreaterThan(800); expect(gap).toBeLessThan(1600); }
+  await page.locator("#recap-go").click(); await expect(page.locator(".screen.town")).toBeVisible();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).checkpoint.history.map(h => h.nw))).toEqual(during);
+  expect(during.slice(0, before.length)).toEqual(before);
+  // the next season: Skip mid show leaves every number as it was
+  await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click();
+  await watchShow(page);
+  const mid = await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).checkpoint.history.map(h => h.nw));
+  await page.getByRole("button", { name: "Skip" }).click(); await passRecap(page);
   await expect(page.locator(".screen.town")).toBeVisible();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).checkpoint.history.map(h => h.nw))).toEqual(mid);
+  expect(errors, errors.join("\n")).toEqual([]);
 });
 test("town screen answers what you own, what you spent and what is left", async ({ page }) => {
   await page.goto(URL);
@@ -570,19 +592,17 @@ test("town screen answers what you own, what you spent and what is left", async 
   await expect(page.locator(".own")).toContainText("1 share");
 });
 
-test("the year show renders news cards as elements: stepping twelve months under reduced motion never prints an object", async ({ page }) => {
+test("the year show renders news cards as elements: twelve months under reduced motion never print an object", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(URL);
-  await page.evaluate(() => { MS.newRun("ch2", "Pebble Creek 3"); MS.S.ui.intro = false; MS.go("town"); });
+  await page.evaluate(() => { MS.S.options.showSpeed = 10; MS.newRun("ch2", "Pebble Creek 3"); MS.S.ui.intro = false; MS.go("town"); });  // the test speed: 50 ms a month
   await page.getByRole("button", { name: /^(Next year|Continue year)$/ }).click(); await page.locator("#go").click();
-  await expect(page.locator(".screen.show")).toBeVisible();
-  let news = 0;
-  for (let i = 0; i < 12; i++) {
-    expect(await page.evaluate(() => document.body.innerText.includes("[object"))).toBe(false);
-    news += await page.locator(".news strong").count();
-    const next = page.getByRole("button", { name: /^(Next month|Continue)$/ }); if (await next.count()) await next.click(); else break;
-  }
-  expect(news).toBeGreaterThan(0);
+  await watchShow(page);
+  await expect(page.locator(".screen.recap")).toBeVisible({ timeout: 10000 });
+  const rec = await page.evaluate(() => window.__show);
+  expect(rec.length).toBe(12);
+  for (const r of rec) expect(r.leak).toBe(false);
+  expect(rec.reduce((n, r) => n + r.news, 0)).toBeGreaterThan(0);
 });
 
 /* ---- M8: music, assigned by feel; routed silent audio so no song needs to exist in the repo ---- */
@@ -707,14 +727,13 @@ test("R14 show captions: every month has a line; one shop speaks through its kee
   await page.emulateMedia({ reducedMotion: "reduce" });
   await ch1Bought(page, 1);
   await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click();
-  await expect(page.locator(".show-cap")).toHaveText("Busy at the bakery. Bram says, “Every tray gone by ten. Good day for bread.”");
-  await page.evaluate(() => { MS.newRun("ch2", "Pebble Creek 3"); MS.S.ui.intro = false; MS.go("town"); });
+  await watchShow(page);
+  expect(await page.evaluate(() => window.__show[0].cap)).toBe("Busy at the bakery. Bram says, “Every tray gone by ten. Good day for bread.”");
+  await page.evaluate(() => { MS.S.options.showSpeed = 10; MS.newRun("ch2", "Pebble Creek 3"); MS.S.ui.intro = false; MS.go("town"); });
   await page.getByRole("button", { name: /^(Next year|Continue year)$/ }).click(); await page.locator("#go").click();
-  const caps = [];
-  for (let i = 0; i < 12; i++) {
-    caps.push(await page.locator(".show-cap").innerText());
-    const next = page.getByRole("button", { name: /^(Next month|Continue)$/ }); if ((await next.innerText()) === "Continue") break; await next.click();
-  }
+  await watchShow(page);
+  await expect(page.locator(".screen.recap")).toBeVisible({ timeout: 10000 });
+  const caps = (await page.evaluate(() => window.__show)).map(r => r.cap);
   expect(caps.length).toBe(12);
   expect(new Set(caps).size).toBeGreaterThan(1);
   for (const c of caps) expect(c).toMatch(/^(Busy at .+\.|A busy month on the street\.|A quiet month on the street\.)$/);
@@ -1104,4 +1123,164 @@ for (const [w, h] of [[412, 915], [320, 568]]) test(`R17 at ${w}x${h}: at every 
   expect(seen).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   expect(errors, errors.join("\n")).toEqual([]);
   await ctx.close();
+});
+
+/* ---- rc9: delivery, the show, and restart (docs/plans/DELIVERY-AND-RESTART-2026-10-11.md) ---- */
+test("rc9 the show: every storefront and weather image is in place and decoded at the first frame, and stays complete as the months change (over http)", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(base);
+  await page.waitForFunction(() => Object.keys(MS.S.art).length > 0);                          // the art manifest loaded
+  await page.evaluate(() => { MS.newRun("ch2", "Pebble Creek 3"); MS.S.ui.intro = false; MS.go("town"); });
+  await page.getByRole("button", { name: /^(Next year|Continue year)$/ }).click(); await page.locator("#go").click();
+  await page.waitForFunction(() => { const st = document.querySelector(".screen.show .stage"); return st && !st.classList.contains("waiting"); }, null, { timeout: 5000 });
+  const first = await page.evaluate(() => [...document.querySelectorAll(".screen.show .stage img")].map(i => ({ src: i.getAttribute("src"), ok: i.complete && i.naturalWidth > 0 })));
+  expect(first.filter(x => /\/shop-/.test(x.src)).length).toBe(6);                             // the six storefronts are images, not placeholders
+  for (const x of first) expect(x.ok, x.src + " is not decoded at the first frame").toBe(true);
+  // through the next months: at every frame change every image on the stage is complete, and the nodes are kept (no blank rebuild)
+  await page.evaluate(() => { const h = document.querySelector(".screen.show h2.month"), stage = document.querySelector(".screen.show .stage"), box = stage.querySelector(".show-shops"); window.__imgs = [];
+    new MutationObserver(() => window.__imgs.push({ all: [...stage.querySelectorAll("img")].every(i => i.complete && i.naturalWidth > 0), n: stage.querySelectorAll("img").length, kept: stage.querySelector(".show-shops") === box })).observe(h, { childList: true, characterData: true, subtree: true }); });
+  await page.waitForFunction(() => window.__imgs.length >= 4, null, { timeout: 10000 });
+  const seen = await page.evaluate(() => window.__imgs.slice(0, 4));
+  for (const x of seen) { expect(x.all).toBe(true); expect(x.n).toBe(first.length); expect(x.kept).toBe(true); }
+  await page.getByRole("button", { name: "Skip" }).click(); await passRecap(page);
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("rc9 Home: a finished chapter's row is a 48 px Play again button; with no town in progress it starts at once, with one it asks first and Keep my town keeps it", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  await page.evaluate(() => { MS.S.progress.completedChapters = ["ch1"]; MS.render(); });
+  const again = page.getByRole("button", { name: "Play again: A Little Piece" });
+  await expect(again).toContainText("Play again");
+  expect((await again.boundingBox()).height).toBeGreaterThanOrEqual(48);
+  // a town in progress (chapter 2), then Home: Continue stays on top
+  await page.getByRole("button", { name: "Start chapter 2" }).click();
+  await page.evaluate(() => MS.go("home"));
+  await expect(page.locator(".home-actions .btn").first()).toHaveText("Continue");
+  const run0 = await page.evaluate(() => MS.S.run.runId);
+  await again.click();
+  const ask = page.getByRole("alertdialog", { name: "This ends your current town. Start chapter 1 again?" });
+  await expect(ask).toBeVisible();
+  for (const b of await ask.getByRole("button").all()) expect((await b.boundingBox()).height).toBeGreaterThanOrEqual(48);
+  expect(await page.evaluate(() => MS.S.run.runId)).toBe(run0);                                // one tap changes nothing
+  await ask.getByRole("button", { name: "Keep my town" }).click();
+  await expect(page.getByRole("alertdialog")).toHaveCount(0);
+  expect(await page.evaluate(() => [MS.S.run.runId, MS.S.run.scenarioId])).toEqual([run0, "ch2"]);
+  // ask again and say yes: a new chapter 1 town, the walk from the door, Skip the walk offered
+  await again.click(); await page.getByRole("button", { name: "Yes, start again" }).click();
+  expect(await page.evaluate(r => [MS.S.run.runId !== r, MS.S.run.scenarioId, MS.S.ui.walk], run0)).toEqual([true, "ch1", 0]);
+  await page.getByRole("button", { name: "Come in" }).click();
+  await expect(page.locator(".walk-card").getByRole("button", { name: "Skip the walk" })).toBeVisible();
+  // with no town in progress (the chapter finished), Play again starts at once
+  await page.evaluate(() => { MS.S.run = null; MS.S.market = null; MS.S.draft = null; MS.go("home"); });
+  await again.click();
+  await expect(page.getByRole("button", { name: "Come in" })).toBeVisible();
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("rc9 Start over: two taps, Keep everything keeps everything, Yes clears the town and every chapter, page and card, keeps the options, and Home says chapter 1 is next", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  await expect(page.getByRole("button", { name: "Start over", exact: true })).toHaveCount(0);   // a new player has nothing to clear
+  await page.evaluate(() => { const p = MS.S.progress; p.completedChapters = ["ch1", "ch2"]; p.album.shops.push("BAKE"); p.album.cards.push("E1"); MS.S.options.textSize = 1.15; MS.newRun("ch3", "Pebble Creek 3"); MS.go("home"); });
+  const over = page.getByRole("button", { name: "Start over", exact: true });
+  expect((await over.boundingBox()).height).toBeGreaterThanOrEqual(48);
+  await over.click();
+  const ask = page.getByRole("alertdialog", { name: "This clears every chapter, page and card on this device. Start over?" });
+  await expect(ask).toBeVisible();
+  await ask.getByRole("button", { name: "Keep everything" }).click();
+  await expect(page.getByRole("alertdialog")).toHaveCount(0);
+  expect(await page.evaluate(() => [!!MS.S.run, MS.S.progress.completedChapters.length, !!localStorage.getItem("ms:save")])).toEqual([true, 2, true]);
+  await over.click();
+  await page.getByRole("button", { name: "Yes, start over" }).click();
+  await expect(page.locator("#s-title")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Continue" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Start chapter 1" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Play again/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /Scrapbook \(0 of 40\)/ })).toBeVisible();
+  const stored = await page.evaluate(() => ({ save: localStorage.getItem("ms:save"), bak: localStorage.getItem("ms:save:bak"), settings: JSON.parse(localStorage.getItem("ms:settings")) }));
+  expect(stored.save).toBe(null); expect(stored.bak).toBe(null);
+  expect(stored.settings.progress.completedChapters).toEqual([]); expect(stored.settings.progress.album.shops).toEqual([]);
+  expect(stored.settings.options.textSize).toBe(1.15);
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Start chapter 1" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Continue" })).toHaveCount(0);
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("rc9 an update that takes over reloads the page at once on the Town, and waits for the next arrival while the show plays (over http)", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(base);
+  await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 30000 });  // a first visit is claimed and never reloads
+  await page.evaluate(() => { window.__mark = 1; });
+  await walkCh1(page); await page.locator("#go").click(); await skipShow(page);
+  await expect(page.locator(".screen.town")).toBeVisible();
+  expect(await page.evaluate(() => window.__mark)).toBe(1);
+  // on the Town with no sheet open: a takeover reloads now
+  const takeover = () => page.evaluate(() => { setTimeout(() => { MS.S.ui.updateReady = {}; navigator.serviceWorker.dispatchEvent(new Event("controllerchange")); }, 0); });
+  await Promise.all([page.waitForEvent("load"), takeover()]);
+  await expect(page.locator(".screen.town")).toBeVisible();
+  expect(await page.evaluate(() => window.__mark)).toBe(undefined);
+  // during the show: no reload until the recap's button calls arrive()
+  await page.evaluate(() => { window.__mark = 2; });
+  await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click();
+  await expect(page.locator(".screen.show")).toBeVisible();
+  await takeover(); await page.waitForTimeout(300);
+  expect(await page.evaluate(() => [window.__mark, MS.S.screen])).toEqual([2, "show"]);
+  await page.getByRole("button", { name: "Skip" }).click();
+  await expect(page.locator(".screen.recap")).toBeVisible();
+  expect(await page.evaluate(() => [window.__mark, MS.S.ui.reloadWhenIdle])).toEqual([2, true]);
+  const t = await page.evaluate(() => MS.S.draft.t);
+  await Promise.all([page.waitForEvent("load"), page.locator("#recap-go").click()]);
+  await expect(page.locator(".screen.town")).toBeVisible();
+  expect(await page.evaluate(() => [window.__mark, MS.S.draft.t])).toEqual([undefined, t]);       // reloaded into the same saved town
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+
+/* rc9: the worker's fetch handler in a stub scope (Node, no browser). The stub clock runs 30 times fast, so the 3 s page wait is 100 ms. */
+import { runInNewContext } from "node:vm";
+import { readFileSync } from "node:fs";
+function stubWorker(fetchImpl, cached = {}) {
+  const SW = "https://lucidwinds.com/satellites/mainstreet/sw.js", key = u => { const x = new globalThis.URL(typeof u === "string" ? u : u.url, SW); return x.origin + x.pathname; };
+  const store = new Map(Object.entries(cached).map(([k, v]) => [key(k), v])), puts = [], calls = [], handlers = {};
+  const cache = { match: async r => store.get(key(r)), put: async (r, res) => { puts.push(key(r)); store.set(key(r), res); }, add: async () => {}, keys: async () => [] };
+  const scope = { console, URL: globalThis.URL, Response, Promise, clearTimeout, setTimeout: (fn, ms) => setTimeout(fn, ms / 30),
+    Request: function (r, init) { return Object.assign({}, r, init); }, fetch: r => { calls.push(r); return fetchImpl(r); },
+    caches: { open: async () => cache, match: async r => store.get(key(r)), keys: async () => [], delete: async () => true },
+    clients: { claim: async () => {} }, location: new globalThis.URL(SW) };
+  scope.self = scope; scope.addEventListener = (t, fn) => { (handlers[t] ||= []).push(fn); }; scope.skipWaiting = async () => {};
+  runInNewContext(readFileSync(resolve(ROOT, "sw.js"), "utf8"), scope);
+  const request = (url, mode = "navigate") => { const waits = []; let answer = null; const t0 = Date.now();
+    handlers.fetch[0]({ request: { url, method: "GET", mode }, respondWith: p => { answer = Promise.resolve(p); }, waitUntil: p => waits.push(p) });
+    return answer.then(async r => ({ r, ms: Date.now() - t0, done: await Promise.all(waits) })); };
+  return { request, puts, calls, store };
+}
+test("rc9 worker: a page request is network first (revalidated) and refreshes the cache; offline, a server error or a hung network answer from the cached page; with nothing cached a hung network still settles; other files stay cache first", async () => {
+  const PAGE = "https://lucidwinds.com/satellites/mainstreet/";
+  // the network answers: the fresh page, asked past the HTTP cache, and stored for the next open
+  let w = stubWorker(async () => new Response("fresh page", { status: 200 }), { [PAGE]: new Response("old page") });
+  let a = await w.request(PAGE + "?pi=1");
+  expect(await a.r.text()).toBe("fresh page");
+  expect(w.calls[0].cache).toBe("no-cache");
+  expect(w.puts).toContain(PAGE);
+  expect(await w.store.get(PAGE).text()).toBe("fresh page");
+  // offline: the cached page
+  w = stubWorker(async () => { throw new TypeError("Failed to fetch"); }, { [PAGE]: new Response("cached page") });
+  expect(await (await w.request(PAGE)).r.text()).toBe("cached page");
+  // offline with only index.html cached: the folder's own address falls back to the game's page
+  w = stubWorker(async () => { throw new TypeError("Failed to fetch"); }, { [PAGE + "index.html"]: new Response("cached index") });
+  expect(await (await w.request(PAGE + "?seed=x")).r.text()).toBe("cached index");
+  // a server error: the cached page
+  w = stubWorker(async () => new Response("down", { status: 503 }), { [PAGE]: new Response("cached page") });
+  expect(await (await w.request(PAGE)).r.text()).toBe("cached page");
+  // a hung network: the cached page after the wait (3 s, 100 ms on the stub clock), never a hang
+  w = stubWorker(() => new Promise(() => {}), { [PAGE]: new Response("cached page") });
+  a = await w.request(PAGE);
+  expect(await a.r.text()).toBe("cached page");
+  expect(a.ms).toBeLessThan(1000);
+  // nothing cached and a hung network: it still settles, as a network error, once the longest wait runs out
+  w = stubWorker(() => new Promise(() => {}), {});
+  a = await w.request(PAGE);
+  expect(a.r.type).toBe("error");
+  // a sprite stays cache first: no network call when it is cached
+  w = stubWorker(async () => new Response("net"), { [PAGE + "art/shop-bake-open.webp"]: new Response("cached sprite") });
+  expect(await (await w.request(PAGE + "art/shop-bake-open.webp", "no-cors")).r.text()).toBe("cached sprite");
+  expect(w.calls.length).toBe(0);
 });
