@@ -62,9 +62,9 @@ test("chapter 1 end to end: opening order, tray, confirm, show, Gazette, goal da
   await page.getByRole("button", { name: "Buy it from my Jar" }).click();
   await expect(page.locator(".screen.results")).toBeVisible();
   await expect(page.locator(".lead")).toContainText("You planned for this!");
-  await expect(page.locator(".stamps")).toContainText("Goal fit");
-  await expect(page.locator(".stamps")).toContainText("Follow-through");
-  await expect(page.locator(".stamp-row").filter({ hasText: "Spread" })).toContainText("Coming later");
+  await expect(page.locator(".stamps")).toContainText("Pulled money to the goal in time");      // rc5: stamps read as moves
+  await expect(page.locator(".stamps")).toContainText("Checked the plan when prices fell");
+  await expect(page.locator(".stamp-row").filter({ hasText: "Spread out" })).toContainText("Coming later");
   await page.getByRole("button", { name: "Show details" }).click();
   await expect(page.getByText(/Plan Practice \d+ of 100/)).toBeVisible();
   await page.locator(".deco").nth(1).click();
@@ -128,22 +128,23 @@ async function advanceOnce(page) {
   const next = page.getByRole("button", { name: /^(Next year|Continue year|Next season)$/ });
   await next.click(); await page.locator("#go").click(); await skipShow(page);
 }
-async function settle(page, onCost) {
+async function settle(page, onCost, opts) {
   // after a show: handle whatever screen arrived, until the town or the results page is showing
+  // rc5 (DECK3): goals sit above what saving alone reaches, so goal day can be short (then the goal is postponed), and the pull card opens itself at the goal fit checkpoint (closed here with "Keep growing" unless the journey wants it)
   for (let i = 0; i < 6; i++) {
-    if (await page.locator(".screen.town").count()) return "town";
+    if (await page.locator(".screen.town").count()) { if (!(opts && opts.keepPull) && await page.locator("#pull-keep").count()) await page.locator("#pull-keep").click(); return "town"; }
     if (await page.locator(".screen.results").count()) return "results";
     if (await page.locator(".screen.recap").count()) { await page.locator("#recap-go").click(); continue; }
     if (await page.locator(".screen.gazette").count()) { await page.getByRole("button", { name: "Continue" }).click(); continue; }
     if (await page.locator(".screen.decision").count()) {
-      if (await page.getByText("Your goal day has arrived").count()) { await page.getByRole("button", { name: /^Buy it/ }).click(); continue; }
+      if (await page.getByText("Your goal day has arrived").count()) { if (await page.getByRole("button", { name: /^Buy it/ }).count()) await page.getByRole("button", { name: /^Buy it/ }).click(); else await page.getByRole("button", { name: "Postpone my goal" }).click(); continue; }
       await onCost(page); continue;
     }
     await page.waitForTimeout(100);
   }
   throw new Error("did not settle");
 }
-test("chapter 2: six shops, the Basket, Ada and Dev; no trading is ever required; results compare the plans", async ({ page }) => {
+test("chapter 2: six shops, the Basket, Ada and Dev; the chapter can be finished without trading; results compare the plans", async ({ page }) => {
   const errors = watch(page);
   await page.goto(URL);
   await page.evaluate(() => { MS.newRun("ch2", "Pebble Creek 3"); MS.go("town"); });
@@ -172,6 +173,7 @@ test("chapter 2: six shops, the Basket, Ada and Dev; no trading is ever required
   await expect(page.locator(".cols li")).toHaveCount(3);
   await expect(page.locator(".cols")).toContainText("Ada");
   await expect(page.locator(".cols")).toContainText("Dev");
+  await expect(page.locator(".cols li").first()).toContainText(/You paid for your nature trip\.|Your nature trip has to wait\./);   // rc5: each plan says whether its goal was bought
   await expect(page.getByRole("button", { name: /Next chapter: Ready for Rain/ })).toBeVisible();
   expect(errors, errors.join("\n")).toEqual([]);
 });
@@ -264,7 +266,7 @@ test("chapter 4: practice coins, routing, dividends and the Reinvest toggle, the
 test("chapter 5: the slump stop, a closure on the street, Cass on the street, costs paid", async ({ page }) => {
   const errors = watch(page);
   await page.goto(URL);
-  await page.evaluate(() => { MS.newRun("ch5", "Clover Field 9"); MS.go("town"); });
+  await page.evaluate(() => { MS.newRun("ch5", "Clover Field 3"); MS.go("town"); });   // DECK3 re-keyed every town: this one has a closure (Toy Box) and the slump
   await expect(page.getByText("This is Cass.")).toBeVisible();
   await page.getByRole("button", { name: "Start exploring" }).click();
   await expect(page.locator(".house")).toHaveCount(4);
@@ -308,7 +310,7 @@ test("chapter 6: the fee lab, two baskets on the street, rising prices, the inde
   const seen = await playThrough(page, null, readHint);
   await expect(page.locator(".screen.results")).toBeVisible();
   await expect(page.getByText(/On the same shops, Basket A ended at/)).toBeVisible();
-  await expect(page.locator(".stamp-row").filter({ hasText: "Cost awareness" })).toContainText("You read both cost cards before choosing.");
+  await expect(page.locator(".stamp-row").filter({ hasText: "Read the cost card" })).toContainText("You read both cost cards before choosing.");
   await page.getByRole("button", { name: "Try one change" }).click();
   await page.locator("#tm-select").selectOption("fee");
   await expect(page.getByText(/Basket B, 1.5 of every 100 coins a year/)).toBeVisible();
@@ -722,5 +724,106 @@ test("R14 chapter 1 results: the year in prices, as one story", async ({ page })
   await expect(card).toContainText("The price was 11 in spring, 9 in summer, 10.5 in autumn and 10.5 in winter.");
   await expect(card).toContainText("Your shares ended worth 10.5.");
   await expect(card).toContainText("Your art supplies were bought from the Jar on goal day.");
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+
+/* ---- Phase A (R15, R16): the Town Clerk, the check-in, the pull card, the stake. docs/plans/PHASE-A-MOVES-AND-STAKE-2026-10-11.md ---- */
+test("phase A cold open: the Clerk names the stake (goal, start, what saving alone reaches) and the chapter's move, from the content numbers", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  await page.evaluate(() => { MS.newRun("ch2", "Maple Hollow 7"); MS.go("town"); });
+  const clerk = page.locator(".cold-open");
+  await expect(clerk.locator(".eyebrow")).toHaveText("The Town Clerk");
+  await expect(clerk).toContainText("Your nature trip costs 210 coins and is due in 36 months. You have 200 coins. Saving alone gets you 200. The rest has to grow.");
+  await expect(clerk).toContainText("This year, try spreading out. Ada puts her coins in the Town Basket, a little of every shop. Dev picks one shop. Watch both.");
+  expect(await page.evaluate(() => CONTENT.chapters.find(c => c.id === "ch2").goal.amount)).toBe(210);   // DECK3
+  await page.evaluate(() => { MS.newRun("ch4", "Harbor Lane 12"); MS.go("town"); });
+  await expect(page.locator(".cold-open")).toContainText("Your project kit costs 850 coins and is due in 60 months. You have 150 coins, and 10 coins arrive each month. Saving alone gets you about 797. The rest has to grow.");
+  await page.evaluate(() => { MS.newRun("ch3", "Willow Bend 41"); MS.go("town"); });                    // chapter 3 kept its goal: the Clerk says saving reaches it
+  await expect(page.locator(".cold-open")).toContainText("Saving alone gets you about 212, enough for this goal.");
+  await expect(page.locator(".cold-open")).toContainText("between 15 and 30 coins");
+  await page.evaluate(() => { MS.newRun("ch6", "Lantern Row 5"); MS.go("town"); });
+  await expect(page.locator(".cold-open")).toContainText("Your big project costs 1500 coins today and is due in 120 months. Its price rises with everyday prices.");
+  await expect(page.locator(".cold-open")).toContainText("and by then your big project will cost more than that. The rest has to grow.");
+  await page.evaluate(() => { MS.newRun("ch1", "Maple Hollow 7"); MS.go("town"); });                    // chapter 1 keeps its practice intro, no Clerk
+  await expect(page.locator(".clerk")).toHaveCount(0);
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("phase A check-in: Spread out shows when one shop is held, queues a Basket buy into the open tray, and Undo takes it back", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  await page.evaluate(() => { MS.newRun("ch2", "Maple Hollow 7"); MS.S.ui.intro = false; MS.go("town"); });
+  const checkin = page.locator(".clerk.checkin"), spread = checkin.locator("[data-move=spread]");
+  await expect(checkin.locator(".eyebrow")).toHaveText("The Town Clerk");
+  await expect(spread).toContainText("You hold no shares right now.");
+  await page.locator(".tile").nth(1).click();
+  await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
+  await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
+  await expect(spread).toContainText("You hold one shop, Rise & Shine Bakery. One shop’s bad year would be your whole year.");
+  const btn = spread.getByRole("button", { name: "Spread out" });
+  expect((await btn.boundingBox()).height).toBeGreaterThanOrEqual(48);
+  await btn.click();
+  await expect(page.locator(".tray")).toHaveClass(/open/);
+  const line = page.locator(".tray li").last();
+  await expect(line).toContainText("Town Basket Fund");
+  await expect(line).toBeInViewport();
+  await expect(page.locator(".panel[data-shop=BASKET]")).toBeVisible();
+  expect(await page.evaluate(() => MS.S.draft.wallet)).toBe(9000);                                  // half of the 180 left in the wallet
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).checkpoint.pos.BASKET || 0)).toBe(0);   // the tray, never the ledger
+  await expect(spread).toHaveCount(0);
+  await expect(checkin).toContainText("Nothing needs doing this year. Keep going.");
+  await line.getByRole("button", { name: /^Undo/ }).click();
+  await expect(spread).toHaveCount(1);
+  expect(await page.evaluate(() => MS.S.draft.wallet)).toBe(18000);
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("phase A pull card: at chapter 2's goal fit checkpoint it opens for a player holding shares with an empty Jar; Move queues sells and a Jar in; the confirm sheet lists them; after the advance Soon holds the amount; Results names the moves", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  await page.evaluate(() => { MS.newRun("ch2", "Maple Hollow 7"); MS.S.ui.intro = false; MS.go("town"); });
+  await page.locator(".tile.stall").click();
+  await page.locator(".steppers").getByRole("button", { name: "More" }).click();
+  await page.getByRole("button", { name: /^Buy with all my wallet/ }).click();
+  await advanceOnce(page); expect(await settle(page, async () => {}, { keepPull: true })).toBe("town");    // month 12: the row, not the card
+  await expect(page.locator("#pull-all")).toHaveCount(0);
+  await expect(page.locator("[data-move=pull]")).toContainText("Your nature trip is 24 months away. Your Jar holds 0 of 210 for it. Prices could fall before then.");
+  await advanceOnce(page); expect(await settle(page, async () => {}, { keepPull: true })).toBe("town");    // month 24: the goal fit checkpoint
+  const sheet = page.locator(".sheet");
+  await expect(sheet).toContainText("Your nature trip is due in 12 months. You need 210 more in the Jar. Selling shares now turns today’s price into coins; keeping them means waiting to see.");
+  await expect(page.locator("#pull-keep")).toHaveText("Keep growing, ask me next stop");
+  await page.locator("#pull-all").click();                                                             // "Move 210 to my Jar now"
+  await expect(page.locator(".tray li")).toHaveCount(2);
+  await expect(page.locator(".tray li").first()).toContainText("Town Basket Fund");
+  await expect(page.locator(".tray li").last()).toContainText("Put 210 in my Jar (Soon)");
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).checkpoint.jar.soon)).toBe(0);   // nothing commits until Next year
+  await page.getByRole("button", { name: "Next year" }).click();
+  await expect(sheet).toContainText(/Sell \d+ shares of Town Basket Fund/);
+  await expect(sheet).toContainText("Put 210 coins in your Jar");
+  await page.locator("#go").click();
+  await page.getByRole("button", { name: "Skip" }).click();
+  await expect(page.locator(".screen.recap")).toContainText("You moved 210 to your Jar for your nature trip.");
+  await page.locator("#recap-go").click();
+  if (await page.locator(".screen.gazette").count()) await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.getByText("Your goal day has arrived")).toBeVisible();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).checkpoint.jar.soon)).toBe(21000);
+  await page.getByRole("button", { name: "Buy it from my Jar" }).click();
+  await expect(page.locator(".screen.results")).toBeVisible();
+  const closing = page.locator(".closing-card");
+  await expect(closing.locator(".eyebrow")).toHaveText("The Town Clerk");
+  await expect(closing).toContainText("You pulled money toward your goal in time. You spread your money out.");
+  await expect(page.locator(".stamp-row").filter({ hasText: "Pulled money to the goal in time" })).toContainText("You kept money ready for your nature trip and used it for that.");
+  await expect(page.locator(".stamp-row").filter({ hasText: "Spread out" })).toContainText("spread across shops");
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("phase A closing card: a player who made no move hears so, the goal is postponed on a short goal day, and each plan says whether its goal was bought", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  await page.evaluate(() => { MS.newRun("ch2", "Maple Hollow 7"); MS.S.ui.intro = false; MS.go("town"); });
+  for (let i = 0; i < 3; i++) { await advanceOnce(page); if (await settle(page, async () => {}) === "results") break; }
+  await expect(page.locator(".screen.results")).toBeVisible();
+  await expect(page.locator(".lead")).toContainText("You moved the date, and that is allowed.");          // 200 coins in the wallet cannot pay 210
+  await expect(page.locator(".closing-card")).toContainText("You kept everything where it was. Next town, try one move.");
+  await expect(page.locator(".cols li").first()).toContainText("Your nature trip has to wait.");
+  await expect(page.locator(".cols li").nth(1)).toContainText(/Ada .*(She paid for her nature trip\.|Her nature trip has to wait\.)/);
   expect(errors, errors.join("\n")).toEqual([]);
 });

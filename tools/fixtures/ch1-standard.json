@@ -2,10 +2,10 @@
  "id": "ch1",
  "seed": "Maple Hollow 7",
  "preset": "standard",
- "marketId": "MS1|DECK2|ch1|Maple Hollow 7",
+ "marketId": "MS1|DECK3|ch1|Maple Hollow 7",
  "versions": {
   "engine": "MS1",
-  "content": "DECK2",
+  "content": "DECK3",
   "rubric": "PLAN1"
  },
  "townName": "Maple Hollow 7",
