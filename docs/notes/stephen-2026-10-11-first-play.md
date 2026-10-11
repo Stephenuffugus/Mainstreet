@@ -26,3 +26,10 @@ The sorting (fault / by design / taste) and the plan follow in docs/decisions.md
 - Ruling R15: the game must teach the moves (divest, diversify, pull money toward the goal), not only show prices.
 - Ruling R16: build on a recognized financial-literacy framework for the age, and make it engaging; a written, animated story is on the table.
 - The lead's read: the engine has every move (sell, the Basket, the Jar bands, goal day) but nothing teaches when or why to make one. That is a re-spec of the experience layer, not a patch.
+
+## Fourth note, chapter 1 at rc7 (verbatim)
+
+> Okay, so this first level is still just stupid. It's not informative enough and Lee it's dry at least players feeling like they're bored in a desert and they'll leave immediately. The tutorial needs to be like the person walking in and being like. Here's your. Yeah here's your hundred coins. You're going to put them here and then you're going to try and save up over the year by investing in these businesses. You're trying to put the coins for your goal here. These are how you allocate them into businesses. This is how the this is. Absolutely pointless we have my plan, but it doesn't really tell us what it is or what it's for or why we're using that. How it structures, how you're building the structure of your plan and how it's going to affect or where. The thing is that you're going to be clicking to go through time. It has no explanation as to what the heck we're doing. This is just frustrating and bad still after all of this
+
+- R17: chapter 1 is a guided walk. A person (the Clerk) walks the player through the screen piece by piece: the coins, where the goal money goes, the businesses and how coins go into them, the plan and what it is for, and that time moves only when you tap. One thing lit at a time, the player does each step.
+- The lead's read: the rc4 guide card explained the stop, never the screen. Nothing ever pointed at the money row, the plan tray, My Plan or the time button and said what they are.
