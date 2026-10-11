@@ -266,7 +266,7 @@ test("chapter 4: practice coins, routing, dividends and the Reinvest toggle, the
 test("chapter 5: the slump stop, a closure on the street, Cass on the street, costs paid", async ({ page }) => {
   const errors = watch(page);
   await page.goto(URL);
-  await page.evaluate(() => { MS.newRun("ch5", "Clover Field 3"); MS.go("town"); });   // DECK3 re-keyed every town: this one has a closure (Toy Box) and the slump
+  await page.evaluate(() => { MS.newRun("ch5", "Clover Field 14"); MS.go("town"); });   // DECK4 re-keyed every town again: in this one Toy Box closes at month 20, the slump starts at 26 and a surprise cost comes at 28
   await expect(page.getByText("This is Cass.")).toBeVisible();
   await page.getByRole("button", { name: "Start exploring" }).click();
   await expect(page.locator(".house")).toHaveCount(4);
@@ -734,19 +734,22 @@ test("phase A cold open: the Clerk names the stake (goal, start, what saving alo
   await page.evaluate(() => { MS.newRun("ch2", "Maple Hollow 7"); MS.go("town"); });
   const clerk = page.locator(".cold-open");
   await expect(clerk.locator(".eyebrow")).toHaveText("The Town Clerk");
-  await expect(clerk).toContainText("Your nature trip costs 210 coins and is due in 36 months. You have 200 coins. Saving alone gets you 200. The rest has to grow.");
+  await expect(clerk).toContainText("Your nature trip costs 210 coins and is due in 3 years. You have 200 coins. Saving alone gets you 200. The rest has to grow.");
   await expect(clerk).toContainText("This year, try spreading out. Ada puts her coins in the Town Basket, a little of every shop. Dev picks one shop. Watch both.");
   expect(await page.evaluate(() => CONTENT.chapters.find(c => c.id === "ch2").goal.amount)).toBe(210);   // DECK3
   await page.evaluate(() => { MS.newRun("ch4", "Harbor Lane 12"); MS.go("town"); });
-  await expect(page.locator(".cold-open")).toContainText("Your project kit costs 850 coins and is due in 60 months. You have 150 coins, and 10 coins arrive each month. Saving alone gets you about 797. The rest has to grow.");
-  await page.evaluate(() => { MS.newRun("ch3", "Willow Bend 41"); MS.go("town"); });                    // chapter 3 kept its goal: the Clerk says saving reaches it
-  await expect(page.locator(".cold-open")).toContainText("Saving alone gets you about 212, enough for this goal.");
+  await expect(page.locator(".cold-open")).toContainText("Your project kit costs 850 coins and is due in 5 years. You have 150 coins, and 10 coins arrive each month. Saving alone gets you about 797. The rest has to grow.");
+  await page.evaluate(() => { MS.newRun("ch3", "Willow Bend 41"); MS.go("town"); });                    // rc7 (DECK4): 190, which saving reaches only if the surprise cost is small
+  await expect(page.locator(".cold-open")).toContainText("Saving alone gets you about 212. That is enough unless a big surprise cost comes first.");
   await expect(page.locator(".cold-open")).toContainText("between 15 and 30 coins");
   await page.evaluate(() => { MS.newRun("ch6", "Lantern Row 5"); MS.go("town"); });
-  await expect(page.locator(".cold-open")).toContainText("Your big project costs 1500 coins today and is due in 120 months. Its price rises with everyday prices.");
+  await expect(page.locator(".cold-open")).toContainText("Your big project costs 1500 coins today and is due in 10 years. Its price rises with everyday prices.");
   await expect(page.locator(".cold-open")).toContainText("and by then your big project will cost more than that. The rest has to grow.");
-  await page.evaluate(() => { MS.newRun("ch1", "Maple Hollow 7"); MS.go("town"); });                    // chapter 1 keeps its practice intro, no Clerk
-  await expect(page.locator(".clerk")).toHaveCount(0);
+  await page.evaluate(() => { MS.newRun("ch1", "Maple Hollow 7"); MS.go("town"); });                    // rc7: chapter 1's intro has the Clerk too, with the practice year
+  await expect(page.locator(".clerk")).toHaveCount(1);
+  await expect(page.locator(".cold-open")).toContainText("This first year is practice. Your art supplies cost 30 and are due in a year. You have 100 coins. We will keep 30 in the Jar for the art supplies and try growing the rest with one bakery. Prices here follow a story, not a real market.");
+  await expect(page.locator(".cold-open").locator(".eyebrow")).toHaveText("The Town Clerk");
+  await page.evaluate(() => MS.go("home")); await expect(page.locator("#s-title")).toBeVisible(); await expect(page.locator(".clerk")).toHaveCount(0);   // Home: no Clerk
   expect(errors, errors.join("\n")).toEqual([]);
 });
 test("phase A check-in: Spread out shows when one shop is held, queues a Basket buy into the open tray, and Undo takes it back", async ({ page }) => {
@@ -786,10 +789,10 @@ test("phase A pull card: at chapter 2's goal fit checkpoint it opens for a playe
   await page.getByRole("button", { name: /^Buy with all my wallet/ }).click();
   await advanceOnce(page); expect(await settle(page, async () => {}, { keepPull: true })).toBe("town");    // month 12: the row, not the card
   await expect(page.locator("#pull-all")).toHaveCount(0);
-  await expect(page.locator("[data-move=pull]")).toContainText("Your nature trip is 24 months away. Your Jar holds 0 of 210 for it. Prices could fall before then.");
+  await expect(page.locator("[data-move=pull]")).toContainText("Your nature trip is 2 years away. Your Jar holds 0 of 210 for it. Prices could fall before then.");
   await advanceOnce(page); expect(await settle(page, async () => {}, { keepPull: true })).toBe("town");    // month 24: the goal fit checkpoint
   const sheet = page.locator(".sheet");
-  await expect(sheet).toContainText("Your nature trip is due in 12 months. You need 210 more in the Jar. Selling shares now turns today’s price into coins; keeping them means waiting to see.");
+  await expect(sheet).toContainText("Your nature trip is due in 1 year. You need 210 more in the Jar. Selling shares now turns today’s price into coins; keeping them means waiting to see.");
   await expect(page.locator("#pull-keep")).toHaveText("Keep growing, ask me next stop");
   await page.locator("#pull-all").click();                                                             // "Move 210 to my Jar now"
   await expect(page.locator(".tray li")).toHaveCount(2);
@@ -825,5 +828,85 @@ test("phase A closing card: a player who made no move hears so, the goal is post
   await expect(page.locator(".closing-card")).toContainText("You kept everything where it was. Next town, try one move.");
   await expect(page.locator(".cols li").first()).toContainText("Your nature trip has to wait.");
   await expect(page.locator(".cols li").nth(1)).toContainText(/Ada .*(She paid for her nature trip\.|Her nature trip has to wait\.)/);
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+
+/* ---- rc7, the proud pass: durations in years, the Gazette after a recap, the town on Home, chapters 3 and 5 at 190 and 800. docs/plans/PHASE-B-PROUD-PASS-2026-10-11.md ---- */
+test("rc7 durations: whole years read as years on the chapter 2 intro, the cold open and the goal chip; signed amounts never print a minus zero; Home is a 48 px button", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  await page.evaluate(() => { MS.newRun("ch2", "Pebble Creek 3"); MS.go("town"); });
+  await expect(page.locator(".intro .goal-chip")).toContainText("210 coins, in 3 years. You start with 200 coins.");
+  await expect(page.locator(".cold-open")).toContainText("Your nature trip costs 210 coins and is due in 3 years.");
+  await expect(page.locator(".screen.intro")).not.toContainText("months");
+  await page.getByRole("button", { name: "Start exploring" }).click();
+  await expect(page.locator(".town .goal-chip")).toContainText("210 coins · in 3 years");
+  const home = page.locator(".town-head").getByRole("button", { name: "Home" });
+  expect((await home.boundingBox()).height).toBeGreaterThanOrEqual(48);                       // .btn.small is 48 px now
+  await expect(page.locator(".town-links").getByRole("button")).toHaveCount(2);               // chapter 2 keeps its row: Scrapbook and Time machine
+  await advanceOnce(page); expect(await settle(page, async () => {})).toBe("town");
+  await expect(page.locator(".town .goal-chip")).toContainText("210 coins · in 2 years");
+  expect(await page.evaluate(() => [1, 11, 12, 13, 24, 36, 60, 120].map(MS.fmt.durationWord))).toEqual(["1 month", "11 months", "1 year", "13 months", "2 years", "3 years", "5 years", "10 years"]);
+  expect(await page.evaluate(() => [-30, -49, 0, 30, -100, 250].map(MS.fmt.signed))).toEqual(["0", "0", "0", "0", "−1", "+3"]);
+  expect(await page.evaluate(() => [-30, -50, 0].map(MS.fmt.signedAmt))).toEqual(["0", "−0.5", "0"]);
+  expect(await page.evaluate(() => [0, -0.004, 0.004, 0.12, -0.08].map(MS.fmt.pct))).toEqual(["0%", "0%", "0%", "+12%", "−8%"]);
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("rc7 Gazette after a recap: chapter 2 drops the Your money panel and keeps the masthead, the neighbors and one thing to notice; chapter 1's year end Gazette keeps it; chapter 1's lone Scrapbook sits beside Home", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  await page.evaluate(() => { MS.newRun("ch2", "Pebble Creek 3"); MS.S.ui.intro = false; MS.go("town"); });
+  await page.getByRole("button", { name: "Next year" }).click(); await page.locator("#go").click();
+  await page.getByRole("button", { name: "Skip" }).click();
+  await expect(page.locator(".screen.recap").getByRole("heading", { name: "Your money" })).toBeVisible();   // the recap shows the money
+  await page.locator("#recap-go").click();
+  const gaz = page.locator(".screen.gazette");
+  await expect(gaz.locator(".masthead")).toContainText("Gazette");
+  await expect(gaz.getByRole("heading", { name: "Your money" })).toHaveCount(0);
+  await expect(gaz.locator(".money-story")).toHaveCount(0);
+  await expect(gaz.getByRole("heading", { name: "Your neighbors" })).toBeVisible();
+  await expect(gaz.getByRole("heading", { name: "One thing to notice" })).toBeVisible();
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.locator(".screen.town")).toBeVisible();
+  // chapter 1: four seasons, each with a seasonal recap, then the year end Gazette with its money panel
+  await page.evaluate(() => { MS.newRun("ch1", "Maple Hollow 7"); MS.S.ui.intro = false; MS.S.ui.tutorialStep = -1; MS.go("town"); });
+  await expect(page.locator(".town-links")).toHaveCount(0);
+  await expect(page.locator(".town-head").getByRole("button", { name: "Scrapbook" })).toBeVisible();
+  await expect(page.locator(".town-head").getByRole("button", { name: "Home" })).toBeVisible();
+  for (let i = 0; i < 4; i++) { await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click(); await skipShow(page); }
+  await expect(page.locator(".screen.gazette .masthead")).toContainText("Gazette");
+  await expect(page.locator(".screen.gazette").getByRole("heading", { name: "Your money" })).toBeVisible();
+  await expect(page.locator(".money-story")).toBeVisible();
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("rc7 Home shows the town: six storefront images under the hook line, decorative, one row at 412 and two rows at 320", async ({ page }) => {
+  const errors = watch(page);
+  await page.setViewportSize({ width: 412, height: 915 });
+  await page.goto(base);                                                                       // over http, so the art loads
+  const strip = page.locator(".home-street");
+  await expect(strip).toHaveAttribute("aria-hidden", "true");
+  await expect(strip.locator("img")).toHaveCount(6);
+  expect(await strip.locator("img").evaluateAll(a => a.map(i => i.getAttribute("src")))).toEqual(["lemn", "bake", "toys", "bike", "paws", "robo"].map(k => "art/shop-" + k + "-open.webp"));
+  await expect.poll(() => strip.locator("img").evaluateAll(a => a.every(i => i.complete && i.naturalWidth > 0))).toBe(true);
+  expect(await strip.locator("img").evaluateAll(a => a.every(i => i.getAttribute("alt") === ""))).toBe(true);
+  expect(Math.round((await strip.locator("img").first().boundingBox()).height)).toBe(56);
+  expect(await page.evaluate(() => { const t = document.querySelector(".home .tag").getBoundingClientRect(), s = document.querySelector(".home-street").getBoundingClientRect(); return s.top >= t.bottom; })).toBe(true);
+  const rows = () => strip.locator("img").evaluateAll(a => new Set(a.map(i => Math.round(i.getBoundingClientRect().top))).size);
+  expect(await rows()).toBe(1);
+  await page.setViewportSize({ width: 320, height: 568 });
+  expect(await rows()).toBe(2);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("rc7 the stake for chapters 3 and 5 (DECK4): the cold opens name 190 and 800", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  expect(await page.evaluate(() => [ENGINE.VERSION.content, CONTENT.chapters.find(c => c.id === "ch3").goal.amount, CONTENT.chapters.find(c => c.id === "ch5").goal.amount])).toEqual(["DECK4", 190, 800]);
+  await page.evaluate(() => { MS.newRun("ch3", "Willow Bend 41"); MS.go("town"); });
+  await expect(page.locator(".cold-open")).toContainText("Your bicycle costs 190 coins and is due in 3 years. You have 200 coins. Saving alone gets you about 212. That is enough unless a big surprise cost comes first.");
+  await expect(page.locator(".intro .goal-chip")).toContainText("190 coins, in 3 years.");
+  await page.evaluate(() => { MS.newRun("ch5", "Clover Field 14"); MS.go("town"); });
+  await expect(page.locator(".cold-open")).toContainText("Your week at camp costs 800 coins and is due in 5 years. You have 300 coins, and 10 coins arrive each month. Saving alone gets you about 963, enough for this goal.");
+  await expect(page.locator(".intro .goal-chip")).toContainText("800 coins, in 5 years.");
   expect(errors, errors.join("\n")).toEqual([]);
 });

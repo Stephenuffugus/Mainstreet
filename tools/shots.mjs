@@ -52,10 +52,10 @@ await (async () => {
   await p.locator("input[name=reinvest][value='1']").check(); await p.getByRole('button', { name: 'Keep my plan' }).click();
   for (let i = 0; i < 6; i++) { if (await p.locator('.screen.results').count()) break; await adv(); }
   await shot3('21-ch4-results'); await p.getByRole('button', { name: 'Try one change' }).click(); await p.locator('#tm-select').selectOption('start-early'); await shot3('22-timemachine');
-  /* DECK3: in Clover Field 3 the Toy Box closes at month 24 and the slump starts at 25 */
-  await p.evaluate(() => { MS.newRun('ch5', 'Clover Field 3'); MS.go('town'); }); await p.getByRole('button', { name: 'Start exploring' }).click();
+  /* DECK4: in Clover Field 14 the Toy Box closes at month 20 and the slump starts at 26 */
+  await p.evaluate(() => { MS.newRun('ch5', 'Clover Field 14'); MS.go('town'); }); await p.getByRole('button', { name: 'Start exploring' }).click();
   await p.locator('.tile').nth(2).click(); await p.locator('.steppers').getByRole('button', { name: 'Buy 1 share' }).click();
-  for (let i = 0; i < 4; i++) { await adv(); const t = await p.evaluate(() => MS.S.draft.t); if (t === 25) await shot3('23-ch5-slump'); if (t === 24) { await p.locator('.tile').nth(2).click(); await shot3('24-ch5-closing'); } }
+  for (let i = 0; i < 4; i++) { await adv(); const t = await p.evaluate(() => MS.S.draft.t); if (t === 26) await shot3('23-ch5-slump'); if (t === 20) { await p.locator('.tile').nth(2).click(); await shot3('24-ch5-closing'); } }
   await p.evaluate(() => { MS.newRun('ch6', 'Lantern Row 5'); MS.go('town'); }); await p.getByRole('button', { name: 'Start exploring' }).click(); await shot3('25-ch6-lab');
   await p.getByRole('button', { name: 'Read the cost card' }).first().click(); await p.getByRole('button', { name: 'Read the cost card' }).first().click(); await shot3('26-ch6-lab-read');
   await p.getByRole('button', { name: 'Choose Basket A' }).click(); await shot3('27-ch6-town');
