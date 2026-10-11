@@ -2,6 +2,7 @@
 Updated: 2026-10-11  ·  Current milestone: handed to the dev team at v1.0.0-rc3; vendored into lucid-winds behind the beta gate 2026-10-11; playtest, songs and sprites open (fun gate still open)  ·  Engine MS1 · Content DECK2 · Rubric PLAN1 · Art ART0
 
 ## Done since last note
+- rc4 (R14, 2026-10-11): the connective tissue after Stephen's first play. The show holds 1.1 s a month in chapter 1 with a caption per month; a recap sheet after every advance in every chapter (prices from and to, your shares, why, your money, one teaching line); the two futures on the confirm sheet; a four-sentence guide at each chapter 1 stop; chapter 1 intro and results as one story; the Town plan tray and buttons pinned at the bottom. Engine, numbers and fixtures untouched. Engine 131 pass, Chromium 37 journeys pass (WebKit in CI). Plan: docs/plans/CH1-CONNECTIVE-TISSUE-2026-10-11.md. Open: the rename (R13), Pages, the fun gate, the art batch.
 - Pickup kit: START-HERE.md, split and join tools, npm scripts, a devcontainer, CI on every push, tag v1.0.0-rc3. Stephen is closing his Codespace; the dev team and Astra pick up from the repo alone.
 - M8: the music lane (docs/MUSIC.md): songs by feel per moment, crossfade, off by default, host-music handshake, three journeys; art-slot guard test. Waiting on Stephen's songs.
 - M7 (rc2): sound, focus for screen readers, Spent on the Town, six checklist journeys automated, first-pass art in all 110 sprite slots (1.3 MB), show news-card fix, plate sizing. 56 Playwright journeys green in chromium and webkit.

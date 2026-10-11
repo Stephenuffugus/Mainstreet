@@ -33,6 +33,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--up);outline-off
 .card{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
 .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
 .actions.col{flex-direction:column;align-items:stretch}
+/* R14: the Town is a long scroll and the guide says "tap Next season", so the plan tray and the Town buttons stay in view at the bottom as one block. */
+.town>.town-foot{position:sticky;bottom:0;z-index:2;margin:0 -16px -32px;padding:8px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:1px solid var(--rule);display:flex;flex-direction:column;gap:10px}
+.town-foot .tray{position:static;max-height:40vh;overflow:auto}
 .opts{display:flex;flex-wrap:wrap;gap:8px}
 .banner{background:var(--down-soft);border:1px solid var(--down);border-radius:8px;padding:8px 12px}
 .stamp{font-family:ui-monospace,Menlo,monospace;font-size:.75em;color:var(--ink-3)}
@@ -1321,8 +1324,8 @@ function townScreen() {
     goalChip(s), moneyRow(s), hintBar(),
     (() => { const ids = sc.ids; const selected = S.ui.openShop && ids.includes(S.ui.openShop) ? S.ui.openShop : (ids.length === 1 ? ids[0] : null); return el('section', { class: 'street', 'aria-label': 'The street' }, art('plate-sky', 'sky'), el('div', { class: 'shops' + (ids.length === 1 ? ' one' : '') }, sc.shops.map(id => shopTile(id, id === selected)), sc.funds.map(id => stallTile(id, id === selected))), selected ? (m.funds[selected] ? fundPanel(selected) : shopPanel(selected)) : el('p', { class: 'muted center', text: 'Tap a shop to see its shares.' })); })(),
     sc.neighbors.length ? neighborsRow() : null,
-    tray(),
-    el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn', onclick: () => go('scrapbook'), text: 'Scrapbook' }), sc.n >= 2 ? el('button', { type: 'button', class: 'btn', onclick: () => { S.ui.tm = null; go('timemachine'); }, text: 'Time machine' }) : null, el('button', { type: 'button', class: 'btn', onclick: openPlan, text: 'My Plan' }), el('button', { type: 'button', class: 'btn primary big', disabled: nextOk ? null : true, onclick: () => { S.ui.sheet = { kind: 'confirm' }; render(); }, text: s.t % sc.stopEvery !== 0 ? 'Continue year' : nextLabel })),
+    el('div', { class: 'town-foot' }, tray(),
+    el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn', onclick: () => go('scrapbook'), text: 'Scrapbook' }), sc.n >= 2 ? el('button', { type: 'button', class: 'btn', onclick: () => { S.ui.tm = null; go('timemachine'); }, text: 'Time machine' }) : null, el('button', { type: 'button', class: 'btn', onclick: openPlan, text: 'My Plan' }), el('button', { type: 'button', class: 'btn primary big', disabled: nextOk ? null : true, onclick: () => { S.ui.sheet = { kind: 'confirm' }; render(); }, text: s.t % sc.stopEvery !== 0 ? 'Continue year' : nextLabel }))),
     sheet());
 }
 
