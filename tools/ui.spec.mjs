@@ -412,10 +412,11 @@ test("two tabs: the second tab is read-only until it takes over, then the first 
 test("offline after install: once the worker has cached the game, it loads and plays with the network off", async ({ browser }) => {
   const ctx = await browser.newContext(); const page = await ctx.newPage();
   await page.goto(base + "index.html");
-  await page.waitForFunction(() => navigator.serviceWorker.getRegistration().then(r => !!(r && r.active)), null, { timeout: 20000 });
-  await page.waitForFunction(() => caches.keys().then(ks => ks.some(k => k.startsWith("mainstreet-"))), null, { timeout: 20000 });
+  // install finished (every precached sprite included), activated, and the page is controlled
+  await page.waitForFunction(() => navigator.serviceWorker.getRegistration().then(r => !!(r && r.active && r.active.state === "activated" && !r.installing && !r.waiting)), null, { timeout: 30000 });
   await page.waitForFunction(() => caches.match("index.html", { ignoreSearch: true }).then(r => !!r), null, { timeout: 20000 });
   await page.reload();
+  await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 20000 });
   await ctx.setOffline(true);
   await page.reload();
   await expect(page.locator("#s-title")).toBeVisible();
@@ -531,4 +532,19 @@ test("town screen answers what you own, what you spent and what is left", async 
   await expect(page.locator(".money-row")).toContainText("Spent");
   await expect(page.locator(".money-row")).toContainText("Jar");
   await expect(page.locator(".own")).toContainText("1 share");
+});
+
+test("the year show renders news cards as elements: stepping twelve months under reduced motion never prints an object", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(URL);
+  await page.evaluate(() => { MS.newRun("ch2", "Pebble Creek 3"); MS.S.ui.intro = false; MS.go("town"); });
+  await page.getByRole("button", { name: /^(Next year|Continue year)$/ }).click(); await page.locator("#go").click();
+  await expect(page.locator(".screen.show")).toBeVisible();
+  let news = 0;
+  for (let i = 0; i < 12; i++) {
+    expect(await page.evaluate(() => document.body.innerText.includes("[object"))).toBe(false);
+    news += await page.locator(".news strong").count();
+    const next = page.getByRole("button", { name: /^(Next month|Continue)$/ }); if (await next.count()) await next.click(); else break;
+  }
+  expect(news).toBeGreaterThan(0);
 });

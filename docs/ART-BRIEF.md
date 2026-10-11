@@ -5,6 +5,9 @@
 
 You are making about 100 sprites for a paper town. This is the runbook: one Blender master scene is the style, Meshy makes the models, every asset renders through the same camera and lights, and the output is 512 px WebP files named by slot in `art/`. Opus never waits for art; every slot has a labeled placeholder until your file lands, and `node tools/art_manifest.mjs` swaps it in.
 
+
+> **First-pass art is in place (2026-10-11).** Every slot in `art/` is a cut-paper SVG rendered by `node tools/gen_art.mjs` (dev only; Chromium plus `tools/webp.py`), 110 files, 1.3 MB, largest 19 KB. They follow the rules below (no text, no coins or arrows, busy means more customers, closed looks like a fresh start) so the game reads as a town before the Blender renders land. Replace them one by one: drop a file with the same name into `art/`, run `node tools/art_manifest.mjs`, bump `VERSION` in `sw.js`. The generator never overwrites a file you have replaced unless you run it for that slot by name.
+
 ## The look, in one paragraph
 
 Folded cardstock. Everything in the town is cut and folded paper: storefronts with visible fold lines and slightly rounded cut edges, a warm cream ground, soft paper grain in every surface, a thin ink outline, matte light with soft shadows baked in. Animal shopkeepers and neighbors are paper too, with simple shapes and expressive posture. No gloss, no plastic, no photoreal texture. The reference feeling is a school diorama made by someone very good at it. It is original: nothing may resemble Animal Crossing or any other game's characters, faces, icon shapes or trade dress, and we check every asset for that by eye.

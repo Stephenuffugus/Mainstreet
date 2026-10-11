@@ -45,8 +45,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--up);outline-off
 .keeper-art{width:72px;height:72px;flex:none}
 .goal-art{width:56px;height:56px;flex:none}
 .goal-big{width:160px;height:160px;align-self:center}
-.sky{width:100%;height:36px;border-radius:10px 10px 0 0}
-.weather{width:100%;height:48px}
+.sky{width:100%;height:36px;border-radius:10px 10px 0 0;object-fit:cover}
+.weather{width:100%;height:auto;max-height:120px;object-fit:contain}
 .stamp-art{width:56px;height:56px;flex:none;border-radius:50%}
 .stamp-art.dim{opacity:.4}
 .deco-art{width:88px;height:88px}
@@ -1050,7 +1050,7 @@ globalThis.ENGINE = {
 (function () {
 'use strict';
 const E = globalThis.ENGINE, PR = globalThis.PARAMS, CT = globalThis.CONTENT, ST = globalThis.STRINGS;
-const BUILD = '1.0.0-rc1';
+const BUILD = '1.0.0-rc2';
 const KEYS = { save: 'ms:save', bak: 'ms:save:bak', bad: 'ms:save:bad', settings: 'ms:settings' };
 const BUILT = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6'];
 const isBuilt = id => BUILT.includes(id);
@@ -1495,7 +1495,7 @@ function showScreen() {
     monthLbl.textContent = MONTHS[f.cal - 1] + ', year ' + (Math.floor((f.t - 1) / 12) + 1);
     weatherLbl.textContent = cap(f.weather) + (f.mood === 'S' ? ' · many families are spending less' : f.mood === 'B' ? ' · a busy time in town' : '');
     stage.replaceChildren(art('weather-' + f.weather, 'weather', f.weather), el('div', { class: 'show-shops' }, sc.shops.map(id => { const a = assetById(id), st = f.activity[id], slot = 'shop-' + id.toLowerCase() + '-' + (st === 'closed' ? 'closed' : st === 'normal' ? 'open' : st); return el('div', { class: 'show-shop' }, art(slot, 'shop-art', a.name + ', ' + st), el('div', { class: 'mini-card' }, el('span', { text: a.name }), el('strong', { text: coins(f.quotes[id], { exact: !guided() }) }))); })));
-    cards.replaceChildren(f.cards.filter(id => id !== 'E21' && id !== 'E22' && id !== 'E20').map(id => { const c = CT.cards.find(x => x.id === id); return el('div', { class: 'news', role: 'status' }, el('strong', { text: c.headline }), el('span', { class: 'muted', text: ' ' + c.shortExplanation })); }));
+    cards.replaceChildren(...f.cards.filter(id => id !== 'E21' && id !== 'E22' && id !== 'E20').map(id => { const c = CT.cards.find(x => x.id === id); return el('div', { class: 'news', role: 'status' }, el('strong', { text: c.headline }), el('span', { class: 'muted', text: ' ' + c.shortExplanation })); }));
     if (nbs) nbars.replaceChildren(el('div', { class: 'nbar you' }, el('div', { class: 'b', style: 'height:' + Math.round(60 * (f.nw || 0) / maxNw) + 'px' }), el('span', { text: 'You' })), ...ids.map(id => el('div', { class: 'nbar' }, el('div', { class: 'b', style: 'height:' + Math.round(60 * (nbs[id].nw[f.t] || 0) / maxNw) + 'px' }), el('span', { text: nbInfo(id).name }))));
   }
   function finishShow() { if (done) return; done = true; if (timer) clearTimeout(timer); arrive(); }

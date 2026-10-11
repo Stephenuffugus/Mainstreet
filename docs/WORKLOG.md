@@ -153,5 +153,7 @@ One box per exit condition. Tick a box only with the command and its result past
       evidence: ui.spec.mjs focus journey, chromium and webkit
 - [x] Manual checklist items automated: blocked storage, exit to the portal with and without history, hidden page, update banner on Home only and never embedded, reduced motion strip, own and spent and left on the Town screen
       evidence: six journeys in ui.spec.mjs; docs/playtest.md boxes ticked with the test names
-- [ ] First-pass art for all 113 slots from tools/gen_art.mjs; manifest regenerated; precache total recorded in STATUS.md
-- [ ] Tag `v1.0.0-rc2`
+- [x] First-pass art for all 113 slots from tools/gen_art.mjs; manifest regenerated; precache total recorded in STATUS.md
+      evidence: 110 sprites in art/ (the other three slots are the two PWA icons and the portal thumbnail, already in place), 1,326 KB, largest 19 KB, every corner transparent except the two opaque plates; contact sheet checked; the show's news cards fixed (an array was passed to replaceChildren); sky and weather plates sized; offline-after-install test waits for install to finish; npx playwright test 56 passed
+- [x] Tag `v1.0.0-rc2`
+      evidence: git tag v1.0.0-rc2; build stamp 1.0.0-rc2; worker cache DECK2-MS1-1.0.0-rc2

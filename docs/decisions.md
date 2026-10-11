@@ -6,6 +6,8 @@ Format: `YYYY-MM-DD · milestone · who · decision · why · what it affects`
 
 ## Entries
 
+- 2026-10-11 · M7 · Fable · First-pass art for every slot is generated cut-paper SVG (tools/gen_art.mjs), shipped under the real names so Stephen's renders replace them file by file · R02 keeps the art lane his; placeholders with the right silhouettes make the fun gate a test of the game, not of dashed boxes · art/, docs/ART-BRIEF.md
+- 2026-10-11 · M7 · Fable · Sky plate uses object-fit cover in its 36 px strip; the weather plate keeps its 2:1 shape inside a 120 px box · Contained plates shrank to small floating boxes once real images arrived · styles
 - 2026-10-11 · M7 · Fable · Sound is synthesized in WebAudio (a 45 ms filtered noise burst per month, a two-note sine chime at the Gazette and the chapter end), off by default, with a Settings toggle · HANDOFF 8 and 10 ask for paper ticks and one soft chime that carry no information; no audio files keeps the precache small and offline simple · showScreen, gazetteScreen, resultsScreen
 - 2026-10-11 · M7 · Fable · Focus policy: a screen change focuses the first heading (tabindex -1, no outline); a same-screen re-render restores focus to the control with the same accessible name; an open dialog takes focus · Every render replaces the whole view, so without this a screen reader heard nothing and keyboard users lost their place after every tap · render, restoreFocus
 - 2026-10-11 · M7 · Fable · The Town money row shows Spent (goal plus costs) beside Wallet and Jar · HANDOFF 15 asks that "what do you own, what did you spend, what is left" be answerable from the Town screen alone · townScreen

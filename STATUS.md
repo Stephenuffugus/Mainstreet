@@ -1,7 +1,8 @@
 # STATUS, MAINSTREET
-Updated: 2026-10-11  ·  Current milestone: M6 release candidate tagged; playtest and vendoring open (fun gate still open)  ·  Engine MS1 · Content DECK2 · Rubric PLAN1 · Art ART0
+Updated: 2026-10-11  ·  Current milestone: M7 polish done, rc2 tagged; playtest and vendoring open (fun gate still open)  ·  Engine MS1 · Content DECK2 · Rubric PLAN1 · Art ART0
 
 ## Done since last note
+- M7 (rc2): sound, focus for screen readers, Spent on the Town, six checklist journeys automated, first-pass art in all 110 sprite slots (1.3 MB), show news-card fix, plate sizing. 56 Playwright journeys green in chromium and webkit.
 - M6: content DECK2 (six drifts recalibrated on held-out seeds; every shop within 0.2 points of its design total), docs/calibration.md with an M6 reading, docs/FLEET-HANDOFF.md, docs/RELEASE-NOTES.md, the embed-protocol journey, Grown-ups copy current, build stamp 1.0.0-rc1, tag v1.0.0-rc1.
 - M5 complete: free play with presets and typed town names; scrapbook pages with the year strip, stamps and neighbors' notes; read-aloud with local voices; export and import with a confirm and a hardened parser; the real service worker (precache from art/manifest.json, update banner, embed guard) with an automated offline-after-install test; the two-tab lock; damaged-save recovery; the debug panel; an overflow sweep at 412, 375 and 320. 28 Playwright journeys green in chromium and webkit.
 - M4 complete: chapters 4 to 6 playable (practice coins and routing, dividends and Reinvest, E18 stop, the authored slump, Robo Lab setback, a closure on the street with the payout, Cass, rising prices with the indexed goal and what-it-can-buy, the fee lab with two baskets); the time machine with two gardens, per-chapter experiments, a year slider and saved experiments. 20 Playwright journeys green in chromium and webkit; 130 engine tests.
@@ -31,10 +32,10 @@ Updated: 2026-10-11  ·  Current milestone: M6 release candidate tagged; playtes
 3. Fleet: vendor per docs/FLEET-HANDOFF.md with the portal card beta:true; after the playtest, tag v1.0.0 and drop beta.
 
 ## Tests
-- node tools/test.mjs: 130 pass / 0 fail · npx playwright test: 38 passed (replay fixtures and fourteen UI journeys incl. offline after install, the embed protocol, two tabs, import, recovery and three overflow widths; chromium and webkit) · harness: free standard 10,000 held-out towns in about 60 s, all families and presets in about 7 min · harness ch5 2,000 seeds: 5.0 s · harness 10,000 seeds, four neighbors: 58.4 s
+- node tools/test.mjs: 130 pass / 0 fail · npx playwright test: 56 passed (replay fixtures and twenty-three UI journeys incl. offline after install with the art precached, the embed protocol, two tabs, import, recovery, three overflow widths, focus, sound, blocked storage, exit, hidden page, reduced motion; chromium and webkit) · harness: free standard 10,000 held-out towns in about 60 s, all families and presets in about 7 min · harness ch5 2,000 seeds: 5.0 s · harness 10,000 seeds, four neighbors: 58.4 s
 
 ## Measurements
-- index.html 210 KB (content, engine, app, styles) · precache 212 KB plus art when it lands (art/manifest.json total 0 KB today) · market precompute 14 ms for 240 months, 39 ms with four neighbors (Node on this Codespace; reference device still to measure) · free play, 10,000 seeds: three shops 0.4 to 0.7 points under drift plus yield after events (LEMN, TOYS, BIKE), to be settled at M6 calibration.
+- index.html 216 KB (content, engine, app, styles) · precache about 1.55 MB: 216 KB page plus 110 first-pass sprites, 1,326 KB (art/manifest.json) · market precompute 14 ms for 240 months, 39 ms with four neighbors (Node on this Codespace; reference device still to measure) · free play, 10,000 seeds: three shops 0.4 to 0.7 points under drift plus yield after events (LEMN, TOYS, BIKE), to be settled at M6 calibration.
 - Reference device still: Reference device: [Stephen to name one; default is a 412 by 915 Android phone, plus 375 and 320 sweeps]
 
 ## Decisions made this session (also in docs/decisions.md)

@@ -1,5 +1,16 @@
 # MAINSTREET release notes
 
+## v1.0.0-rc2 (2026-10-11)
+
+Polish after rc1, built while the arcade integration waits on a free Codespace.
+
+- Optional paper sounds (off by default): a soft tick per month in the year show, one quiet chime at the Gazette and the chapter end, synthesized, no files.
+- Focus follows the screen for screen readers and keyboard players: screen changes land on the heading, actions keep focus on their control, sheets take focus.
+- The Town money row shows Spent beside Wallet and Jar.
+- First-pass art in every slot: 110 cut-paper sprites generated from `tools/gen_art.mjs`, 1.3 MB in all, to be replaced by the Blender lane file by file.
+- Fixes: the year show printed an object label in place of a news card; the sky and weather plates were shrinking into small boxes; the update banner never shows when embedded.
+- Six more automated journeys from the manual checklist: blocked storage, exit to the portal, hidden page, update banner, reduced motion, own and spent and left.
+
 ## v1.0.0-rc1 (2026-10-11)
 
 The first release candidate for the Lucid Winds arcade Test Lab (portal card `beta:true`). Engine MS1, content DECK2, rubric PLAN1.
