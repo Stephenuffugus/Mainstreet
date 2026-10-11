@@ -147,11 +147,11 @@ Six chapters, each introducing one new money idea and one neighbor, then free pl
 | # | Chapter | Length | New idea | Neighbor introduced | Start coins | Goal (amount, due) | Contributions | Market moods | Required ending |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | A Little Piece | 12 months, stops every 3 | What do I own when I buy? | none (practice) | 100 | Art supplies, 30, month 12 | None | Fixed script | Same share at two prices; the planned purchase happens |
-| 2 | Different Shops | 36 months, yearly stops | What if one shop has trouble? | Ada (spreads out) and Dev (one shop) | 200 | Nature trip, 60, month 36 | None | Normal only | Ada's basket and Dev's shop side by side on the same market; either can finish higher |
+| 2 | Different Shops | 36 months, yearly stops | What if one shop has trouble? | Ada (spreads out) and Dev (one shop) | 200 | Nature trip, 210, month 36 (DECK3; was 60) | None | Normal only | Ada's basket and Dev's shop side by side on the same market; either can finish higher |
 | 3 | Ready for Rain | 36 months | Which money needs to stay ready? | Bo (keeps it in the jar) | 200 | Bicycle, 80, month 36 | None | Normal only | A surprise cost is paid; Bo pays it without selling anything; cash served a purpose |
-| 4 | Payments Can Grow | 60 months | What changes when payments are reinvested? | none new (Ada, Bo, Dev continue; Dev reinvests) | 150 | Project kit, 120, month 60 | 10/month | Normal and Boom, no Slump | Contributions, dividends and market change shown as three separate numbers |
+| 4 | Payments Can Grow | 60 months | What changes when payments are reinvested? | none new (Ada, Bo, Dev continue; Dev reinvests) | 150 | Project kit, 850, month 60 (DECK3; was 120) | 10/month | Normal and Boom, no Slump | Contributions, dividends and market change shown as three separate numbers |
 | 5 | A Bumpy Journey | 60 months | What changed: price, business, or my goal? | Cass (follows the news) | 300 | Camp week, 150, month 60 | 10/month | Authored slump | A slump and a company setback look different; no recovery promised, no sale condemned; Cass's moves are described, never judged |
-| 6 | Two Futures | 120 months | What can a plan buy, after costs and rising prices? | all four | 300 | Big project, 300 indexed, month 120 | 10/month | Full chain, inflation on | Goal reached or revised; fee lab result; unlock free play |
+| 6 | Two Futures | 120 months | What can a plan buy, after costs and rising prices? | all four | 300 | Big project, 1500 indexed, month 120 (DECK3; was 300) | 10/month | Full chain, inflation on | Goal reached or revised; fee lab result; unlock free play |
 
 **Pacing targets** (measured in playtests, never enforced): chapters 1 to 3 in 4 to 7 minutes each, chapters 4 to 6 in 6 to 10 minutes, the full 20-year free play in 8 to 12 minutes. The year show is about 6 seconds at normal speed and skippable.
 
@@ -329,7 +329,7 @@ Ada is the plan-following bot the abuse tests use; Bo is the cash-only bot that 
 
 ### Determinism and numeric policy
 
-- `ENGINE_VERSION = 'MS1'`, `CONTENT_VERSION = 'DECK2'` (DECK1 was the v1 tuning candidate; DECK2 is the M6 recalibration of the six drifts), `RUBRIC_VERSION = 'PLAN1'`. A market's identity is `${ENGINE_VERSION}|${CONTENT_VERSION}|${scenarioId}|${seed}`. In free play the seed is the town name (section 11).
+- `ENGINE_VERSION = 'MS1'`, `CONTENT_VERSION = 'DECK3'` (DECK1 was the v1 tuning candidate; DECK2 was the M6 recalibration; DECK3 (2026-10-11, R15) raised the chapter 2, 4 and 6 goals to the 35th percentile of Ada's net worth at the due month so saving alone cannot reach them, see docs/plans/PHASE-A-MOVES-AND-STAKE-2026-10-11.md and docs/decisions.md; DECK2 was the M6 recalibration of the six drifts), `RUBRIC_VERSION = 'PLAN1'`. A market's identity is `${ENGINE_VERSION}|${CONTENT_VERSION}|${scenarioId}|${seed}`. In free play the seed is the town name (section 11).
 - PRNG: cyrb128 seeding into sfc32, five independent streams keyed `|mood`, `|events`, `|prices`, `|neighbors`, `|cosmetic`. `Math.random` never appears inside `ENGINE`. Seeds for chapters 2 to 6 come from the app layer (`crypto.getRandomValues`, encoded as a town name); the time machine and the neighbors reuse the attempt's seed; "Replay chapter" draws a new one; the debug panel accepts a typed one.
 - Inside the tick: only `+ − × ÷ %`, `Math.round`, `Math.floor`, `Math.max`, `Math.min`, `Math.imul`, `>>>`, BigInt. **No `Math.pow`, `**`, `exp`, `log`, `sqrt`, `sin`, `cos`, `toFixed`, `parseFloat`, `Intl`, `Number()` on strings.** Every constant that would need them is a literal in `PARAMS`. Use `x * x`, not `x ** 2`.
 - Asset, fund, card and neighbor iteration order is the fixed order of `PARAMS.assets`, `PARAMS.funds`, `CONTENT.cards`, `PARAMS.neighbors`. No object-key iteration in the engine; use arrays.
@@ -855,7 +855,7 @@ Actions are plain objects with a `seq` number: `{ seq, t, type:'BUY'|'SELL'|'JAR
 Versioned, with a validated checkpoint plus the pending tray. Replay from month 0 is a test tool, not the load path. Neighbors are never saved; they are recomputed from the market and their policy.
 
 ```js
-{ schemaVersion:1, engineVersion:'MS1', contentVersion:'DECK2', rubricVersion:'PLAN1',
+{ schemaVersion:1, engineVersion:'MS1', contentVersion:'DECK3', rubricVersion:'PLAN1',
   runId:'r_8f3k2', scenarioId:'ch3', seed:'Maple Hollow 7', tick:18, lastSeq:32,
   checkpoint:{ tick:12, wallet:4120, jar:{soon:8000, buffer:1500, saved:0}, positions:[{id:'BAKE', msh:3000}], funds:{...},
                goal:{...}, totals:{...}, opportunities:[...], moodState:..., index:1.0, history:[...] },
