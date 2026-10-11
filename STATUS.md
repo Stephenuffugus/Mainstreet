@@ -35,6 +35,7 @@ Updated: 2026-10-11  ·  Current milestone: M7 polish done, rc2 tagged; playtest
 - node tools/test.mjs: 130 pass / 0 fail · npx playwright test: 56 passed (replay fixtures and twenty-three UI journeys incl. offline after install with the art precached, the embed protocol, two tabs, import, recovery, three overflow widths, focus, sound, blocked storage, exit, hidden page, reduced motion; chromium and webkit) · harness: free standard 10,000 held-out towns in about 60 s, all families and presets in about 7 min · harness ch5 2,000 seeds: 5.0 s · harness 10,000 seeds, four neighbors: 58.4 s
 
 ## Measurements
+- Performance, headless Chromium at 4x CPU throttle (stand-in until the reference device is named): boot to title 385 ms; new run plus Town render 165 ms; queue an action and re-render 1 ms; advance 12 months 3 ms; full render 5 ms
 - index.html 216 KB (content, engine, app, styles) · precache about 1.55 MB: 216 KB page plus 110 first-pass sprites, 1,326 KB (art/manifest.json) · market precompute 14 ms for 240 months, 39 ms with four neighbors (Node on this Codespace; reference device still to measure) · free play, 10,000 seeds: three shops 0.4 to 0.7 points under drift plus yield after events (LEMN, TOYS, BIKE), to be settled at M6 calibration.
 - Reference device still: Reference device: [Stephen to name one; default is a 412 by 915 Android phone, plus 375 and 320 sweeps]
 
