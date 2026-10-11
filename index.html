@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>MAINSTREET</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#F3EEE2">
+<style>
+/* M0 stub. The real stylesheet lands in M2. Tokens only. */
+:root{--paper:#F3EEE2;--ink:#2B2420;--up:#0072B2;--down:#E69F00;}
+html,body{height:100%;margin:0;background:var(--paper);color:var(--ink);font:18px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;}
+#s-title{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;}
+h1{font-size:40px;margin:0;letter-spacing:.04em;}
+.stamp{font-family:ui-monospace,Menlo,monospace;font-size:13px;opacity:.7;}
+button{min-width:48px;min-height:48px;padding:0 20px;border:2px solid var(--ink);border-radius:8px;background:#fff;color:var(--ink);font:inherit;cursor:pointer;}
+button:focus-visible{outline:3px solid var(--up);outline-offset:2px;}
+</style>
+</head>
+<body>
+<svg id="sprite" aria-hidden="true" style="display:none"><defs></defs></svg>
+
+<main id="s-title">
+  <h1>MAINSTREET</h1>
+  <p>Own little pieces of a town. Make a plan. See what time changes.</p>
+  <p class="stamp" id="build-stamp">build 0.0.0 · M0 stub</p>
+  <button type="button" id="exit-arcade">← All Sky Wolf games</button>
+</main>
+
+<script id="engine">
+/* ENGINE (M1). Pure: no DOM, Date, Math.random, fetch, localStorage, timers. See HANDOFF sections 4, 5, 14. */
+</script>
+
+<script id="content">
+/* CONTENT (M1). PARAMS, CONTENT, STRINGS. Data only. See HANDOFF sections 3, 6, 7, 9. */
+</script>
+
+<script id="app">
+/* ===== Sky Wolf Studio embed protocol (docs/FLEET.md). Stays first in this block. ===== */
+(function(){
+  var framed=false; try{ framed = window.parent!==window; }catch(e){ framed=true; }
+  var EMBED = /[?&]embed=1(&|$)/.test(location.search) || framed;
+  window.SWS_EMBED = EMBED; window.SWS_FRAMED = framed;
+  window.SWS_EXIT = function(){
+    if(framed){ try{ parent.postMessage({sws:'close'},'*'); }catch(e){} return; }
+    if(document.referrer.indexOf('/portal')>=0 && history.length>1){ history.back(); }
+    else{ location.replace('https://lucidwinds.com/portal/'); }
+  };
+  if(framed){
+    try{ parent.postMessage({sws:'ready'},'*'); }catch(e){}
+    window.addEventListener('load',function(){ try{ parent.postMessage({sws:'ready'},'*'); }catch(e){} });
+  }
+})();
+/* APP (M2 onward). Store, screens, year show, chart, persistence, PWA registration guarded by SWS_EMBED. */
+document.getElementById('exit-arcade').addEventListener('click', function(){ window.SWS_EXIT(); });
+</script>
+</body>
+</html>

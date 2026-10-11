@@ -1,0 +1,34 @@
+# Decision log, MAINSTREET
+
+One entry per choice the build makes that `HANDOFF.md` left open, or that changes a locked contract (HANDOFF sections 4 to 7). Newest first. If a locked number changes, bump the matching version string (`MS1`, `DECK1`, `PLAN1`, `ART0`) in the same commit and regenerate fixtures.
+
+Format: `YYYY-MM-DD · milestone · who · decision · why · what it affects`
+
+## Entries
+
+- 2026-10-11 · M0 · Stephen (R01) · No Sunbeam SDK, no earn messages, no music-unlocks include; embed protocol only · A daily-capped studio currency and a song-unlock ladder are the mechanics the non-negotiables forbid · HANDOFF 12, docs/FLEET.md
+- 2026-10-11 · M0 · Stephen (R02) · Art is pre-rendered WebP sprites from a Meshy to Blender pipeline; Stephen makes the assets; `index.html` under 250 KB, precache under 2 MB · About 100 images cannot fit inline SVG under 150 KB; the studio owns the pipeline · HANDOFF 10, 11, docs/ART-BRIEF.md
+- 2026-10-11 · M0 · Stephen (R11) · The request was "a game like Crypto Parrot"; the kids' interpretation stands · Recorded so no later round re-litigates it · HANDOFF 0, Grown-ups page
+- 2026-10-11 · M0 · Fable (R03) · Four neighbors (Ada, Bo, Cass, Dev) launch, one per chapter, replacing the faceless benchmarks; fixed order, plain observations, never ranked, never affect the score; a fifth PRNG stream `|neighbors` for Dev's pick · "Make this game fun": competition with no other players is the Crypto Parrot core; Astra's three objections to named bots are each addressed · HANDOFF 3, 5, 8, 9, 10, 14; modifies C18's landing
+- 2026-10-11 · M0 · Fable (R04) · Inline trading: plus and minus on shop cards, a pending tray, one confirm sheet on the time advance; the engine's draft = replay(checkpoint, pending) · Six taps per trade is too many; one deliberate review per stop is safer than six reflex confirms · HANDOFF 5, 8
+- 2026-10-11 · M0 · Fable (R05) · Net worth and the year's change shown on the Town screen in Guided · "Shown but never the score" had become "hidden" · HANDOFF 8
+- 2026-10-11 · M0 · Fable (R06) · `G` is the total-return factor: `g` includes `yieldM` · The v1 code subtracted the dividend from a price-only factor: Bakery 2.55%/yr as written vs 6.19%/yr fixed, 20,000 seeds · HANDOFF 4, 5, tests; no version bump (no fixtures exist yet)
+- 2026-10-11 · M0 · Fable (R07) · Buying charges exactly `posValue(msh, quote)`; the requested amount is a ceiling · Worst loss per buy was quote/1000 cc: 11 cc at a 112-coin quote, failing the 1 cc tolerance · HANDOFF 5, tests
+- 2026-10-11 · M0 · Fable (R08) · Tested invariants are the cash law and the share law; `marketChange` is derived · The v1 identity defined `marketChange` as the residual and tested nothing · HANDOFF 5, 14
+- 2026-10-11 · M0 · Fable (R09) · E08 weights `BIKE 1.0, LEMN 0.5, TOYS −0.3`; every shock card carries `expectedDirection`; content test · As written, rain raised bike sales · HANDOFF 6
+- 2026-10-11 · M0 · Fable (R10) · Gap resolutions: `scripted` mood mode with a 13-month quote array for chapter 1 (linear between anchors); linear decay kernel; `own` loadings and sector draws as literals; Ada moves goal money to Soon at the first stop where the goal is due within 12 months; E20 headline variants per chapter; per-chapter time-machine experiments; "intentional allocation" defined; `exposure()` over `PARAMS.funds`; purity list allows max/min and bans toFixed/Intl/parseFloat; E18 is total-return neutral by design; iPhone standalone storage note; Guided vs Explorer table; seeds from the app layer as town names; 20 s tab-lock staleness; keeper dialogue added as content; mood codes N/B/S; the Jar has a third band, Saved · Opus should not have to guess · Throughout
+- 2026-10-11 · M0 · Fable (R12) · Fun gate after M2: Penny plays chapter 1 and is shown chapter 2 before M3 starts · Cheapest insurance against six chapters nobody wants to continue · HANDOFF 13, 15, docs/playtest.md
+- 2026-10-11 · M0 · Fable · Discovery card A ("earned as much as you added") kept for free play; card B ("more than a whole year of practice coins") added for chapters 4 to 6 · Card A never fires inside any chapter (6%/yr: free play month 139 without contributions, 228 with) · HANDOFF 9
+- 2026-10-11 · M0 · Fable · `tools/setup.sh` installs Playwright and two engines; M1 names the engines that ran · Playwright is not installed in the Codespace, contrary to the v1 packet · HANDOFF 13, 14
+- 2026-10-11 · M0 · Fable · `docs/WORKLOG.md` with one checkbox per exit condition, tagged gates `m0` to `m6` · Matches how the studio's Opus sessions run now (pixelmeba) · HANDOFF 13, 17
+- 2026-10-10 · M0 · Fable (design relay) · Accepted all 22 Astra changes, C12 and C18 with modifications · See HANDOFF section 2 · Whole packet
+- 2026-10-10 · M0 · Fable · Trade fees removed; costs live only in fund expenses (0.2% Basket, 1.5% lab basket B) · A 1-coin minimum fee is 20% on a 5-coin trade · Ledger, Results, fee lab
+- 2026-10-10 · M0 · Fable · Money in integer centi-coins, shares in integer milli-shares, ledger products via BigInt, prices quantized once at the ledger boundary · Cross-browser determinism and no rounding exploits · Engine, fixtures
+- 2026-10-10 · M0 · Fable · Basket tracks internal per-unit holdings and reinvests dividends inside itself; NAV stays float internally · So a 0.2% fee is never rounded away and look-through exposure is exact · Fund mechanics, Spread score
+- 2026-10-10 · M0 · Fable · Chapter 1 uses a fixed scripted market (10 → 11 → 9 → 10.5 → 10.5), labeled as practice · Teaches "same share, different price" without disguising a favorable path as market evidence · Chapter 1 content
+- 2026-10-10 · M0 · Fable · Glow Slime fad, Pro Picker fund, share cards, daily scenario, Family Night deferred to backlog · Launch scope and anti-gambling guardrails · Section 16 backlog
+- 2026-10-10 · M0 · Fable · Defaults taken on Stephen's open decisions (title MAINSTREET, ages 8 to 11, arcade PWA first) · Work proceeds; Stephen can override before M2 · Section 2
+
+## Template for new entries
+
+- YYYY-MM-DD · M? · Opus · <decision> · <why> · <what it affects; version bump if any>

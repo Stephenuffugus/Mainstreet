@@ -1,0 +1,16 @@
+{
+  "name": "mainstreet",
+  "private": true,
+  "description": "MAINSTREET, a kids' investing game. Dev dependencies only; nothing here ships.",
+  "type": "module",
+  "scripts": {
+    "test": "node tools/test.mjs",
+    "harness": "node tools/harness.mjs --seeds 10000",
+    "replay": "npx playwright test tools/replay.spec.mjs",
+    "art": "node tools/art_manifest.mjs",
+    "calibrate-v1": "node tools/calibrate-v1.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0"
+  }
+}

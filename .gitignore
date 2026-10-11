@@ -1,0 +1,7 @@
+node_modules/
+*.zip
+renders/
+masters/
+test-results/
+playwright-report/
+.DS_Store
