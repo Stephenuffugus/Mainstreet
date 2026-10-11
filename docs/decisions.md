@@ -6,6 +6,7 @@ Format: `YYYY-MM-DD · milestone · who · decision · why · what it affects`
 
 ## Entries
 
+- 2026-10-11 · M6 · Fable · Content bumped to DECK2: every shop's drift moved up by its measured free-play gap (LEMN +0.9, BAKE +0.4, TOYS +0.6, BIKE +0.7, PAWS +0.1, ROBO +0.4 points) so the realized arithmetic mean total return over 10,000 held-out towns lands on the v1 design totals; the harness report now shows the design total, the knob and the gap to design · Authored moods and events are a net cost; the v1 numbers were declared a tuning candidate (HANDOFF 4 and 14); nothing has shipped, so every town identity changing is free · Fixtures regenerated; HANDOFF 4 table and note updated
 - 2026-10-11 · M5 · Fable · The tab id lives in sessionStorage, so a reload keeps its claim on the run · With a fresh id per load, a reload saw its own stamp as another tab and went read-only · Tab lock
 - 2026-10-11 · M5 · Fable · "Try the backup" restores the save from one step earlier (the last queued action may be missing) and says so in the test, not to the child · The backup slot rotates on every successful save; that is what makes it a backup · Recovery card
 - 2026-10-11 · M5 · Fable · The service worker precaches the core files plus every file in art/manifest.json at install, and caches new art on first fetch; its version constant is bumped by hand per release · One precache list from one manifest · sw.js

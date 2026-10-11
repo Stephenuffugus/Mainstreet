@@ -6,5 +6,6 @@ A free, offline, kid-safe investing game for ages 8 to 11. Own little pieces of 
 - `STATUS.md` says where the build stands. `docs/WORKLOG.md` has the next unticked box.
 - `docs/FLEET.md` is how it joins the arcade (embed protocol only; no sunbeams, by design).
 - `docs/ART-BRIEF.md` is the sprite lane.
+- `docs/RELEASE-NOTES.md` says what each release carries and what it leaves out. `docs/FLEET-HANDOFF.md` is the vendoring note for the arcade. `docs/calibration.md` is the held-out harness report.
 
 No build step. `index.html` plus `sw.js`, `manifest.webmanifest`, `icons/` and `art/` are the whole game. `tools/` and `docs/` never ship.

@@ -2,14 +2,14 @@
  "id": "ch1",
  "seed": "Maple Hollow 7",
  "preset": "standard",
- "marketId": "MS1|DECK1|ch1|Maple Hollow 7",
+ "marketId": "MS1|DECK2|ch1|Maple Hollow 7",
  "versions": {
   "engine": "MS1",
-  "content": "DECK1",
+  "content": "DECK2",
   "rubric": "PLAN1"
  },
  "townName": "Maple Hollow 7",
- "quoteHash": "2753239695-808648141-2994581128-643058122",
+ "quoteHash": "2656863860-3761862130-2865268849-3568139255",
  "moods": "NNNNNNNNNNNNN",
  "cards": [
   "E21@12"

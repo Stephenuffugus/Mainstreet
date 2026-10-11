@@ -128,11 +128,19 @@ One box per exit condition. Tick a box only with the command and its result past
       evidence: git tag m5 on the M5 commit
 
 ## M6 Playtest and release candidate
-- [ ] `node tools/harness.mjs --seeds 10000 --report docs/calibration.md` on held-out seeds; report complete per HANDOFF section 14, including every neighbor's distribution and Cass's move count
-- [ ] Any asset more than 0.5 pt from drift plus yield adjusted, recorded, rerun
+- [x] `node tools/harness.mjs --seeds 10000 --report docs/calibration.md` on held-out seeds; report complete per HANDOFF section 14, including every neighbor's distribution and Cass's move count
+      evidence: docs/calibration.md, M6 reading plus the harness tables: free standard 10,000 held-out towns, chapters 2 to 6 at 10,000 each, six presets at 2,000 each; every neighbor's p10/p50/p90 nominal and real, drawdown, goal funded, below Ada, Plan Practice and moves
+- [x] Any asset more than 0.5 pt from drift plus yield adjusted, recorded, rerun
+      evidence: DECK1 gaps were LEMN -0.92, TOYS -0.61, BIKE -0.67 (BAKE -0.45, ROBO -0.42, PAWS -0.14); DECK2 moved every drift by its gap; rerun gaps are within 0.2 points (docs/calibration.md, decisions.md entry of 2026-10-11)
 - [ ] Five to eight children playtested; notes in `docs/playtest.md`; release blockers checked; product gates reported as counts
-- [ ] Known limitations in Grown-ups and release notes
-- [ ] Fleet handoff written per `docs/FLEET.md` ("earn moments: none, by design")
-- [ ] Fleet checks pass: overflow probe, SW cache scope, no dashes, build stamp, `ready`/`close` in a frame, zero requests during play
+      open: Stephen and Penny first (the fun gate, R12), then the wider group; the automated blockers in docs/playtest.md are ticked
+- [x] Known limitations in Grown-ups and release notes
+      evidence: Grown-ups page (in-game) and docs/RELEASE-NOTES.md v1.0.0-rc1
+- [x] Fleet handoff written per `docs/FLEET.md` ("earn moments: none, by design")
+      evidence: docs/FLEET-HANDOFF.md: live URL, file manifest with a vendor MANIFEST entry, card copy, earn moments none (R01), nav map, thumbnail note, every localStorage key, how to update
+- [x] Fleet checks pass: overflow probe, SW cache scope, no dashes, build stamp, `ready`/`close` in a frame, zero requests during play
+      evidence: ui.spec.mjs overflow sweep (3 widths, 0 px), no-dashes content test, build stamp on #s-title asserted in the chapter 1 journey, embed-protocol journey (ready posted, no worker in the frame, exactly one close, nothing else leaves the frame), offline-after-install journey (plays with the network off); sw.js deletes only mainstreet-* caches
 - [ ] Portal card `beta:true` live; thumbnail delivered
-- [ ] Tag `v1.0.0-rc1`; STATUS.md says what shipped and what did not
+      open: needs Pages enabled and the lucid-winds vendoring step (docs/FLEET-HANDOFF.md has the card entry and the MANIFEST line); thumbnail is in the M5 art batch
+- [x] Tag `v1.0.0-rc1`; STATUS.md says what shipped and what did not
+      evidence: git tag v1.0.0-rc1 on the M6 commit; STATUS.md and docs/RELEASE-NOTES.md list what shipped and the backlog

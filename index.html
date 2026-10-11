@@ -224,15 +224,15 @@ label.btn{display:inline-flex;align-items:center;justify-content:center;cursor:p
 <script id="content">
 /* CONTENT (M1). PARAMS, CONTENT, STRINGS. Data only: no functions, no DOM. See HANDOFF sections 3, 4, 6, 7, 9. */
 globalThis.PARAMS = {
-  ENGINE_VERSION: 'MS1', CONTENT_VERSION: 'DECK1', RUBRIC_VERSION: 'PLAN1',
+  ENGINE_VERSION: 'MS1', CONTENT_VERSION: 'DECK2', RUBRIC_VERSION: 'PLAN1',
   SQRT12: 3.4641016151377544, IH_SCALE: 1.4142135623730951,
   assets: [
-    { id:'LEMN', name:'Lemon Lane',          keeper:'lou',     sector:0, start:8.00,  drift:0.050, vol:0.28, yield:0.020, mkt:0.40, sec:0.40, own:0.824621125123532 },
-    { id:'BAKE', name:'Rise & Shine Bakery', keeper:'bram',    sector:0, start:10.00, drift:0.045, vol:0.14, yield:0.035, mkt:0.45, sec:0.35, own:0.8215838362577492 },
-    { id:'TOYS', name:'Toy Box',             keeper:'ottilie', sector:1, start:12.00, drift:0.060, vol:0.24, yield:0.015, mkt:0.55, sec:0.40, own:0.733143914930759 },
-    { id:'BIKE', name:'Spoke Bikes',         keeper:'hop',     sector:2, start:15.00, drift:0.055, vol:0.20, yield:0.025, mkt:0.50, sec:0.35, own:0.792148975887743 },
-    { id:'PAWS', name:'Paws Pet Care',       keeper:'hazel',   sector:3, start:9.00,  drift:0.050, vol:0.16, yield:0.025, mkt:0.40, sec:0.30, own:0.8660254037844386 },
-    { id:'ROBO', name:'Robo Lab',            keeper:'fen',     sector:4, start:20.00, drift:0.090, vol:0.36, yield:0.000, mkt:0.55, sec:0.35, own:0.7582875444051551 }
+    { id:'LEMN', name:'Lemon Lane',          keeper:'lou',     sector:0, start:8.00,  drift:0.059, vol:0.28, yield:0.020, mkt:0.40, sec:0.40, own:0.824621125123532 },
+    { id:'BAKE', name:'Rise & Shine Bakery', keeper:'bram',    sector:0, start:10.00, drift:0.049, vol:0.14, yield:0.035, mkt:0.45, sec:0.35, own:0.8215838362577492 },
+    { id:'TOYS', name:'Toy Box',             keeper:'ottilie', sector:1, start:12.00, drift:0.066, vol:0.24, yield:0.015, mkt:0.55, sec:0.40, own:0.733143914930759 },
+    { id:'BIKE', name:'Spoke Bikes',         keeper:'hop',     sector:2, start:15.00, drift:0.062, vol:0.20, yield:0.025, mkt:0.50, sec:0.35, own:0.792148975887743 },
+    { id:'PAWS', name:'Paws Pet Care',       keeper:'hazel',   sector:3, start:9.00,  drift:0.051, vol:0.16, yield:0.025, mkt:0.40, sec:0.30, own:0.8660254037844386 },
+    { id:'ROBO', name:'Robo Lab',            keeper:'fen',     sector:4, start:20.00, drift:0.094, vol:0.36, yield:0.000, mkt:0.55, sec:0.35, own:0.7582875444051551 }
   ],
   sectors: ['Food', 'Fun', 'Outdoor', 'Care', 'Tech'],
   funds: [
@@ -1045,7 +1045,7 @@ globalThis.ENGINE = {
 (function () {
 'use strict';
 const E = globalThis.ENGINE, PR = globalThis.PARAMS, CT = globalThis.CONTENT, ST = globalThis.STRINGS;
-const BUILD = '0.2.0 M2';
+const BUILD = '1.0.0-rc1';
 const KEYS = { save: 'ms:save', bak: 'ms:save:bak', bad: 'ms:save:bad', settings: 'ms:settings' };
 const BUILT = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6'];
 const isBuilt = id => BUILT.includes(id);
@@ -1314,8 +1314,8 @@ function grownupsScreen() {
     P('The neighbors are computed plans that run on the same pretend market, not other players and not advice. No plan is "the right one"; any of them can have a good or bad year.'),
     P('The score measures planning habits inside this game (did the child keep goal money ready, keep a buffer, spread out, check the plan before deciding, read both cost cards). It never counts how much money was made, and it is not a measure of real-life skill.'),
     P('Someone asked for a game like Crypto Parrot, a paper-trading app. This is the version we would hand a child: pretend money, a pretend market, real decisions, no real risk.'),
-    P('Privacy: no accounts, no data collection, no studio currency, no ads. Saves live only on this device. Browser storage can be cleared by the device, so an export is the backup (coming with the finished game). This game sends nothing; the website that hosts it has its own logs. On iPhone, installing to the home screen starts a separate save.'),
-    el('p', { class: 'stamp', text: 'engine ' + E.VERSION.engine + ' · content ' + E.VERSION.content + ' · rubric ' + E.VERSION.rubric }));
+    P('Privacy: no accounts, no data collection, no studio currency, no ads. Saves live only on this device. Browser storage can be cleared by the device, so the export in Settings is the backup. This game sends nothing; the website that hosts it has its own logs. The first visit needs a connection; after that the game works offline. Read-aloud uses only voices already on this device. On iPhone, installing to the home screen starts a separate save.'),
+    el('p', { class: 'stamp', text: 'build ' + BUILD + ' · engine ' + E.VERSION.engine + ' · content ' + E.VERSION.content + ' · rubric ' + E.VERSION.rubric }));
 }
 
 

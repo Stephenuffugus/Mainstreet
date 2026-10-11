@@ -2,22 +2,22 @@
  "id": "ch2",
  "seed": "Pebble Creek 3",
  "preset": "standard",
- "marketId": "MS1|DECK1|ch2|Pebble Creek 3",
+ "marketId": "MS1|DECK2|ch2|Pebble Creek 3",
  "versions": {
   "engine": "MS1",
-  "content": "DECK1",
+  "content": "DECK2",
   "rubric": "PLAN1"
  },
  "townName": "Pebble Creek 3",
- "quoteHash": "588215267-2992439814-1503264058-3368783071",
+ "quoteHash": "2316210720-4001279488-2727826078-3337055934",
  "moods": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
  "cards": [
-  "E08@11:BIKE:-13073",
-  "E09@15:PAWS:-53491",
-  "E10@31:PAWS:-56143",
+  "E16@3:BAKE:-121021",
+  "E10@23:PAWS:70763",
+  "E03@32:BAKE:-79857",
   "E21@36"
  ],
- "devPick": "PAWS",
+ "devPick": "TOYS",
  "closure": null,
  "index": 1000000000,
  "totals": {
@@ -32,8 +32,8 @@
    "goalSpending": 6000,
    "costSpending": 0,
    "costUnmet": 0,
-   "fundFeesEstimate": 120.40099837923896,
-   "nw": 17778,
+   "fundFeesEstimate": 93.07712349752656,
+   "nw": 9994,
    "goal": "funded",
    "score": 100
   },
@@ -48,10 +48,10 @@
    "goalSpending": 6000,
    "costSpending": 0,
    "costUnmet": 0,
-   "fundFeesEstimate": 120.40099837923896,
-   "nw": 17778,
+   "fundFeesEstimate": 93.07712349752656,
+   "nw": 9994,
    "goal": "funded",
-   "score": 100
+   "score": 69
   },
   "dev": {
    "contributionsIn": 0,
@@ -65,9 +65,9 @@
    "costSpending": 0,
    "costUnmet": 0,
    "fundFeesEstimate": 0,
-   "nw": 23140,
+   "nw": 7514,
    "goal": "funded",
-   "score": 56
+   "score": 38
   }
  }
 }

@@ -196,13 +196,14 @@ Six shops, one fund (two in chapter 6), one jar. The model is a toy: a monthly s
 
 | ID | Name | Keeper | Sector (draw) | Start price (coins) | Price drift, yearly | Volatility, yearly | Dividend yield, yearly | `mkt` | `sec` | `own` (literal) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| LEMN | Lemon Lane | Lou, a lemur | Food (0) | 8.00 | 5.0% | 28% | 2.0% | 0.40 | 0.40 | 0.824621125123532 |
-| BAKE | Rise & Shine Bakery | Bram, a badger | Food (0) | 10.00 | 4.5% | 14% | 3.5% | 0.45 | 0.35 | 0.8215838362577492 |
-| TOYS | Toy Box | Ottilie, an otter | Fun (1) | 12.00 | 6.0% | 24% | 1.5% | 0.55 | 0.40 | 0.733143914930759 |
-| BIKE | Spoke Bikes | Hop, a hare | Outdoor (2) | 15.00 | 5.5% | 20% | 2.5% | 0.50 | 0.35 | 0.792148975887743 |
-| PAWS | Paws Pet Care | Hazel, a hedgehog | Care (3) | 9.00 | 5.0% | 16% | 2.5% | 0.40 | 0.30 | 0.8660254037844386 |
-| ROBO | Robo Lab | Fen, a fox | Tech (4) | 20.00 | 9.0% | 36% | 0% | 0.55 | 0.35 | 0.7582875444051551 |
+| LEMN | Lemon Lane | Lou, a lemur | Food (0) | 8.00 | 5.9% | 28% | 2.0% | 0.40 | 0.40 | 0.824621125123532 |
+| BAKE | Rise & Shine Bakery | Bram, a badger | Food (0) | 10.00 | 4.9% | 14% | 3.5% | 0.45 | 0.35 | 0.8215838362577492 |
+| TOYS | Toy Box | Ottilie, an otter | Fun (1) | 12.00 | 6.6% | 24% | 1.5% | 0.55 | 0.40 | 0.733143914930759 |
+| BIKE | Spoke Bikes | Hop, a hare | Outdoor (2) | 15.00 | 6.2% | 20% | 2.5% | 0.50 | 0.35 | 0.792148975887743 |
+| PAWS | Paws Pet Care | Hazel, a hedgehog | Care (3) | 9.00 | 5.1% | 16% | 2.5% | 0.40 | 0.30 | 0.8660254037844386 |
+| ROBO | Robo Lab | Fen, a fox | Tech (4) | 20.00 | 9.4% | 36% | 0% | 0.55 | 0.35 | 0.7582875444051551 |
 
+- **Drift was recalibrated in M6 (content DECK2).** The v1 candidates were LEMN 5.0, BAKE 4.5, TOYS 6.0, BIKE 5.5, PAWS 5.0, ROBO 9.0. Authored moods and events cost each shop 0.1 to 0.9 points a year on average, so each drift moved up by its measured gap until the realized arithmetic mean total return over 10,000 held-out free-play towns lands on the v1 design total (LEMN 7.0%, BAKE 8.0%, TOYS 7.5%, BIKE 8.0%, PAWS 7.5%, ROBO 9.0%). `docs/calibration.md` shows both columns.
 - **Drift excludes dividends** and is annualized. Monthly drift `driftM = yearly ÷ 12`; monthly yield `yieldM = yield ÷ 12`; monthly volatility `volM = yearly ÷ 3.4641016151377544` (√12 as a literal). All three are precomputed once at load with ÷ only and stored on the asset.
 - **Total expected return = drift + yield**, and the engine honors that: the monthly factor `G` is a **total-return factor** that includes `yieldM`; the dividend is then carved out of it (section 4, Dividends). Price alone compounds at the drift; price plus reinvested payments compounds at drift plus yield.
 - Drift is an arithmetic monthly mean. Realized median growth sits below it by about half the variance: roughly 1 point for the Bakery and 6 points for Robo Lab. That is intended, and it is why single-shop medians trail the Basket while single-shop best cases beat it.
@@ -328,7 +329,7 @@ Ada is the plan-following bot the abuse tests use; Bo is the cash-only bot that 
 
 ### Determinism and numeric policy
 
-- `ENGINE_VERSION = 'MS1'`, `CONTENT_VERSION = 'DECK1'`, `RUBRIC_VERSION = 'PLAN1'`. A market's identity is `${ENGINE_VERSION}|${CONTENT_VERSION}|${scenarioId}|${seed}`. In free play the seed is the town name (section 11).
+- `ENGINE_VERSION = 'MS1'`, `CONTENT_VERSION = 'DECK2'` (DECK1 was the v1 tuning candidate; DECK2 is the M6 recalibration of the six drifts), `RUBRIC_VERSION = 'PLAN1'`. A market's identity is `${ENGINE_VERSION}|${CONTENT_VERSION}|${scenarioId}|${seed}`. In free play the seed is the town name (section 11).
 - PRNG: cyrb128 seeding into sfc32, five independent streams keyed `|mood`, `|events`, `|prices`, `|neighbors`, `|cosmetic`. `Math.random` never appears inside `ENGINE`. Seeds for chapters 2 to 6 come from the app layer (`crypto.getRandomValues`, encoded as a town name); the time machine and the neighbors reuse the attempt's seed; "Replay chapter" draws a new one; the debug panel accepts a typed one.
 - Inside the tick: only `+ − × ÷ %`, `Math.round`, `Math.floor`, `Math.max`, `Math.min`, `Math.imul`, `>>>`, BigInt. **No `Math.pow`, `**`, `exp`, `log`, `sqrt`, `sin`, `cos`, `toFixed`, `parseFloat`, `Intl`, `Number()` on strings.** Every constant that would need them is a literal in `PARAMS`. Use `x * x`, not `x ** 2`.
 - Asset, fund, card and neighbor iteration order is the fixed order of `PARAMS.assets`, `PARAMS.funds`, `CONTENT.cards`, `PARAMS.neighbors`. No object-key iteration in the engine; use arrays.
@@ -854,7 +855,7 @@ Actions are plain objects with a `seq` number: `{ seq, t, type:'BUY'|'SELL'|'JAR
 Versioned, with a validated checkpoint plus the pending tray. Replay from month 0 is a test tool, not the load path. Neighbors are never saved; they are recomputed from the market and their policy.
 
 ```js
-{ schemaVersion:1, engineVersion:'MS1', contentVersion:'DECK1', rubricVersion:'PLAN1',
+{ schemaVersion:1, engineVersion:'MS1', contentVersion:'DECK2', rubricVersion:'PLAN1',
   runId:'r_8f3k2', scenarioId:'ch3', seed:'Maple Hollow 7', tick:18, lastSeq:32,
   checkpoint:{ tick:12, wallet:4120, jar:{soon:8000, buffer:1500, saved:0}, positions:[{id:'BAKE', msh:3000}], funds:{...},
                goal:{...}, totals:{...}, opportunities:[...], moodState:..., index:1.0, history:[...] },

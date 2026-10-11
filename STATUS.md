@@ -1,7 +1,8 @@
 # STATUS, MAINSTREET
-Updated: 2026-10-11  ·  Current milestone: M6 Playtest and release candidate (fun gate still open)  ·  Engine MS1 · Content DECK1 · Rubric PLAN1 · Art ART0
+Updated: 2026-10-11  ·  Current milestone: M6 release candidate tagged; playtest and vendoring open (fun gate still open)  ·  Engine MS1 · Content DECK2 · Rubric PLAN1 · Art ART0
 
 ## Done since last note
+- M6: content DECK2 (six drifts recalibrated on held-out seeds; every shop within 0.2 points of its design total), docs/calibration.md with an M6 reading, docs/FLEET-HANDOFF.md, docs/RELEASE-NOTES.md, the embed-protocol journey, Grown-ups copy current, build stamp 1.0.0-rc1, tag v1.0.0-rc1.
 - M5 complete: free play with presets and typed town names; scrapbook pages with the year strip, stamps and neighbors' notes; read-aloud with local voices; export and import with a confirm and a hardened parser; the real service worker (precache from art/manifest.json, update banner, embed guard) with an automated offline-after-install test; the two-tab lock; damaged-save recovery; the debug panel; an overflow sweep at 412, 375 and 320. 28 Playwright journeys green in chromium and webkit.
 - M4 complete: chapters 4 to 6 playable (practice coins and routing, dividends and Reinvest, E18 stop, the authored slump, Robo Lab setback, a closure on the street with the payout, Cass, rising prices with the indexed goal and what-it-can-buy, the fee lab with two baskets); the time machine with two gardens, per-chapter experiments, a year slider and saved experiments. 20 Playwright journeys green in chromium and webkit; 130 engine tests.
 - M3 complete: chapters 2 and 3 playable; six shops and the Basket stall with look-through bars; Ada, Bo and Dev on the street, in the show (coin bars), in the Gazette (one sentence each) and on Results ("Every plan on this town"); the surprise-cost decision with every funding path; chapter intros; basic Scrapbook with the 40-card album and the decoder. 14 Playwright journeys green in chromium and webkit.
@@ -13,18 +14,24 @@ Updated: 2026-10-11  ·  Current milestone: M6 Playtest and release candidate (f
 - `node tools/calibrate-v1.js` reproduces the v1 table (pasted into `docs/calibration.md`).
 
 ## In progress
-- M6: the calibration report on held-out seeds, the fleet handoff, playtest notes, known limitations, release candidate tag.
+- Waiting on Stephen: GitHub Pages, the fun gate with Penny, the wider playtest, the art batches, the reference device, vendoring into lucid-winds with the portal card beta:true.
 - Fun gate (R12) still open: Penny plays chapters 1 and 2 when Stephen has a moment; M3 proceeded on his call.
 - Earlier: M0 committed and pushed. `tools/setup.sh` ran (Playwright 1.64.0, engines chromium and webkit). GitHub Pages could not be enabled from the Codespace (403); waiting on Stephen.
 - Asset lists are in Drive: Business Materials › Github › 012Assets › mainstreet (sheet with 113 rows plus the direction and prompts doc); links at the top of `docs/ART-BRIEF.md`.
 
+## What shipped and what did not (v1.0.0-rc1)
+- Shipped: six chapters, free play with seven presets and typed town names, six voiced shops, the Town Basket Fund (two baskets in chapter 6), the Savings Jar bands, four neighbors, inline trading with a plan tray, the year show, the Gazette, Results with five stamps, the scrapbook and album, the time machine, Guided and Explorer, read-aloud with local voices, export and import, recovery, the two-tab lock, offline after first load, the embed protocol, the debug panel. Full list in docs/RELEASE-NOTES.md.
+- Did not ship, by decision: sunbeams, earn messages and music unlocks (R01); a "force a card" debug control; a chapter 3 free-play unlock (flag exists, off).
+- Did not ship, backlog (HANDOFF 16): Glow Slime and any crypto-flavored content, Pro Picker Fund, share cards and replay links, a calendar scenario, Family Night, bonds, ORCHARD, Play Store packaging.
+- Not yet done, needs Stephen: Pages, the live airplane-mode check, the fun gate and the children's playtest, the art batches (every sprite slot is a labeled placeholder), the reference device, TalkBack, vendoring with the portal card.
+
 ## Next three steps
-1. M6: node tools/harness.mjs --seeds 10000 --family all --heldout --report docs/calibration.md; settle the three shops that sit 0.5 to 0.7 points under target in free play.
-2. M6: write the fleet handoff (docs/FLEET.md template), known limitations into the Grown-ups page and release notes, tag v1.0.0-rc1.
-3. Stephen: enable Pages, run the airplane-mode check on the live URL, name the reference device, let Penny play; TalkBack pass; the M2 art batch.
+1. Stephen: enable Pages (Settings, Pages, main, root), open the URL on a phone, play chapter 1, airplane mode, reload, play on; then let Penny play (docs/playtest.md prompts) and rule on the fun gate.
+2. Stephen: the M2 art batch per the Drive asset list; name the reference device so the performance line and the TalkBack pass can be done there.
+3. Fleet: vendor per docs/FLEET-HANDOFF.md with the portal card beta:true; after the playtest, tag v1.0.0 and drop beta.
 
 ## Tests
-- node tools/test.mjs: 130 pass / 0 fail · npx playwright test: 28 passed (replay fixtures and thirteen UI journeys incl. offline, two tabs, import, recovery and three overflow widths; chromium and webkit) · harness ch5 2,000 seeds: 5.0 s · harness 10,000 seeds, four neighbors: 58.4 s
+- node tools/test.mjs: 130 pass / 0 fail · npx playwright test: 38 passed (replay fixtures and fourteen UI journeys incl. offline after install, the embed protocol, two tabs, import, recovery and three overflow widths; chromium and webkit) · harness: free standard 10,000 held-out towns in about 60 s, all families and presets in about 7 min · harness ch5 2,000 seeds: 5.0 s · harness 10,000 seeds, four neighbors: 58.4 s
 
 ## Measurements
 - index.html 210 KB (content, engine, app, styles) · precache 212 KB plus art when it lands (art/manifest.json total 0 KB today) · market precompute 14 ms for 240 months, 39 ms with four neighbors (Node on this Codespace; reference device still to measure) · free play, 10,000 seeds: three shops 0.4 to 0.7 points under drift plus yield after events (LEMN, TOYS, BIKE), to be settled at M6 calibration.

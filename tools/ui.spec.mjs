@@ -267,12 +267,13 @@ test("chapter 5: the slump stop, a closure on the street, Cass on the street, co
   await page.locator(".tile.stall").click();
   await page.locator(".steppers").getByRole("button", { name: "More" }).click();
   await page.getByRole("button", { name: /^Buy with half my wallet/ }).click();
-  await page.locator(".tile").nth(2).click();                                          // Toy Box, which closes in this town
+  const cl = await page.evaluate(() => { const m = MS.S.market; return { id: m.closure.id, idx: m.scenario.assetIdx[m.closure.id], name: PARAMS.assets.find(a => a.id === m.closure.id).name, t: m.closure.announceT }; });
+  await page.locator(".tile").nth(cl.idx).click();                                     // the shop that closes in this town
   await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
-  const seen = await playThrough(page, null, async (p, acc) => { await readHint(p, acc); if (await p.locator(".tile").nth(2).locator(".ph").filter({ hasText: "shop-toys-closed" }).count()) acc.push("TILE_CLOSED"); });
+  const seen = await playThrough(page, null, async (p, acc) => { await readHint(p, acc); if (await p.locator(".tile").nth(cl.idx).locator(".ph").filter({ hasText: "shop-" + cl.id.toLowerCase() + "-closed" }).count()) acc.push("TILE_CLOSED"); });
   expect(seen.join(" | ")).toMatch(/Many families are spending less/);
-  expect(seen.join(" | ")).toMatch(/Toy Box is closing/);
-  expect(seen.join(" | ")).toMatch(/Toy Box has closed\. You got (about )?\d+ coins back/);
+  expect(seen.join(" | ")).toContain(cl.name + " is closing");
+  expect(seen.join(" | ")).toMatch(new RegExp(cl.name + " has closed\\. You got (about )?\\d+ coins back"));
   expect(seen).toContain("TILE_CLOSED");
   await expect(page.locator(".screen.results")).toBeVisible();
   await expect(page.locator(".cols")).toContainText("Cass");
@@ -421,4 +422,19 @@ test("offline after install: once the worker has cached the game, it loads and p
   await page.getByRole("button", { name: "Start chapter 1" }).click();
   await expect(page.getByText("These are pretend coins")).toBeVisible();
   await ctx.close();
+});
+
+test("embed protocol: framed with ?embed=1 the game posts ready, registers no worker, and the exit button posts close", async ({ page }) => {
+  await page.goto(base + "tools/replay.html");                      // any same-server page as the parent
+  await page.setContent(`<!doctype html><html><body><script>window.__msgs = []; window.addEventListener("message", e => window.__msgs.push(e.data));</script><iframe id="f" src="${base}index.html?embed=1" style="width:412px;height:915px"></iframe></body></html>`, { waitUntil: "load" });
+  await page.waitForFunction(() => window.__msgs.some(m => m && m.sws === "ready"), null, { timeout: 15000 });
+  const frame = page.frameLocator("#f");
+  await expect(frame.locator("#s-title")).toBeVisible();
+  const reg = await page.frames()[1].evaluate(() => navigator.serviceWorker.getRegistration().then(r => !!r));
+  expect(reg).toBe(false);
+  await frame.getByRole("button", { name: "← All Sky Wolf games" }).click();
+  await page.waitForFunction(() => window.__msgs.some(m => m && m.sws === "close"), null, { timeout: 5000 });
+  const msgs = await page.evaluate(() => window.__msgs.map(m => m && m.sws));
+  expect(msgs.filter(m => m === "close").length).toBe(1);
+  expect(msgs.every(m => m === "ready" || m === "close")).toBe(true);                // nothing else leaves the frame: no earn messages
 });
