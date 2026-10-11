@@ -83,7 +83,7 @@ Source image: `portal-thumb-source.png` in the asset list (M5 batch, Stephen's a
 
 ## 9. Ready-made patch for the arcade (2026-10-11)
 
-`docs/fleet/lucid-winds-add-mainstreet.patch` is the finished lucid-winds commit: the MANIFEST entry with selftest counts 13/14, the vendored `satellites/mainstreet/` at upstream `d476e0a` (v1.0.0-rc2 plus the show, album and guard fixes and the music lane), the FEATURED card with `beta:true` and stamp `?v=20261011d`, the search alias and a 480 px Town thumbnail. The patch is refreshed at each tag; it is about 2 MB because the sprites ride along. It applies cleanly on a fresh lucid-winds `main` (checked with `git am`) and `--check mainstreet` reports CLEAN afterwards. A Codespace scoped to the Mainstreet repo cannot push to lucid-winds (403), so apply it from a session that can:
+`docs/fleet/lucid-winds-add-mainstreet.patch` is the finished lucid-winds commit: the MANIFEST entry with selftest counts 13/14, the vendored `satellites/mainstreet/` at upstream `495e0c3` (v1.0.0-rc3: music lane, pickup kit), the FEATURED card with `beta:true` and stamp `?v=20261011e`, the search alias and a 480 px Town thumbnail. The patch is refreshed at each tag; it is about 2 MB because the sprites ride along. It applies cleanly on a fresh lucid-winds `main` (checked with `git am`) and `--check mainstreet` reports CLEAN afterwards. A Codespace scoped to the Mainstreet repo cannot push to lucid-winds (403), so apply it from a session that can:
 
 ```bash
 cd /workspaces/lucid-winds
