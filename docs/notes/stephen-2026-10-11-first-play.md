@@ -18,3 +18,11 @@ The sorting (fault / by design / taste) and the plan follow in docs/decisions.md
 
 - Chapter 1 after rc4: still "not very good". He has not yet said what was missing; the lead asks one question after the tray fix.
 - Chapter 2: the plan tray, pinned at the bottom with the buttons since rc4, grows with every queued trade on a six-shop street and covers the screen. Fault, the lead's own (the sticky footer); the team's original tray was also sticky and would have grown the same way.
+
+## Third note, chapter 2 (verbatim)
+
+> its also not clear that as you pass time how to divest and diversify your investments and pull profits to do stuff. its extremely boring and doesnt teach you how to also pull the money to invest in what youre trying to do. arent there programs out there that help teach kids and adults how to do this? you shuld be using a strong framework to build from and make it engaging. we may way to write and animate almost a story. it doesnt not explain well or all
+
+- Ruling R15: the game must teach the moves (divest, diversify, pull money toward the goal), not only show prices.
+- Ruling R16: build on a recognized financial-literacy framework for the age, and make it engaging; a written, animated story is on the table.
+- The lead's read: the engine has every move (sell, the Basket, the Jar bands, goal day) but nothing teaches when or why to make one. That is a re-spec of the experience layer, not a patch.
