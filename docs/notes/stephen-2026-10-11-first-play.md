@@ -33,3 +33,13 @@ The sorting (fault / by design / taste) and the plan follow in docs/decisions.md
 
 - R17: chapter 1 is a guided walk. A person (the Clerk) walks the player through the screen piece by piece: the coins, where the goal money goes, the businesses and how coins go into them, the plan and what it is for, and that time moves only when you tap. One thing lit at a time, the player does each step.
 - The lead's read: the rc4 guide card explained the stop, never the screen. Nothing ever pointed at the money row, the plan tray, My Plan or the time button and said what they are.
+
+## Fifth note, 21:52 his time, with a screenshot (verbatim)
+
+> Look at this fucking garbage! I already told you that that the plan is covering my screen up. Them I have to simulate an entire year. The fucking buildings are disappearing and reappearing. Then all of a sudden I'm out money and no explanations and have no way to learn or correct. It's just fucking dumb. I closed and reopened and it's like you ignore half the shit intell you. I also have no way to restart the game since I got to the second level to even see how the tutorial works.
+
+- The screenshot shows the rc4 tray ("Your plan" with "Clear plan", the full list pinned): his phone was still running the afternoon build. The game's own service worker keeps the cached copy and only swaps after every tab under /satellites/mainstreet/ is closed; the "Restart now" banner that forces the swap shows only when installed to the home screen. So rc5, rc6, rc7 and rc8 never reached his phone. The lead's delivery failure, not a thing he missed.
+- "Simulate an entire year": with his phone's reduce-motion setting on, the year show became twelve Next month taps.
+- "Buildings disappearing and reappearing": the show swaps storefront images per month without preloading them; each swap blanks until the new image decodes.
+- "Out of money, no explanation, no way to correct": rc4 had no check-in and no pull card; those are in rc5 and later, which he never saw.
+- "No way to restart": Home has no replay for a finished chapter; reset is two taps deep in Settings.
