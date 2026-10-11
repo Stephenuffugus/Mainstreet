@@ -855,7 +855,7 @@ Actions are plain objects with a `seq` number: `{ seq, t, type:'BUY'|'SELL'|'JAR
 Versioned, with a validated checkpoint plus the pending tray. Replay from month 0 is a test tool, not the load path. Neighbors are never saved; they are recomputed from the market and their policy.
 
 ```js
-{ schemaVersion:1, engineVersion:'MS1', contentVersion:'DECK3', rubricVersion:'PLAN1',
+{ schemaVersion:1, engineVersion:'MS1', contentVersion:'DECK4', rubricVersion:'PLAN1',
   runId:'r_8f3k2', scenarioId:'ch3', seed:'Maple Hollow 7', tick:18, lastSeq:32,
   checkpoint:{ tick:12, wallet:4120, jar:{soon:8000, buffer:1500, saved:0}, positions:[{id:'BAKE', msh:3000}], funds:{...},
                goal:{...}, totals:{...}, opportunities:[...], moodState:..., index:1.0, history:[...] },
