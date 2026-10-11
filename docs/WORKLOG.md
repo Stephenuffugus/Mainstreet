@@ -167,3 +167,20 @@ One box per exit condition. Tick a box only with the command and its result past
       evidence: ui.spec.mjs three music journeys with routed silent audio (toggle, feel follows the screen to the Gazette, no-tracks build shows no controls, host-music mutes and unmutes, volume and now-playing), chromium and webkit; node tools/music_check.mjs
 - [x] docs/MUSIC.md: the drop-in guide with the moment table and the rules
 - [ ] Stephen's songs in music/ with feels assigned; card flag ownMusic:true in the arcade patch
+
+## R14 Connective tissue (2026-10-11; Stephen's first play, "it must explain itself"; plan docs/plans/CH1-CONNECTIVE-TISSUE-2026-10-11.md)
+
+- [x] The show can be read: 1100 ms a month in chapter 1, 800 ms elsewhere, ×2 halves it, end hold 900 ms; a caption per month (one shop: the keeper's line for that month's activity; a street: the busy shop, a busy street or a quiet street); reduced motion and Skip unchanged
+      evidence: ui.spec.mjs "R14 show captions" (chapter 1 caption is Bram's busy line; a chapter 2 year has 12 captions, more than one distinct, changing between frames), chromium, 2026-10-11; screenshot 6-show
+- [x] A recap after every advance: "{Season} is done" or "Year n is done", Prices, Your shares ("Still yours"), Why (months by activity, the keeper's line, a fired card, never busy means up), Your money, one teaching line, #recap-go "Back to town" or "Continue" in arrive()'s order; a reload mid recap lands on the town
+      evidence: ui.spec.mjs "R14 recap" (from 10 to 11, Still yours: 1 share., From 100 to 101., no dashes, exclamation marks or arrows in its text, reload falls through to the town, the year end goes on to the Gazette) and "R14 recap after a drop" (from 11 to 9, from 22 to 18 coins, Still yours: 2 shares.), chromium; screenshots 6b, 8a, 8c, 16b
+- [x] The confirm sheet says what could happen, in the player's own numbers from the live quote
+      evidence: ui.spec.mjs "R14 confirm sheet": "goes from 10 to 11, your 3 shares would be worth 33. If it goes to 9, they would be worth 27", the next season starts from 11, nothing held says prices cannot change your money; screenshots 5-confirm, 7b-confirm-spring
+- [x] The chapter 1 guide at every stop (steps 1, 3, 4, 5 and months 3, 6, 9) with the Practice year eyebrow; the intro's third paragraph; the results card "Your year in prices"
+      evidence: ui.spec.mjs "R14 chapter 1 guide" (from 10 to 11, from 11 to 9, from 9 to 10.5, the town price reads 10.5) and "R14 chapter 1 results" (bought 1 share at 10 and kept it, 11 in spring, 9 in summer, 10.5 in autumn and 10.5 in winter, worth 10.5, bought from the Jar); the chapter 1 end to end journey follows the new copy
+- [x] Versions and suites: build 1.0.0-rc4, worker DECK2-MS1-1.0.0-rc4; no engine or content number changed, fixtures replay with no --write-fixtures
+      evidence: node tools/test.mjs 131 pass / 0 fail; node tools/join.mjs --check matches; npx playwright test --project=chromium 37 passed (31 before plus 6 R14 journeys), 2026-10-11. WebKit is not installed on this box; CI runs it on push
+- [x] Pictures looked at, 412 by 915: 5-confirm, 6-show, 6b-recap-winter, 7-town-spring, 8-town-drop, 8a-recap-spring, 8c-recap-autumn, 11-results, 16b-ch2-recap
+      evidence: node tools/shots.mjs /tmp/ms-build/shots 412 915. Fixed after looking: "about 71" beside "worth 10.5" on Results, a lone "This is what someone would pay" under the recap, illegible orange change text, "every one of them" for one share, a money line that wrapped onto a leading dot
+- [ ] The lead reviews the pictures, pushes, and re-vendors into the arcade
+- [ ] WebKit journeys green in CI on the push

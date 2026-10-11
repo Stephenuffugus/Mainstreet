@@ -7,7 +7,9 @@ const URL = "file://" + resolve(ROOT, "index.html");
 // Under file:// WebKit logs a CORS error for the <link rel="manifest"> fetch; it does not happen over http and is not the game's doing.
 const NOISE = /Access-Control-Allow-Origin|Failed to load resource/;
 function watch(page) { const errors = []; page.on("pageerror", e => errors.push("pageerror: " + e.message)); page.on("console", m => { if (m.type() === "error" && !NOISE.test(m.text())) errors.push("console: " + m.text()); }); return errors; }
-async function skipShow(page) { await expect(page.locator(".screen.show")).toBeVisible(); await page.getByRole("button", { name: "Skip" }).click(); }
+// R14: every advance now ends on the recap sheet; its one button (#recap-go) goes on to whatever arrive() opens next
+async function passRecap(page) { await expect(page.locator(".screen.recap")).toBeVisible(); await page.locator("#recap-go").click(); }
+async function skipShow(page) { await expect(page.locator(".screen.show")).toBeVisible(); await page.getByRole("button", { name: "Skip" }).click(); await passRecap(page); }
 
 test("chapter 1 end to end: opening order, tray, confirm, show, Gazette, goal day, results", async ({ page }) => {
   const errors = watch(page);
@@ -24,10 +26,10 @@ test("chapter 1 end to end: opening order, tray, confirm, show, Gazette, goal da
   await expect(page.locator(".band.soon")).toContainText("Soon 30");
   await page.locator(".shop-face").click();                                                   // step 4: tap the Bakery
   await expect(page.locator(".share-grid")).toBeVisible();
-  await expect(page.getByText("A share is one tiny piece of this business. Tap plus to buy one.")).toBeVisible();
+  await expect(page.getByText("A share is one tiny piece of this business. Each one costs 10 right now.")).toBeVisible();
   await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();                          // step 5
   await expect(page.locator(".tray")).toContainText("+1 share Rise & Shine Bakery");
-  await expect(page.getByText("Buy 1 share for 10 coins. You keep 60 in your wallet.")).toBeVisible();
+  await expect(page.getByText("1 share for 10 coins. 60 coins stay in your wallet.")).toBeVisible();
   await expect(page.locator(".money").nth(1)).toContainText("60");
   await expect(page.locator(".own")).toContainText("1 share");
   // refresh mid-stop: the tray and the draft come back exactly
@@ -44,7 +46,7 @@ test("chapter 1 end to end: opening order, tray, confirm, show, Gazette, goal da
   await expect(page.locator(".price strong")).toContainText("11");
   await expect(page.locator(".tray")).toHaveCount(0);                                        // undo is gone after a commit
   await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click(); await skipShow(page);
-  await expect(page.getByText("Prices fell. Check when you need this money.")).toBeVisible(); // step 9 (FT1)
+  await expect(page.getByText("Prices fell, from 11 to 9.")).toBeVisible();               // step 9 (FT1)
   await expect(page.locator(".price strong")).toContainText("9");
   await expect(page.locator(".steppers").getByRole("button", { name: "Sell 1 share" })).toBeEnabled(); // buy and sell both available at a drop
   await expect(page.locator(".steppers").getByRole("button", { name: "Buy 1 share" })).toBeEnabled();
@@ -115,7 +117,7 @@ test("keyboard only: start, jar, pick the shop, buy, next season, confirm, skip 
   async function pressUntil(label) { for (let i = 0; i < 60; i++) { await page.keyboard.press("Tab"); const t = await page.evaluate(() => { const a = document.activeElement; return a ? ((a.getAttribute("aria-label") || a.textContent) || "").trim() : ""; }); if (t.startsWith(label)) { await page.keyboard.press("Enter"); return; } } throw new Error("not reachable by Tab: " + label); }
   await pressUntil("Start chapter 1"); await pressUntil("Start exploring"); await pressUntil("Put 30 in my Jar"); await pressUntil("Rise & Shine Bakery"); await pressUntil("Buy 1 share");
   await expect(page.locator(".tray")).toContainText("+1 share");
-  await pressUntil("Next season"); await pressUntil("Go to spring"); await pressUntil("Skip");
+  await pressUntil("Next season"); await pressUntil("Go to spring"); await pressUntil("Skip"); await pressUntil("Back to town");
   await expect(page.locator(".screen.town")).toBeVisible(); await expect(page.locator(".price strong")).toContainText("11");
   expect(errors, errors.join("\n")).toEqual([]);
 });
@@ -130,6 +132,7 @@ async function settle(page, onCost) {
   for (let i = 0; i < 6; i++) {
     if (await page.locator(".screen.town").count()) return "town";
     if (await page.locator(".screen.results").count()) return "results";
+    if (await page.locator(".screen.recap").count()) { await page.locator("#recap-go").click(); continue; }
     if (await page.locator(".screen.gazette").count()) { await page.getByRole("button", { name: "Continue" }).click(); continue; }
     if (await page.locator(".screen.decision").count()) {
       if (await page.getByText("Your goal day has arrived").count()) { await page.getByRole("button", { name: /^Buy it/ }).click(); continue; }
@@ -355,8 +358,8 @@ for (const [w, h] of [[412, 915], [375, 667], [320, 568]]) test(`no horizontal o
   await page.goto(URL); await noOverflow("home");
   await page.getByRole("button", { name: "Start chapter 1" }).click(); await noOverflow("intro");
   await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click(); await page.locator(".shop-face").click(); await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click(); await noOverflow("town");
-  await page.getByRole("button", { name: "Next season" }).click(); await noOverflow("confirm sheet"); await page.locator("#go").click(); await expect(page.locator(".screen.show")).toBeVisible(); await noOverflow("show"); await page.getByRole("button", { name: "Skip" }).click();
-  for (let i = 0; i < 3; i++) { await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click(); await page.getByRole("button", { name: "Skip" }).click(); }
+  await page.getByRole("button", { name: "Next season" }).click(); await noOverflow("confirm sheet"); await page.locator("#go").click(); await expect(page.locator(".screen.show")).toBeVisible(); await noOverflow("show"); await page.getByRole("button", { name: "Skip" }).click(); await expect(page.locator(".screen.recap")).toBeVisible(); await noOverflow("recap"); await page.locator("#recap-go").click();
+  for (let i = 0; i < 3; i++) { await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click(); await page.getByRole("button", { name: "Skip" }).click(); await page.locator("#recap-go").click(); }
   await expect(page.locator(".masthead")).toBeVisible(); await noOverflow("gazette"); await page.getByRole("button", { name: "Continue" }).click();
   await page.getByRole("button", { name: /^Buy it/ }).click(); await expect(page.locator(".screen.results")).toBeVisible(); await noOverflow("results");
   await page.getByRole("button", { name: "My Plan" }).click(); await noOverflow("plan");
@@ -522,6 +525,7 @@ test("reduced motion: the year show is a strip of still frames stepped by tap, n
   await next.click();
   expect(await page.locator(".screen.show h2.month").innerText()).not.toBe(first);
   await page.getByRole("button", { name: "Skip" }).click();
+  await passRecap(page);
   await expect(page.locator(".screen.town")).toBeVisible();
 });
 test("town screen answers what you own, what you spent and what is left", async ({ page }) => {
@@ -568,7 +572,7 @@ test("music: off by default, nothing plays before a tap, the Home toggle starts 
   await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click();
   await page.locator(".shop-face").click(); await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
   expect(await page.evaluate(() => MS.music.state().track)).toBe("Calm Street");               // same feel, no switch
-  for (let i = 0; i < 4; i++) { await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click(); await page.getByRole("button", { name: "Skip" }).click(); }
+  for (let i = 0; i < 4; i++) { await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click(); await page.getByRole("button", { name: "Skip" }).click(); await page.locator("#recap-go").click(); }
   await expect(page.locator(".masthead")).toBeVisible();
   await expect.poll(() => page.evaluate(() => MS.music.state().feel)).toBe("bright");
   await expect.poll(() => page.evaluate(() => MS.music.state().track)).toBe("Bright Morning");
@@ -600,4 +604,122 @@ test("music: the arcade's host-music message mutes and unmutes; Settings shows t
   await page.locator("#opt-music-vol").fill("20");
   expect(await page.evaluate(() => MS.S.options.musicVolume)).toBe(20);
   await expect(page.locator("#now-playing")).toContainText("Now playing: Calm Street");
+});
+
+/* ---- R14 (Stephen's first play, 2026-10-11): it must explain itself. Before, during and after every advance, and a guide at every chapter 1 stop ---- */
+async function ch1Bought(page, n) {
+  await page.goto(URL);
+  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click();
+  await page.locator(".shop-face").click();
+  for (let i = 0; i < n; i++) await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click();
+}
+test("R14 recap: after the first season it says the price went from 10 to 11 and the share is still yours; a reload falls through to the town; the year end goes on to the Gazette", async ({ page }) => {
+  const errors = watch(page);
+  await ch1Bought(page, 1);
+  await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click();
+  await page.getByRole("button", { name: "Skip" }).click();
+  const recap = page.locator(".screen.recap");
+  await expect(recap).toBeVisible();
+  await expect(recap.locator("h2")).toHaveText("Winter is done");
+  await expect(recap).toContainText("Rise & Shine Bakery: from 10 to 11 a share.");
+  await expect(recap).toContainText("Your 1 share of Rise & Shine Bakery: from 10 to 11 coins.");
+  await expect(recap).toContainText("Still yours: 1 share.");
+  await expect(recap).toContainText("3 busy months at the bakery.");
+  await expect(recap).toContainText("From 100 to 101.");
+  await expect(recap).toContainText("Jar 30 for your art supplies");
+  await expect(recap.locator(".teach")).toHaveText("A share\u2019s price is what someone would pay for it right now. Today that is 11.");
+  expect(await recap.innerText()).not.toMatch(/[–—!←-⇿▲▼]/);  // no dashes, no exclamation marks, no arrows or triangles: it reads aloud
+  await expect(page.locator("#recap-go")).toHaveText("Back to town");
+  await page.reload();                                                                          // the recap is never saved; a reload lands on the town with the stop's guide
+  await expect(page.locator(".screen.town")).toBeVisible();
+  await expect(page.locator(".hint")).toContainText("from 10 to 11");
+  for (let i = 0; i < 3; i++) { await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click(); await page.getByRole("button", { name: "Skip" }).click(); if (i < 2) await passRecap(page); }
+  await expect(recap.locator("h2")).toHaveText("Autumn is done");
+  await expect(recap).toContainText("Prices barely moved. That happens too.");
+  await expect(page.locator("#recap-go")).toHaveText("Continue");                            // the Gazette comes next, not the town
+  await page.locator("#recap-go").click();
+  await expect(page.locator(".masthead")).toContainText("Gazette");
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("R14 recap after a drop: the price fell, the shares did not; the busy-means-up story is never told", async ({ page }) => {
+  const errors = watch(page);
+  await ch1Bought(page, 2);
+  await advanceOnce(page);
+  await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click(); await page.getByRole("button", { name: "Skip" }).click();
+  const recap = page.locator(".screen.recap");
+  await expect(recap.locator("h2")).toHaveText("Spring is done");
+  await expect(recap).toContainText("from 11 to 9 a share.");
+  await expect(recap).toContainText("Your 2 shares of Rise & Shine Bakery: from 22 to 18 coins.");
+  await expect(recap).toContainText("Still yours: 2 shares.");
+  await expect(recap.locator(".teach")).toHaveText("Prices fell. Check when you need this money. You still own the same 2 shares.");
+  expect(await recap.innerText()).not.toMatch(/busy.{0,40}(means|so).{0,20}(rise|higher|up)/i);
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("R14 confirm sheet: the two futures in the player's own numbers, from the live quote; with nothing held it says prices cannot change your money", async ({ page }) => {
+  const errors = watch(page);
+  await ch1Bought(page, 3);
+  await expect(page.getByText("3 shares for 30 coins. 40 coins stay in your wallet.")).toBeVisible();   // the guide follows the tray
+  await page.getByRole("button", { name: "Next season" }).click();
+  const fut = page.locator(".sheet .futures");
+  await expect(fut).toContainText(/If the bakery.s price goes from 10 to 11, your 3 shares would be worth 33\. If it goes to 9, they would be worth 27\./);
+  await expect(fut).toContainText("Either way you still own 3 shares, and your Jar keeps 30 for your art supplies.");
+  await expect(fut).toContainText("Nobody knows which way prices go. That is why the money you need soon stays in the Jar.");
+  await page.locator("#go").click(); await skipShow(page);
+  await page.getByRole("button", { name: "Next season" }).click();
+  await expect(fut).toContainText("goes from 11 to about 12, your 3 shares would be worth about 36");       // the next season starts from the live quote, 11
+  await page.locator(".sheet").getByRole("button", { name: "Back to town" }).click();
+  const minus = page.locator(".steppers").getByRole("button", { name: "Sell 1 share" });
+  await minus.click(); await minus.click(); await minus.click();
+  await page.getByRole("button", { name: "Next season" }).click();
+  await expect(fut).toContainText("You hold no shares, so prices will not change your money this season.");
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("R14 show captions: every month has a line; one shop speaks through its keeper; on a street the line follows the month", async ({ page }) => {
+  const errors = watch(page);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await ch1Bought(page, 1);
+  await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click();
+  await expect(page.locator(".show-cap")).toHaveText("Busy at the bakery. Bram says, “Every tray gone by ten. Good day for bread.”");
+  await page.evaluate(() => { MS.newRun("ch2", "Pebble Creek 3"); MS.S.ui.intro = false; MS.go("town"); });
+  await page.getByRole("button", { name: /^(Next year|Continue year)$/ }).click(); await page.locator("#go").click();
+  const caps = [];
+  for (let i = 0; i < 12; i++) {
+    caps.push(await page.locator(".show-cap").innerText());
+    const next = page.getByRole("button", { name: /^(Next month|Continue)$/ }); if ((await next.innerText()) === "Continue") break; await next.click();
+  }
+  expect(caps.length).toBe(12);
+  expect(new Set(caps).size).toBeGreaterThan(1);
+  for (const c of caps) expect(c).toMatch(/^(Busy at .+\.|A busy month on the street\.|A quiet month on the street\.)$/);
+  expect(caps.slice(1).some((c, i) => c !== caps[i])).toBe(true);                                // it changes from one frame to the next
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("R14 chapter 1 guide: the stops at 3, 6 and 9 months say what moved, from what to what, and what to do next", async ({ page }) => {
+  const errors = watch(page);
+  await ch1Bought(page, 1);
+  await expect(page.locator(".hint .eyebrow")).toHaveText("Practice year");
+  await advanceOnce(page);
+  await expect(page.locator(".hint")).toContainText("Same share. A different price. The bakery’s price went from 10 to 11, so each share you own is worth 11 now.");
+  await expect(page.locator(".hint")).toContainText("Try one, then tap Next season.");
+  await advanceOnce(page);
+  await expect(page.locator(".hint")).toContainText("Prices fell, from 11 to 9. Your share is worth less today, but you still own it. Selling now gives you 9 coins for it.");
+  await expect(page.locator(".hint")).toContainText("Your art supplies money is safe in the Jar either way.");
+  await expect(page.locator(".hint").getByRole("button", { name: "Review my plan" })).toBeVisible();
+  await advanceOnce(page);
+  await expect(page.locator(".hint")).toContainText("Prices came part way back, from 9 to 10.5. Next stop is goal day.");
+  await expect(page.locator(".hint")).toContainText("Your 30 coins for art supplies have waited in the Jar all year.");
+  await expect(page.locator(".price strong")).toHaveText("10.5");                             // the town shows the same 10.5 the guide says
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("R14 chapter 1 results: the year in prices, as one story", async ({ page }) => {
+  const errors = watch(page);
+  await ch1Bought(page, 1);
+  for (let i = 0; i < 4; i++) { await advanceOnce(page); }
+  await expect(page.locator(".masthead")).toBeVisible(); await page.getByRole("button", { name: "Continue" }).click();
+  await page.getByRole("button", { name: "Buy it from my Jar" }).click();
+  const card = page.locator(".card").filter({ hasText: "Your year in prices" });
+  await expect(card).toContainText("You bought 1 share at 10 and kept it all year.");
+  await expect(card).toContainText("The price was 11 in spring, 9 in summer, 10.5 in autumn and 10.5 in winter.");
+  await expect(card).toContainText("Your shares ended worth 10.5.");
+  await expect(card).toContainText("Your art supplies were bought from the Jar on goal day.");
+  expect(errors, errors.join("\n")).toEqual([]);
 });

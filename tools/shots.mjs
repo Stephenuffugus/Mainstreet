@@ -14,8 +14,8 @@ await page.getByRole('button', { name: 'Start exploring' }).click(); await shot(
 await page.getByRole('button', { name: 'Put 30 in my Jar' }).click(); await page.locator('.shop-face').click(); await page.locator('.steppers').getByRole('button', { name: 'Buy 1 share' }).click(); await shot('4-town-tray');
 await page.getByRole('button', { name: 'Next season' }).click(); await shot('5-confirm');
 await page.locator('#go').click(); await page.waitForTimeout(1300); await shot('6-show');
-await page.getByRole('button', { name: 'Skip' }).click(); await shot('7-town-spring');
-for (let i = 0; i < 3; i++) { await page.getByRole('button', { name: 'Next season' }).click(); await page.locator('#go').click(); await page.getByRole('button', { name: 'Skip' }).click(); if (i === 0) await shot('8-town-drop'); }
+await page.getByRole('button', { name: 'Skip' }).click(); await shot('6b-recap-winter'); await page.locator('#recap-go').click(); await shot('7-town-spring');
+for (let i = 0; i < 3; i++) { await page.getByRole('button', { name: 'Next season' }).click(); if (i === 0) await shot('7b-confirm-spring'); await page.locator('#go').click(); await page.getByRole('button', { name: 'Skip' }).click(); if (i === 0) await shot('8a-recap-spring'); if (i === 2) await shot('8c-recap-autumn'); await page.locator('#recap-go').click(); if (i === 0) await shot('8-town-drop'); if (i === 1) await shot('8b-town-autumn'); }
 await shot('9-gazette'); await page.getByRole('button', { name: 'Continue' }).click(); await shot('10-goalday');
 await page.getByRole('button', { name: 'Buy it from my Jar' }).click(); await shot('11-results');
 await page.getByRole('button', { name: 'My Plan' }).click(); await shot('12-plan');
@@ -29,9 +29,9 @@ await (async () => {
   await p2.getByRole('button', { name: 'Start exploring' }).click(); await shot2('14-ch2-town');
   await p2.locator('.tile.stall').click(); await p2.locator('.steppers').getByRole('button', { name: 'Buy 1 share' }).click(); await shot2('15-ch2-stall');
   await p2.getByRole('button', { name: 'Next year' }).click(); await p2.locator('#go').click(); await p2.waitForTimeout(2600); await shot2('16-ch2-show');
-  await p2.getByRole('button', { name: 'Skip' }).click(); await shot2('17-ch2-gazette');
+  await p2.getByRole('button', { name: 'Skip' }).click(); await shot2('16b-ch2-recap'); await p2.locator('#recap-go').click(); await shot2('17-ch2-gazette');
   await p2.getByRole('button', { name: 'Continue' }).click();
-  for (let i = 0; i < 2; i++) { await p2.getByRole('button', { name: 'Next year' }).click(); await p2.locator('#go').click(); await p2.getByRole('button', { name: 'Skip' }).click(); if (await p2.locator('.screen.gazette').count()) await p2.getByRole('button', { name: 'Continue' }).click(); }
+  for (let i = 0; i < 2; i++) { await p2.getByRole('button', { name: 'Next year' }).click(); await p2.locator('#go').click(); await p2.getByRole('button', { name: 'Skip' }).click(); await p2.locator('#recap-go').click(); if (await p2.locator('.screen.gazette').count()) await p2.getByRole('button', { name: 'Continue' }).click(); }
   if (await p2.locator('.screen.decision').count()) await p2.getByRole('button', { name: /^Buy it/ }).click();
   await shot2('18-ch2-results');
   await p2.getByRole('button', { name: 'Scrapbook' }).click(); await shot2('19-scrapbook');
@@ -43,7 +43,7 @@ await (async () => {
   const b3 = await chromium.launch(); const p = await b3.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
   const shot3 = n => p.screenshot({ path: OUT + n + '.png', fullPage: true });
   const settle = async () => { for (let k = 0; k < 8; k++) { if (await p.locator('.screen.town').count() || await p.locator('.screen.results').count()) return; if (await p.locator('.screen.gazette').count()) { await p.getByRole('button', { name: 'Continue' }).click(); continue; } if (await p.locator('.screen.decision').count()) { if (await p.getByText('Your goal day has arrived').count()) await p.getByRole('button', { name: /^Buy it/ }).click(); else await p.getByRole('button', { name: /^Pay from my (Buffer|wallet|Saved)/ }).first().click(); continue; } await p.waitForTimeout(100); } };
-  const adv = async () => { await p.getByRole('button', { name: /^(Next year|Continue year)$/ }).click(); await p.locator('#go').click(); await p.getByRole('button', { name: 'Skip' }).click(); await settle(); };
+  const adv = async () => { await p.getByRole('button', { name: /^(Next year|Continue year)$/ }).click(); await p.locator('#go').click(); await p.getByRole('button', { name: 'Skip' }).click(); await p.locator('#recap-go').click(); await settle(); };
   await p.goto('file://' + resolve(ROOT, 'index.html'));
   await p.evaluate(() => { MS.newRun('ch4', 'Harbor Lane 12'); MS.go('town'); }); await p.getByRole('button', { name: 'Start exploring' }).click();
   await p.locator('.tile').nth(1).click(); for (let i = 0; i < 4; i++) await p.locator('.steppers').getByRole('button', { name: 'Buy 1 share' }).click();
@@ -73,7 +73,7 @@ await (async () => {
   await p.goto('file://' + resolve(ROOT, 'index.html') + '?debug=1');
   await p.evaluate(() => { MS.newRun('ch5', 'Clover Field 9'); MS.S.ui.intro = false; MS.go('debug'); }); await shot5('30-debug');
   await p.goto('file://' + resolve(ROOT, 'index.html')); await p.evaluate(() => { MS.newRun('ch2', 'Pebble Creek 3'); MS.S.ui.intro = false; MS.go('town'); });
-  for (let i = 0; i < 3; i++) { await p.getByRole('button', { name: /^(Next year|Continue year)$/ }).click(); await p.locator('#go').click(); await p.getByRole('button', { name: 'Skip' }).click(); for (let k = 0; k < 6; k++) { if (await p.locator('.screen.town').count() || await p.locator('.screen.results').count()) break; if (await p.locator('.screen.gazette').count()) { await p.getByRole('button', { name: 'Continue' }).click(); continue; } if (await p.locator('.screen.decision').count()) { await p.getByRole('button', { name: /^Buy it/ }).click(); continue; } await p.waitForTimeout(100); } }
+  for (let i = 0; i < 3; i++) { await p.getByRole('button', { name: /^(Next year|Continue year)$/ }).click(); await p.locator('#go').click(); await p.getByRole('button', { name: 'Skip' }).click(); await p.locator('#recap-go').click(); for (let k = 0; k < 6; k++) { if (await p.locator('.screen.town').count() || await p.locator('.screen.results').count()) break; if (await p.locator('.screen.gazette').count()) { await p.getByRole('button', { name: 'Continue' }).click(); continue; } if (await p.locator('.screen.decision').count()) { await p.getByRole('button', { name: /^Buy it/ }).click(); continue; } await p.waitForTimeout(100); } }
   await p.locator('.deco').nth(0).click(); await p.getByRole('button', { name: 'I reached my goal on the day I planned.' }).click().catch(() => {});
   await p.getByRole('button', { name: 'Scrapbook' }).click(); await shot5('31-scrapbook-page');
   await b5.close();
