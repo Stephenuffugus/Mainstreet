@@ -1,0 +1,7 @@
+{
+  "name": "MAINSTREET",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "features": { "ghcr.io/devcontainers/features/python:1": {} },
+  "postCreateCommand": "bash tools/setup.sh",
+  "customizations": { "vscode": { "extensions": ["ms-playwright.playwright"] } }
+}

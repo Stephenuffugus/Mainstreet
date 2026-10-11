@@ -14,4 +14,6 @@ else
   echo "engines: chromium, firefox"
 fi
 npx playwright --version
+# the art generator (tools/gen_art.mjs) needs Pillow for WebP; optional, best effort
+python3 -m pip install --user --quiet pillow 2>/dev/null && echo "pillow: ok" || echo "pillow: not installed (only tools/gen_art.mjs and tools/webp.py need it)"
 echo "setup done"

@@ -1,7 +1,8 @@
 # STATUS, MAINSTREET
-Updated: 2026-10-11  ·  Current milestone: M7 polish done, rc2 tagged; playtest and vendoring open (fun gate still open)  ·  Engine MS1 · Content DECK2 · Rubric PLAN1 · Art ART0
+Updated: 2026-10-11  ·  Current milestone: handed to the dev team at v1.0.0-rc3; playtest, songs, sprites and vendoring open (fun gate still open)  ·  Engine MS1 · Content DECK2 · Rubric PLAN1 · Art ART0
 
 ## Done since last note
+- Pickup kit: START-HERE.md, split and join tools, npm scripts, a devcontainer, CI on every push, tag v1.0.0-rc3. Stephen is closing his Codespace; the dev team and Astra pick up from the repo alone.
 - M8: the music lane (docs/MUSIC.md): songs by feel per moment, crossfade, off by default, host-music handshake, three journeys; art-slot guard test. Waiting on Stephen's songs.
 - M7 (rc2): sound, focus for screen readers, Spent on the Town, six checklist journeys automated, first-pass art in all 110 sprite slots (1.3 MB), show news-card fix, plate sizing. 56 Playwright journeys green in chromium and webkit.
 - M6: content DECK2 (six drifts recalibrated on held-out seeds; every shop within 0.2 points of its design total), docs/calibration.md with an M6 reading, docs/FLEET-HANDOFF.md, docs/RELEASE-NOTES.md, the embed-protocol journey, Grown-ups copy current, build stamp 1.0.0-rc1, tag v1.0.0-rc1.
