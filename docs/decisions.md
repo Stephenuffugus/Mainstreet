@@ -6,6 +6,13 @@ Format: `YYYY-MM-DD · milestone · who · decision · why · what it affects`
 
 ## Entries
 
+- 2026-10-11 · M5 · Fable · The tab id lives in sessionStorage, so a reload keeps its claim on the run · With a fresh id per load, a reload saw its own stamp as another tab and went read-only · Tab lock
+- 2026-10-11 · M5 · Fable · "Try the backup" restores the save from one step earlier (the last queued action may be missing) and says so in the test, not to the child · The backup slot rotates on every successful save; that is what makes it a backup · Recovery card
+- 2026-10-11 · M5 · Fable · The service worker precaches the core files plus every file in art/manifest.json at install, and caches new art on first fetch; its version constant is bumped by hand per release · One precache list from one manifest · sw.js
+- 2026-10-11 · M5 · Fable · A damaged town file is refused as a whole (HTML strings are never rendered anyway; keys named __proto__, constructor and prototype are dropped; numbers above 1e15 or non-finite are refused; depth and length capped) and the import never replaces the current save without a confirm · HANDOFF 11 import rules · importText
+- 2026-10-11 · M5 · Fable · The debug panel omits "force a card" · Cards are scheduled when the market is created; forcing one would change the town's identity. Typed seeds, the event log and Jump to month cover the need · Debug panel
+- 2026-10-11 · M5 · Fable · Free play opens after chapter 6 (or chapter 3 behind CONTENT.flags.freePlayAfterChapter3, or in debug) · HANDOFF 2 default · Home
+- 2026-10-11 · M5 · Fable · ?debug opens the panel directly even when a run exists · The panel is a tool, not a screen the child reaches · boot
 - 2026-10-11 · M4 · Fable · The time machine compares declared alternatives (a policy with a variant, or the same seed with a contribution-start override), plus "your path vs a neighbor"; it never edits the child's action log · HANDOFF 5 "another path, never what would have happened"; replaying a modified child log would invent trades the child did not make · comparePlan, time machine screen
 - 2026-10-11 · M4 · Fable · "Start now vs start in two years" is a scenario override (practice coins begin in month 25, same seed, same prices); "same money, different timing" is Ada parking contributions in Saved until month 24 · Astra's two explicitly different "start earlier" experiments · Engine contribStart, Ada holdUntil variant
 - 2026-10-11 · M4 · Fable · Garden tree stage is net worth relative to the start: under 0.9 stage 1, under 1.1 stage 2, under 1.4 stage 3, under 1.9 stage 4, else 5 · Readable at a glance; the numbers sit beneath · Time machine

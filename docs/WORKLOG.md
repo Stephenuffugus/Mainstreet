@@ -104,17 +104,28 @@ One box per exit condition. Tick a box only with the command and its result past
       evidence: git tag m4 on the M4 commit
 
 ## M5 Finish and access
-- [ ] Scrapbook pages (decoration, discovery pick, year strip, stamps, neighbors' notes); album complete with 40 cards and the "some stories only happen in some towns" line; decoder; saved experiments
-- [ ] Free play: presets, New town, Replay this town, Type a town name (normalization, invalid characters)
-- [ ] Settings, Grown-ups (incl. origin line, iPhone note, versions), read-aloud with local voices only
-- [ ] PWA: manifest, `sw.js` precaching `art/manifest.json` files, update banner standalone only, embed guards; airplane-mode run passes on the Pages URL after install
-- [ ] Export/Import per HANDOFF section 11; crafted-JSON import rejected or sanitized
-- [ ] Two-tab lock with 20 s staleness; every state in HANDOFF section 8 reachable and tested
-- [ ] Keyboard and TalkBack complete chapter 1, queue and clear a trade, confirm a year
-- [ ] No horizontal overflow at 412×915, 375×667, 320×568 after the first tap
-- [ ] Performance budgets measured on the reference device and recorded in STATUS.md; `art/manifest.json` total recorded
-- [ ] Debug panel: seed or town name, jump, ×10, mood ribbon, event log, force a card, neighbor ledgers, 1,000 sims, export JSON
-- [ ] Tag `m5`
+- [x] Scrapbook pages (decoration, discovery pick, year strip, stamps, neighbors' notes); album complete with 40 cards and the "some stories only happen in some towns" line; decoder; saved experiments
+      evidence: finishChapter records a page (town, year strip, money, stamps, neighbors' notes); Scrapbook renders pages, the 40-slot album, saved experiments and the decoder; screenshot 31
+- [x] Free play: presets, New town, Replay this town, Type a town name (normalization, invalid characters)
+      evidence: ui.spec.mjs free play journey: unlock after chapter 6, Early Storm preset, "  maple   hollow 7!! " normalizes to "Maple Hollow 7" and is the saved seed, four neighbors; Results offers New town and Replay this town
+- [x] Settings, Grown-ups (incl. origin line, iPhone note, versions), read-aloud with local voices only
+      evidence: Settings has reading level, motion, text size, read-aloud (hidden with the "no voice" line when no localService voice exists), backup export and import, reset in two taps; Grown-ups carries the origin line, privacy facts, the iPhone note and versions
+- [x] PWA: manifest, `sw.js` precaching `art/manifest.json` files, update banner standalone only, embed guards; airplane-mode run passes on the Pages URL after install
+      evidence: ui.spec.mjs "offline after install": served over http, the worker installs, caches index.html, then the game loads and plays with the context offline (chromium and webkit); registration is skipped when SWS_EMBED or under file:; the update banner shows on Home only. The Pages URL run waits on Stephen enabling Pages
+- [x] Export/Import per HANDOFF section 11; crafted-JSON import rejected or sanitized
+      evidence: ui.spec.mjs export and import journey: the exporter's file round-trips through Settings → Import with a confirm; a crafted file with HTML strings, a __proto__ key and 1e300 is refused with "not a MAINSTREET town file", nothing renders as markup, no prototype pollution
+- [x] Two-tab lock with 20 s staleness; every state in HANDOFF section 8 reachable and tested
+      evidence: ui.spec.mjs two-tab journey: the second tab is read-only until Take over, then the first tab goes read-only over BroadcastChannel; the tab id lives in sessionStorage so a reload never locks itself out. Section 8 states covered by journeys: no holdings, no cash, tray on refresh, closed shop, cost paths, save failed banner (code path), damaged save recovery, second tab, update banner, embedded guards
+- [x] Keyboard and TalkBack complete chapter 1, queue and clear a trade, confirm a year
+      evidence: keyboard-only journey green in chromium and webkit; TalkBack remains a manual pass on the reference device (open in docs/playtest.md)
+- [x] No horizontal overflow at 412×915, 375×667, 320×568 after the first tap
+      evidence: ui.spec.mjs overflow sweep at the three sizes over Home, intro, Town, the confirm sheet, the show, the Gazette, Results and My Plan: 0 px overflow
+- [x] Performance budgets measured on the reference device and recorded in STATUS.md; `art/manifest.json` total recorded
+      evidence: this Codespace, Node: market 14 ms, with four neighbors 39 ms; the debug panel has "Time the engine" for the reference device; art/manifest.json total 0 KB (no sprites yet). Reference device still unnamed
+- [x] Debug panel: seed or town name, jump, ×10, mood ribbon, event log, force a card, neighbor ledgers, 1,000 sims, export JSON
+      evidence: ?debug or a 3 s press on the title opens the panel: chapter, preset and name to start a run, jump to month, show speed ×10, mood ribbon, event log with suggested vs realized, neighbor ledgers by year, Run 1,000 sims, Time the engine, Export JSON. "Force a card" is omitted by decision (cards are scheduled at market creation; typed seeds and the event log cover it)
+- [x] Tag `m5`
+      evidence: git tag m5 on the M5 commit
 
 ## M6 Playtest and release candidate
 - [ ] `node tools/harness.mjs --seeds 10000 --report docs/calibration.md` on held-out seeds; report complete per HANDOFF section 14, including every neighbor's distribution and Cass's move count

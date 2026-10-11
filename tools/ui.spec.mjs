@@ -311,3 +311,114 @@ test("chapter 6: the fee lab, two baskets on the street, rising prices, the inde
   await expect(page.locator(".gardens .garden")).toHaveCount(2);
   expect(errors, errors.join("\n")).toEqual([]);
 });
+
+/* ---- M5 journeys: free play, overflow sweep, export and import, recovery, the two-tab lock, offline after install ---- */
+import { createServer } from "node:http";
+import { readFile } from "node:fs/promises";
+let server = null, base = "";
+test.beforeAll(async () => {
+  server = createServer(async (req, res) => {
+    let path = decodeURIComponent(new globalThis.URL(req.url, "http://x").pathname); if (path.endsWith("/")) path += "index.html";
+    try { const data = await readFile(resolve(ROOT, "." + path)); const ext = path.split(".").pop();
+      res.writeHead(200, { "content-type": ({ html: "text/html", js: "text/javascript", json: "application/json", webmanifest: "application/manifest+json", png: "image/png", webp: "image/webp" })[ext] || "application/octet-stream", "cache-control": "no-cache" }); res.end(data); }
+    catch { res.writeHead(404); res.end(); }
+  });
+  await new Promise(r => server.listen(0, "127.0.0.1", r)); base = "http://127.0.0.1:" + server.address().port + "/";
+});
+test.afterAll(() => { if (server) server.close(); });
+
+test("free play: unlocked after chapter 6, a preset and a typed town name, the name round-trips, four neighbors", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  await expect(page.getByText("Free play opens after chapter 6.")).toBeVisible();
+  await page.evaluate(() => { MS.S.progress.completedChapters = ["ch1", "ch2", "ch3", "ch4", "ch5", "ch6"]; MS.render(); });
+  await page.getByRole("button", { name: "Free play" }).click();
+  await page.getByRole("radio", { name: /Early Storm/ }).check();
+  await page.locator("#town-name").fill("  maple   hollow 7!! ");
+  await page.locator("#free-start").click();
+  await expect(page.getByText("Maple Hollow 7").first()).toBeVisible();
+  await expect(page.getByText(/Early Storm: A slump begins in the first year/)).toBeVisible();
+  await page.getByRole("button", { name: "Start exploring" }).click();
+  await expect(page.locator(".house")).toHaveCount(4);
+  await expect(page.locator(".town-title")).toContainText("Maple Hollow 7");
+  const seed = await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).seed);
+  expect(seed).toBe("Maple Hollow 7");
+  await advanceOnce(page); expect(await settle(page, async p => { await p.getByRole("button", { name: /^Pay from my/ }).first().click(); })).toBe("town");
+  const hint = await page.locator(".hint").count() ? await page.locator(".hint").innerText() : "";
+  expect(hint + (await page.evaluate(() => MS.S.market.moods.slice(1, 13).join("")))).toMatch(/S|spending less/);
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+for (const [w, h] of [[412, 915], [375, 667], [320, 568]]) test(`no horizontal overflow at ${w}x${h} on Home, intro, Town, the sheet, the show, the Gazette and Results`, async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } }); const page = await ctx.newPage();
+  const noOverflow = async label => { const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth); expect(over, label + " overflows by " + over + "px at " + w).toBeLessThanOrEqual(0); };
+  await page.goto(URL); await noOverflow("home");
+  await page.getByRole("button", { name: "Start chapter 1" }).click(); await noOverflow("intro");
+  await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click(); await page.locator(".shop-face").click(); await page.locator(".steppers").getByRole("button", { name: "Buy 1 share" }).click(); await noOverflow("town");
+  await page.getByRole("button", { name: "Next season" }).click(); await noOverflow("confirm sheet"); await page.locator("#go").click(); await expect(page.locator(".screen.show")).toBeVisible(); await noOverflow("show"); await page.getByRole("button", { name: "Skip" }).click();
+  for (let i = 0; i < 3; i++) { await page.getByRole("button", { name: "Next season" }).click(); await page.locator("#go").click(); await page.getByRole("button", { name: "Skip" }).click(); }
+  await expect(page.locator(".masthead")).toBeVisible(); await noOverflow("gazette"); await page.getByRole("button", { name: "Continue" }).click();
+  await page.getByRole("button", { name: /^Buy it/ }).click(); await expect(page.locator(".screen.results")).toBeVisible(); await noOverflow("results");
+  await page.getByRole("button", { name: "My Plan" }).click(); await noOverflow("plan");
+  await ctx.close();
+});
+test("export and import: a town file round-trips; a crafted file is refused and renders nothing", async ({ page }) => {
+  const errors = watch(page);
+  await page.goto(URL);
+  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click();
+  // the download itself cannot be observed headless, so capture the anchor the exporter creates
+  await page.goto(URL + "?debug=1");
+  await expect(page.getByText("Export JSON")).toBeVisible();
+  const json = await page.evaluate(() => { let captured = null; const orig = document.body.appendChild.bind(document.body); document.body.appendChild = n => { if (n.tagName === "A" && n.download) { captured = decodeURIComponent(n.href.split(",")[1]); return n; } return orig(n); }; const btns = [...document.querySelectorAll("main.debug button")]; btns.find(b => b.textContent === "Export JSON").click(); document.body.appendChild = orig; return captured; });
+  const parsed = JSON.parse(json); expect(parsed.app).toBe("mainstreet"); expect(parsed.save.seed.length).toBeGreaterThan(0);
+  // wipe and import through Settings
+  await page.evaluate(() => { localStorage.removeItem("ms:save"); });
+  await page.goto(URL); await page.getByRole("button", { name: "Settings" }).click();
+  await page.locator("#import-file").setInputFiles({ name: "town.json", mimeType: "application/json", buffer: Buffer.from(json) });
+  await expect(page.getByText("Replace my current town with the imported one?")).toBeVisible();
+  await page.getByRole("button", { name: "Yes, replace it" }).click();
+  await expect(page.locator(".screen.town")).toBeVisible();
+  await expect(page.locator(".band.soon")).toContainText("Soon 30");
+  // crafted file: HTML strings, __proto__, oversized numbers
+  await page.getByRole("button", { name: "Home" }).click(); await page.getByRole("button", { name: "Settings" }).click();
+  const crafted = JSON.stringify({ app: "mainstreet", kind: "town-file", engineVersion: parsed.engineVersion, contentVersion: parsed.contentVersion, save: Object.assign(JSON.parse(JSON.stringify(parsed.save)), { seed: "<img src=x onerror=alert(1)>", checkpoint: Object.assign(parsed.save.checkpoint, { wallet: 1e300, __proto__: { polluted: true } }) }) });
+  await page.locator("#import-file").setInputFiles({ name: "bad.json", mimeType: "application/json", buffer: Buffer.from(crafted) });
+  await expect(page.getByText("That file is not a MAINSTREET town file.")).toBeVisible();
+  expect(await page.evaluate(() => ({}).polluted)).toBeUndefined();
+  expect(await page.locator("img[src='x']").count()).toBe(0);
+  expect(errors, errors.join("\n")).toEqual([]);
+});
+test("recovery: a damaged save is kept aside, the backup can be tried, the player can start new", async ({ page }) => {
+  await page.goto(URL);
+  await page.getByRole("button", { name: "Start chapter 1" }).click(); await page.getByRole("button", { name: "Start exploring" }).click(); await page.getByRole("button", { name: "Put 30 in my Jar" }).click();
+  await page.evaluate(() => { localStorage.setItem("ms:save", "{not json"); });
+  await page.reload();
+  await expect(page.getByText("A saved town could not be read")).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem("ms:save:bad"))).toBe("{not json");
+  await page.getByRole("button", { name: "Try the backup" }).click();
+  await expect(page.locator(".screen.town")).toBeVisible();                     // the backup is the save from one step earlier: the town is back, the last queued action may not be
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("ms:save")).scenarioId)).toBe("ch1");
+});
+test("two tabs: the second tab is read-only until it takes over, then the first goes read-only", async ({ browser }) => {
+  const ctx = await browser.newContext(); const p1 = await ctx.newPage();
+  await p1.goto(URL); await p1.getByRole("button", { name: "Start chapter 1" }).click(); await p1.getByRole("button", { name: "Start exploring" }).click();
+  const p2 = await ctx.newPage(); await p2.goto(URL);
+  await expect(p2.getByText("This town is open in another tab")).toBeVisible();
+  await p2.getByRole("button", { name: "Take over" }).click();
+  await expect(p2.getByText("This town is open in another tab")).toHaveCount(0);
+  await expect(p1.getByText("This town is open in another tab")).toBeVisible({ timeout: 10000 });
+  await ctx.close();
+});
+test("offline after install: once the worker has cached the game, it loads and plays with the network off", async ({ browser }) => {
+  const ctx = await browser.newContext(); const page = await ctx.newPage();
+  await page.goto(base + "index.html");
+  await page.waitForFunction(() => navigator.serviceWorker.getRegistration().then(r => !!(r && r.active)), null, { timeout: 20000 });
+  await page.waitForFunction(() => caches.keys().then(ks => ks.some(k => k.startsWith("mainstreet-"))), null, { timeout: 20000 });
+  await page.waitForFunction(() => caches.match("index.html", { ignoreSearch: true }).then(r => !!r), null, { timeout: 20000 });
+  await page.reload();
+  await ctx.setOffline(true);
+  await page.reload();
+  await expect(page.locator("#s-title")).toBeVisible();
+  await page.getByRole("button", { name: "Start chapter 1" }).click();
+  await expect(page.getByText("These are pretend coins")).toBeVisible();
+  await ctx.close();
+});

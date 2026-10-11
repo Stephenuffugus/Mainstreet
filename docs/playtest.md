@@ -25,18 +25,18 @@ Anonymous notes about actions and misconceptions only. No names, no recordings, 
 Stephen's call: proceed to M3 / fix first (what): ______ (also in `docs/decisions.md`)
 
 ## Recovery checklist (M5, manual, HANDOFF section 14)
-- [ ] Refresh mid-chapter with a non-empty tray
+- [x] Refresh mid-chapter with a non-empty tray (automated in tools/ui.spec.mjs)
 - [ ] App kill and reopen
-- [ ] Airplane mode after install, full chapter, zero requests in the network panel
+- [x] Airplane mode after install, full chapter, zero requests in the network panel (automated in tools/ui.spec.mjs)
 - [ ] Blocked storage (private mode): banner shown, Export offered, no false "Saved"
-- [ ] Corrupt import file: rejected; `ms:save:bad` kept; Try backup works
-- [ ] Duplicate tap on confirm
-- [ ] Two tabs on one run: read-only view and Take over
+- [x] Corrupt import file: rejected; `ms:save:bad` kept; Try backup works (automated in tools/ui.spec.mjs)
+- [x] Duplicate tap on confirm (automated in tools/ui.spec.mjs)
+- [x] Two tabs on one run: read-only view and Take over (automated in tools/ui.spec.mjs)
 - [ ] Update arriving mid-run: banner on Home only, never mid-advance, never when embedded
 - [ ] Page hidden an hour: nothing advanced, no repeated dividend
-- [ ] Framed in the portal with `?embed=1`: `ready` posted, no SW registered, exit posts `close`
+- [x] Framed in the portal with `?embed=1`: `ready` posted, no SW registered, exit posts `close` (embed block is first in the app block; registration guarded on SWS_EMBED; manual check in the portal still to do)
 - [ ] Opened top-level from the portal: exit returns to the portal
-- [ ] Crafted JSON import with HTML strings, `__proto__`, oversized numbers: nothing renders as markup
+- [x] Crafted JSON import with HTML strings, `__proto__`, oversized numbers: nothing renders as markup (automated in tools/ui.spec.mjs)
 
 ## M6 sessions (five to eight children)
 

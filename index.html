@@ -190,6 +190,30 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--up);outline-off
 .year-ctl{display:flex;gap:8px;align-items:center}
 .range{flex:1;min-height:48px;accent-color:var(--up)}
 @media (max-width:420px){.lab-cards{grid-template-columns:1fr}}
+/* M5: free play, read-aloud, backup, lock, recovery, debug, scrapbook pages */
+.presets{display:flex;flex-direction:column;gap:6px}
+.preset{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:2px solid var(--rule);border-radius:10px;cursor:pointer}
+.preset.sel{border-color:var(--ink)}
+.preset input{margin-top:6px}
+.num-in.wide{width:100%;max-width:360px}
+.read-row{display:flex;justify-content:flex-end}
+.btn.read{border-style:dashed}
+.banner.lock{background:var(--card);border-color:var(--ink);display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.card.recovery{border-color:var(--down)}
+.card.inner{background:var(--paper-2)}
+.file-in{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+label.btn{display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.strip{display:flex;gap:3px;margin:4px 0;flex-wrap:wrap}
+.strip i{display:block;width:14px;height:14px;border-radius:3px;background:var(--paper-2)}
+.strip i.up{background:var(--up)}.strip i.down{background:var(--down)}
+.stamps-row{display:flex;gap:6px;flex-wrap:wrap}
+.stamp-art.small{width:40px;height:40px}
+.cols.small{font-size:.9em}
+.dbg-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.decoder.dbg td{font-size:.8em;font-variant-numeric:tabular-nums}
+.ribbon{display:flex;flex-wrap:wrap;gap:1px}
+.ribbon i{display:block;width:6px;height:14px;background:var(--rule)}
+.ribbon i.mB{background:var(--up)}.ribbon i.mS{background:var(--down)}
 </style>
 </head>
 <body>
@@ -348,10 +372,16 @@ globalThis.STRINGS = {
   neighborSentence: { held:'{name} kept {his} {what} all year. It {grew}.', jarSame:'{name} kept {his} jar. It stayed the same.', moved:'{name} moved {his} money to {shop} after the {news} news. {shop} had a {kind} year.', bigYear:'{name}\u2019s shop had a big year.', hardYear:'{name}\u2019s shop had a hard year.', quietYear:'{name}\u2019s shop had a quiet year.', paidCost:'{name} paid the surprise cost from {his} jar.', soldForCost:'{name} sold part of {his} basket to pay the cost.', toJar:'{name} sold everything when prices fell and put it in {his} jar.', backIn:'{name} bought the basket again.' },
   neighborPronouns: { ada:{ he:'she', his:'her' }, bo:{ he:'he', his:'his' }, cass:{ he:'she', his:'her' }, dev:{ he:'he', his:'his' } },
   neighborDid: { ada:'{name} put {x} coins in the Basket at the start. Now {now}.', dev:'{name} put {x} coins in {shop} at the start. Now {now}.', bo:'{name} kept {x} coins in {his} jar. Now {now}.', cass:'{name} started with the Basket and moved {n} times. Now {now}.', you:'You started with {x} coins. Now {now}.' },
-  chapterIntro: { ch4:['The game now adds 10 practice coins every month. They are added, not earned by your shares.', 'Some shops share money with their owners four times a year. You can keep it or use it to buy more shares.', 'What changes when payments are reinvested?'], ch5:['Some years, many families spend less and most shops feel it. That is a slump. It is not the same as one shop having its own trouble.', 'Cass joins the street. She follows the news.', 'What changed: price, business, or my goal?'], ch6:['Ten years this time. Prices of everyday things rise a little each year, so your goal grows with them.', 'Two baskets hold the same six shops. One charges more each year than the other. Read both cost cards before you choose.', 'What can a plan buy, after costs and rising prices?'], ch2:['Six shops are open now. The Town Basket Fund holds a little of all six.', 'What if one shop has trouble?'], ch3:['A surprise cost may come this chapter: {lo} to {hi} coins, sometime after the first year.', 'Your Jar has a new band for exactly that. It is called Buffer.', 'Which money needs to stay ready?'] },
+  chapterIntro: { free:['Twenty years in a town with a name. Every stop is a year. All four neighbors play beside you.', 'Type this town\u2019s name into any copy of the game and the same years happen again.'], ch4:['The game now adds 10 practice coins every month. They are added, not earned by your shares.', 'Some shops share money with their owners four times a year. You can keep it or use it to buy more shares.', 'What changes when payments are reinvested?'], ch5:['Some years, many families spend less and most shops feel it. That is a slump. It is not the same as one shop having its own trouble.', 'Cass joins the street. She follows the news.', 'What changed: price, business, or my goal?'], ch6:['Ten years this time. Prices of everyday things rise a little each year, so your goal grows with them.', 'Two baskets hold the same six shops. One charges more each year than the other. Read both cost cards before you choose.', 'What can a plan buy, after costs and rising prices?'], ch2:['Six shops are open now. The Town Basket Fund holds a little of all six.', 'What if one shop has trouble?'], ch3:['A surprise cost may come this chapter: {lo} to {hi} coins, sometime after the first year.', 'Your Jar has a new band for exactly that. It is called Buffer.', 'Which money needs to stay ready?'] },
   fund: { card:'Six shops in one town. Spread out, but still one town.', cost:'Yearly cost: {pct}.', unit:'One basket share holds a little of each shop.' },
   stops: { e18:'{shop} is sharing less money with owners this year. The business is the same business.', e12:'Robo Lab is fixing a product problem. This is one shop\u2019s trouble, not the whole street\u2019s.', slump:'Many families are spending less this year. Most shops feel it. Check when you need this money.', closure:'{shop} is closing. Owners get {liq} coins a share back next month. {keeper}', closurePaid:'{shop} has closed. You got {paid} coins back for your shares.' },
   feeLab: { title:'Two baskets charge different fees', body:'Both baskets hold the same six shops in the same amounts. Only the yearly cost is different. Read both cards, then choose one for this chapter. Both stay available.', cardA:'Basket A keeps 0.2 of every 100 coins each year.', cardB:'Basket B keeps 1.5 of every 100 coins each year.', chooseA:'Choose Basket A', chooseB:'Choose Basket B', result:'On the same shops, Basket A ended at {a} a share and Basket B at {b}. The difference is the cost, nothing else.' },
+  freePlay: { title:'Free play', pick:'Pick a town', random:'A random name', typed:'Or type a town name', nameHint:'Letters, spaces and a number. Two words and a number work best.', start:'Start this town', replay:'Replay this town', newTown:'New town', unlock:'Free play opens after chapter 6.', presetLabel:'What kind of twenty years' },
+  readAloud: { label:'Read aloud', hint:'Uses a voice already on this device. Nothing is sent anywhere.', none:'No voice on this device can read aloud. The text is complete without it.', read:'Read this screen' },
+  backup: { export:'Export my town', exportHint:'Saves a file you control. It is the backup if this device clears its storage.', import:'Import a town file', confirm:'Replace my current town with the imported one?', yes:'Yes, replace it', no:'Keep my town', badFile:'That file is not a MAINSTREET town file.', badVersion:'That file was made by a different version of the game and cannot be read.', tooBig:'That file is too large to be a town file.', done:'Imported. Your town is loaded.' },
+  tabLock: { title:'This town is open in another tab', body:'Play there, or take over here. Taking over stops the other tab.', take:'Take over' },
+  recovery: { title:'A saved town could not be read', body:'The save on this device is damaged. Nothing was deleted.', backup:'Try the backup', export:'Export the damaged file', fresh:'Start new' },
+  update: { ready:'A new version is ready. Restart when you like.', restart:'Restart now' },
   inflation: { gazette:'Familiar things cost {pct} more than last year. Your goal now needs {goal} coins.', canBuy:'Your money could buy what {real} coins bought at the start.', toggle:'Show what it can buy' },
   timeMachine: { title:'The time machine', intro:'Two gardens, one town, one change. Both start with the same coins and see the same prices. The change is labeled.', another:'This is another path, not what would have happened.', save:'Save to scrapbook', saved:'Saved to your scrapbook.',
     experiments: { 'ada-vs-dev':{ label:'Spread out vs one shop', a:'Ada\u2019s plan: the Basket', b:'Dev\u2019s plan: one shop', note:'Same coins, same town. Which shop Dev picks is seeded by the town.' }, 'buffer':{ label:'Buffer kept vs Buffer invested', a:'Keeps a Buffer for surprise costs', b:'Invests the Buffer too', note:'When a cost comes, the second plan must sell shares to pay it.' }, 'reinvest':{ label:'Reinvest on vs off', a:'Payments buy more shares', b:'Payments stay in the wallet', note:'The wallet money is still yours. It just does not grow.' }, 'start-early':{ label:'Start now vs start in two years', a:'Practice coins invested from month 1', b:'Practice coins start arriving in month 25', note:'The second plan has less time and less money added. Both matter.' }, 'timing':{ label:'Same money, different timing', a:'Invests practice coins as they arrive', b:'Saves them for two years, then invests', note:'Same total added. Only the timing changes.' }, 'hold-vs-sell':{ label:'Hold through the slump vs sell and wait', a:'Keeps the Basket through the slump', b:'Sells when the slump begins, buys back a year later', note:'Selling locks in that year\u2019s prices. Buying back pays that day\u2019s prices. Either can end higher.' }, 'fee':{ label:'Basket A vs Basket B', a:'Basket A, 0.2 of every 100 coins a year', b:'Basket B, 1.5 of every 100 coins a year', note:'Same shops, same amounts. Only the yearly cost differs.' } } },
@@ -1040,7 +1070,7 @@ const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 /* ---- state ---- */
 const S = {
   screen: 'home', run: null, market: null, draft: null, saveOk: true, art: {},
-  options: { presentation: 'guided', motion: 'auto', textSize: 1, sound: false },
+  options: { presentation: 'guided', motion: 'auto', textSize: 1, sound: false, readAloud: false, showSpeed: 1 }, readOnly: false, badSave: false,
   progress: { completedChapters: [], decorations: {}, discoveries: {}, scrapbook: [], album: { shops: [], cards: [], neighbors: [], goals: [] }, towns: [] },
   ui: { tutorialStep: 0, intro: false, openShop: null, sheet: null, hint: null, seenGazetteAt: -1, gazetteYear: 1, showDetails: false, resetArmed: false, receipt: null, lastShow: null }
 };
@@ -1075,16 +1105,16 @@ function save() {
 }
 function validSave(j) { return j && j.schemaVersion === 1 && j.engineVersion === E.VERSION.engine && j.contentVersion === E.VERSION.content && typeof j.scenarioId === 'string' && typeof j.seed === 'string' && j.checkpoint && Array.isArray(j.pending); }
 function loadRun() {
-  const raw = storage(ls => ls.getItem(KEYS.save)); if (!raw) return false;
+  const raw = storage(ls => ls.getItem(KEYS.save)); if (!raw) return 'none';
   let j = null; try { j = JSON.parse(raw); } catch (e) { j = null; }
-  if (!validSave(j)) { storage(ls => { if (!ls.getItem(KEYS.bad)) ls.setItem(KEYS.bad, raw); }); return false; }
+  if (!validSave(j)) { storage(ls => { if (!ls.getItem(KEYS.bad)) ls.setItem(KEYS.bad, raw); }); return 'bad'; }
   try {
     const market = E.createMarket({ scenarioId: j.scenarioId, seed: j.seed, preset: j.preset !== 'standard' ? j.preset : undefined });
     S.run = { runId: j.runId, scenarioId: j.scenarioId, seed: j.seed, preset: j.preset || 'standard', checkpoint: j.checkpoint, pending: j.pending, lastSeq: j.lastSeq || 0 };
     S.market = market; if (j.options) Object.assign(S.options, j.options); if (j.progress) S.progress = Object.assign(S.progress, j.progress);
     if (j.ui) { S.ui.tutorialStep = j.ui.tutorialStep || 0; S.ui.intro = !!j.ui.intro; S.ui.seenGazetteAt = j.ui.seenGazetteAt === undefined ? -1 : j.ui.seenGazetteAt; }
-    recomputeDraft(); return true;
-  } catch (e) { storage(ls => { if (!ls.getItem(KEYS.bad)) ls.setItem(KEYS.bad, raw); }); S.run = null; S.market = null; return false; }
+    recomputeDraft(); return 'ok';
+  } catch (e) { storage(ls => { if (!ls.getItem(KEYS.bad)) ls.setItem(KEYS.bad, raw); }); S.run = null; S.market = null; return 'bad'; }
 }
 function randomId(prefix) { const a = new Uint32Array(2); (window.crypto || {}).getRandomValues ? window.crypto.getRandomValues(a) : (a[0] = Date.now(), a[1] = 1); return prefix + a[0].toString(36) + a[1].toString(36); }
 function randomTownName() { const a = new Uint32Array(3); if (window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(a); else { a[0] = Date.now(); a[1] = Date.now() >>> 3; a[2] = Date.now() >>> 7; } return E.randomTownName(a[0], a[1], a[2]); }
@@ -1099,6 +1129,7 @@ function newRun(scenarioId, seed, preset) {
   recomputeDraft(); save();
 }
 function queue(action) {
+  if (S.readOnly) return { ok: false, code: 'READ_ONLY' };
   const v = E.validateAction(S.draft, action, S.market);
   if (!v.ok) return v;
   if ((action.type === 'VIEW_PLAN' || action.type === 'VIEW_COST') && S.run.pending.some(p => p.type === action.type && p.id === action.id)) return { ok: true, preview: v.preview, duplicate: true };
@@ -1109,6 +1140,7 @@ function undo(seq) { const i = seq === undefined ? S.run.pending.length - 1 : S.
 function clearTray() { S.run.pending = []; recomputeDraft(); save(); render(); }
 const hasRequired = s => s.queue.some(q => q.required && !q.resolved);
 function commitAndAdvance() {
+  if (S.readOnly) return;
   S.ui.hint = null;
   const target = E.nextStop(S.draft, S.market.scenario);
   let res; try { res = E.advance(S.draft, S.market, target); } catch (e) { S.ui.hint = { text: 'Something needs a decision first.' }; render(); return; }
@@ -1147,6 +1179,7 @@ function finishChapter() {
   const sc = S.market.scenario; if (sc.contrib > 0 && !al.cards.includes('E22')) al.cards.push('E22'); if (sc.inflation && !al.cards.includes('E23')) al.cards.push('E23'); if (sc.feeLab && !al.cards.includes('E24')) al.cards.push('E24'); if (!guided() && S.market.cards.some(c => c.kind === 'shock' && c.t <= s.t) && !al.cards.includes('E17')) al.cards.push('E17');
   for (const n of S.market.scenario.neighbors) if (!al.neighbors.includes(n)) al.neighbors.push(n);
   if (s.goal.status === 'funded' && !al.goals.includes(s.goal.slug)) al.goals.push(s.goal.slug);
+  recordScrapbook(s, S.market);
   save(); go('results');
 }
 function openPlan() { if (S.run && !S.draft.ended) queue({ type: 'VIEW_PLAN' }); go('plan'); }
@@ -1265,6 +1298,11 @@ function settingsScreen() {
     el('section', { class: 'card' }, el('h3', { text: 'Reading level' }), radio('pres', 'guided', 'Guided: whole coins, fewer numbers', S.options.presentation, v => { S.options.presentation = v; }), radio('pres', 'explorer', 'Explorer: exact numbers, more details', S.options.presentation, v => { S.options.presentation = v; })),
     el('section', { class: 'card' }, el('h3', { text: 'Motion' }), radio('motion', 'auto', 'Follow my device', S.options.motion, v => { S.options.motion = v; }), radio('motion', 'reduced', 'Still frames, no animation', S.options.motion, v => { S.options.motion = v; })),
     el('section', { class: 'card' }, el('h3', { text: 'Text size' }), radio('ts', 1, 'Normal', S.options.textSize, v => { S.options.textSize = v; }), radio('ts', 1.15, 'Larger', S.options.textSize, v => { S.options.textSize = v; }), radio('ts', 1.3, 'Largest', S.options.textSize, v => { S.options.textSize = v; })),
+    el('section', { class: 'card' }, el('h3', { text: ST.readAloud.label }), localVoices().length ? el('label', { class: 'radio' }, el('input', { type: 'checkbox', checked: S.options.readAloud ? true : null, onchange: e => { S.options.readAloud = e.target.checked; saveSettings(); render(); } }), ' ' + ST.readAloud.label) : el('p', { class: 'muted', text: ST.readAloud.none }), el('p', { class: 'muted small', text: ST.readAloud.hint })),
+    el('section', { class: 'card' }, el('h3', { text: 'Backup' }), el('button', { type: 'button', class: 'btn', onclick: () => download('mainstreet-town.json', exportText()), text: ST.backup.export }), el('p', { class: 'muted small', text: ST.backup.exportHint }),
+      (() => { const inp = el('input', { type: 'file', accept: 'application/json,.json', id: 'import-file', class: 'file-in', onchange: e => { const f = e.target.files && e.target.files[0]; if (!f) return; if (f.size > 262144) { S.ui.notice = ST.backup.tooBig; render(); return; } const rd = new FileReader(); rd.onload = () => { const r = importText(String(rd.result)); S.ui.notice = r.ok ? null : ST.backup[r.code]; render(); }; rd.readAsText(f); } }); return el('div', {}, el('label', { for: 'import-file', class: 'btn', text: ST.backup.import }), inp); })(),
+      S.ui.importPending ? el('div', { class: 'card inner', role: 'alertdialog' }, el('p', { text: ST.backup.confirm }), el('div', { class: 'opts' }, el('button', { type: 'button', class: 'btn primary', onclick: applyImport, text: ST.backup.yes }), el('button', { type: 'button', class: 'btn', onclick: () => { S.ui.importPending = null; render(); }, text: ST.backup.no }))) : null,
+      S.ui.notice ? el('p', { class: 'muted', role: 'status', text: S.ui.notice }) : null),
     el('section', { class: 'card' }, el('h3', { text: 'Start over' }), el('p', { class: 'muted', text: 'Removes the saved town on this device. Two taps.' }), el('button', { type: 'button', class: 'btn', onclick: () => { if (!S.ui.resetArmed) { S.ui.resetArmed = true; render(); return; } S.ui.resetArmed = false; S.run = null; S.market = null; S.draft = null; storage(ls => { ls.removeItem(KEYS.save); ls.removeItem(KEYS.bak); }); go('home'); }, text: S.ui.resetArmed ? 'Yes, remove my saved town' : 'Reset' }), S.ui.resetArmed ? el('button', { type: 'button', class: 'btn ghost', onclick: () => { S.ui.resetArmed = false; render(); }, text: 'Keep it' }) : null),
     el('p', { class: 'stamp', text: 'engine ' + E.VERSION.engine + ' · content ' + E.VERSION.content + ' · rubric ' + E.VERSION.rubric + ' · build ' + BUILD }));
 }
@@ -1344,11 +1382,11 @@ function homeScreen() {
     return playable ? el('li', { class: 'chapter ' + (done ? 'done' : '') }, el('button', { type: 'button', class: 'chapter-btn', onclick: () => start(c.id), 'aria-label': (done ? 'Play again: ' : 'Start: ') + c.title }, row)) : el('li', { class: 'chapter locked' }, row); });
   const mainBtn = next && isBuilt(next) ? el('button', { type: 'button', class: 'btn ' + (cont ? '' : 'primary big'), onclick: () => start(next), text: (r && !S.draft.ended) ? (S.ui.resetArmed ? 'Start a new town and leave this one?' : 'New town') : 'Start chapter ' + CT.chapters.find(c => c.id === next).n }) : el('p', { class: 'muted', text: 'Chapters 4 to 6 are coming. Play a chapter again below.' });
   const albumCount = S.progress.album.shops.length + S.progress.album.cards.length + S.progress.album.neighbors.length + S.progress.album.goals.length;
-  return el('main', { id: 's-title', class: 'screen home' }, banner(),
-    el('h1', { text: 'MAINSTREET' }), el('p', { class: 'tag', text: 'Own little pieces of a town. Make a plan. See what time changes.' }),
+  return el('main', { id: 's-title', class: 'screen home' }, banner(), readOnlyBanner(), recoveryCard(), S.ui.notice ? el('p', { class: 'muted', role: 'status', text: S.ui.notice }) : null, S.ui.updateReady ? el('div', { class: 'banner', role: 'status' }, ST.update.ready + ' ', el('button', { type: 'button', class: 'btn small', onclick: () => { try { S.ui.updateReady.waiting && S.ui.updateReady.waiting.postMessage('skipWaiting'); } catch (e) {} }, text: ST.update.restart })) : null,
+    el('h1', { text: 'MAINSTREET', onpointerdown: () => { S.ui.pressAt = Date.now(); }, onpointerup: () => { if (S.ui.pressAt && Date.now() - S.ui.pressAt > 3000) { S.ui.debug = true; render(); } S.ui.pressAt = 0; } }), el('p', { class: 'tag', text: 'Own little pieces of a town. Make a plan. See what time changes.' }),
     el('div', { class: 'home-actions' }, cont, where, mainBtn, S.ui.resetArmed ? el('button', { type: 'button', class: 'btn ghost', onclick: () => { S.ui.resetArmed = false; render(); }, text: 'Keep my town' }) : null),
     el('ol', { class: 'chapters' }, chapters),
-    el('nav', { class: 'home-nav' }, el('button', { type: 'button', class: 'btn', onclick: () => go('scrapbook'), text: 'Scrapbook (' + albumCount + ' of 40)' }), el('button', { type: 'button', class: 'btn', onclick: () => go('settings'), text: 'Settings' }), el('button', { type: 'button', class: 'btn', onclick: () => go('grownups'), text: 'Grown-ups' }), el('button', { type: 'button', class: 'btn', onclick: () => window.SWS_EXIT(), text: '← All Sky Wolf games' })),
+    el('nav', { class: 'home-nav' }, freeUnlocked() ? el('button', { type: 'button', class: 'btn', onclick: () => { S.ui.fp = null; go('freeplay'); }, text: ST.freePlay.title }) : el('span', { class: 'muted small', text: ST.freePlay.unlock }), el('button', { type: 'button', class: 'btn', onclick: () => go('scrapbook'), text: 'Scrapbook (' + albumCount + ' of 40)' }), S.ui.debug ? el('button', { type: 'button', class: 'btn', onclick: () => go('debug'), text: 'Debug' }) : null, el('button', { type: 'button', class: 'btn', onclick: () => go('settings'), text: 'Settings' }), el('button', { type: 'button', class: 'btn', onclick: () => go('grownups'), text: 'Grown-ups' }), el('button', { type: 'button', class: 'btn', onclick: () => window.SWS_EXIT(), text: '← All Sky Wolf games' })),
     el('p', { class: 'stamp', id: 'build-stamp', text: 'build ' + BUILD + ' · engine ' + E.VERSION.engine + ' · ' + (navigator.onLine === false ? 'offline' : 'loads once online, then works offline') }));
 }
 
@@ -1418,7 +1456,12 @@ function decisionScreen() {
 function cardFace(kind, id, label, got, slot) { return el('div', { class: 'album-card ' + (got ? 'got' : 'missing'), role: 'img', 'aria-label': got ? label : 'Not in your town yet' }, got && slot ? art(slot, 'album-art', '') : el('div', { class: 'ph album-art' }, el('span', { text: got ? label : '?' })), el('span', { class: 'small', text: got ? label : (kind === 'card' ? 'Story ' + id.slice(1) : '?') })); }
 function scrapbookScreen() {
   const al = S.progress.album, count = al.shops.length + al.cards.length + al.neighbors.length + al.goals.length;
-  const pages = S.progress.completedChapters.map(id => { const c = CT.chapters.find(x => x.id === id); return el('section', { class: 'card page' }, art('frame-' + id, 'frame-art', ''), el('h3', { text: 'Chapter ' + c.n + ': ' + c.title }), el('p', { text: S.progress.discoveries[id] || 'No discovery picked.' }), S.progress.decorations[id] ? el('div', { class: 'decos' }, art('deco-' + S.progress.decorations[id], 'deco-art', 'Decoration')) : null); });
+  const pages = (S.progress.scrapbook || []).map(pg => el('section', { class: 'card page' }, art('frame-' + pg.chapter, 'frame-art', ''), el('h3', { text: (pg.chapter === 'free' ? 'Free play' : 'Chapter ' + pg.n + ': ' + pg.title) + ' \u00b7 ' + pg.town }),
+      el('div', { class: 'strip', role: 'img', 'aria-label': pg.strip.map((u, i) => 'year ' + (i + 1) + (u ? ' up' : ' down')).join(', ') }, pg.strip.map(u => el('i', { class: u ? 'up' : 'down' }))),
+      el('p', { text: S.progress.discoveries[pg.chapter] || 'No discovery picked.' }), el('p', { class: 'muted', text: 'Started with ' + coins(pg.money.start) + ', added ' + coins(pg.money.added, { noAbout: true }) + ', investments ' + signed(pg.money.result) + ', spent ' + coins(pg.money.spent, { noAbout: true }) + '. Ended with ' + coins(pg.money.end) + '.' }),
+      el('div', { class: 'stamps-row' }, Object.keys(pg.stamps).filter(k => pg.stamps[k] === 'full' || pg.stamps[k] === 'part').map(k => art('stamp-' + k.replace('followThrough', 'follow-through').replace('goalFit', 'goal-fit').replace('costAwareness', 'cost'), 'stamp-art small ' + (pg.stamps[k] === 'part' ? 'dim' : ''), DIM_NAMES[k]))),
+      pg.neighbors.length ? el('ul', { class: 'cols small' }, pg.neighbors.map(n => el('li', { text: n.text }))) : null,
+      S.progress.decorations[pg.chapter] ? el('div', { class: 'decos' }, art('deco-' + S.progress.decorations[pg.chapter], 'deco-art', 'Decoration')) : null));
   const grid = el('div', { class: 'album-grid' }, PR.assets.map(a => cardFace('shop', a.id, a.name, al.shops.includes(a.id), 'shop-' + a.id.toLowerCase() + '-open')), CT.cards.map(c => cardFace('card', c.id, c.headline, al.cards.includes(c.id), null)), PR.neighbors.map(n => cardFace('nb', n.id, n.name, al.neighbors.includes(n.id), 'neighbor-' + n.id + '-neutral')), Object.keys(CT.goals).map(g => cardFace('goal', g, CT.goals[g], al.goals.includes(g), 'goal-' + g)));
   return el('main', { class: 'screen scrapbook' }, topbar('Scrapbook', { label: '← Back', fn: () => go(S.run ? (S.draft.ended ? 'results' : 'town') : 'home') }),
     pages.length ? pages : el('p', { class: 'muted', text: 'Finish a chapter to add a page.' }),
@@ -1448,7 +1491,8 @@ function showScreen() {
     if (nbs) nbars.replaceChildren(el('div', { class: 'nbar you' }, el('div', { class: 'b', style: 'height:' + Math.round(60 * (f.nw || 0) / maxNw) + 'px' }), el('span', { text: 'You' })), ...ids.map(id => el('div', { class: 'nbar' }, el('div', { class: 'b', style: 'height:' + Math.round(60 * (nbs[id].nw[f.t] || 0) / maxNw) + 'px' }), el('span', { text: nbInfo(id).name }))));
   }
   function finishShow() { if (done) return; done = true; if (timer) clearTimeout(timer); arrive(); }
-  function step() { if (done) return; if (i >= frames.length) { timer = setTimeout(finishShow, 600); return; } paint(frames[i]); i++; timer = setTimeout(step, fast ? 250 : 500); }
+  const base = S.options.showSpeed === 10 ? 50 : 500;
+  function step() { if (done) return; if (i >= frames.length) { timer = setTimeout(finishShow, 600); return; } paint(frames[i]); i++; timer = setTimeout(step, fast ? base / 2 : base); }
   wrap.append(cap1, el('div', { class: 'show-head' }, monthLbl, weatherLbl), stage, nbs ? nbars : null, cards);
   if (!frames.length) { setTimeout(finishShow, 0); return wrap; }
   if (reduced) { paint(frames[0]); i = 1;
@@ -1516,7 +1560,8 @@ function resultsScreen() {
     el('section', { class: 'card' }, el('h3', { text: 'How you planned' }), el('ul', { class: 'stamps' }, stamps), el('button', { type: 'button', class: 'btn ghost small', onclick: () => { S.ui.showDetails = !S.ui.showDetails; render(); }, text: S.ui.showDetails ? 'Hide details' : 'Show details' }), S.ui.showDetails ? el('p', { class: 'muted', text: score.total === null ? 'Exploring: nothing to grade yet.' : 'Plan Practice ' + score.total + ' of 100 (' + E.VERSION.rubric + '). It grades planning habits in this chapter, not how much money you made.' }) : null),
     el('section', { class: 'card' }, el('h3', { text: 'Choose a decoration' }), el('div', { class: 'decos' }, decos)),
     el('section', { class: 'card' }, el('h3', { text: 'Pick a discovery' }), el('div', { class: 'opts' }, offered.map(t => el('button', { type: 'button', class: 'btn ' + (disc === t ? 'primary' : ''), 'aria-pressed': disc === t ? 'true' : 'false', onclick: () => { S.progress.discoveries[sc.id] = t; saveSettings(); render(); }, text: t })))),
-    el('div', { class: 'actions col' }, nextId && isBuilt(nextId) ? el('button', { type: 'button', class: 'btn primary big', onclick: () => { newRun(nextId, randomTownName()); go('town'); }, text: 'Next chapter: ' + CT.chapters.find(c => c.id === nextId).title }) : el('button', { type: 'button', class: 'btn', disabled: true, text: sc.id === 'ch6' ? 'Free play (coming soon)' : 'Next chapter (coming soon)' }), sc.n >= 2 ? el('button', { type: 'button', class: 'btn', onclick: () => { S.ui.tm = null; go('timemachine'); }, text: 'Try one change' }) : null, el('button', { type: 'button', class: 'btn ' + (nextId && isBuilt(nextId) ? '' : 'primary big'), onclick: () => go('home'), text: 'Save and stop' }), el('button', { type: 'button', class: 'btn', onclick: () => { newRun(sc.id, randomTownName()); go('town'); }, text: 'Replay chapter' }), el('button', { type: 'button', class: 'btn ghost', onclick: () => go('scrapbook'), text: 'Scrapbook' }), el('button', { type: 'button', class: 'btn ghost', onclick: openPlan, text: 'My Plan' })));
+    el('div', { class: 'actions col' }, sc.id === 'free' ? el('button', { type: 'button', class: 'btn primary big', onclick: () => { S.ui.fp = null; go('freeplay'); }, text: ST.freePlay.newTown }) : nextId && isBuilt(nextId) ? el('button', { type: 'button', class: 'btn primary big', onclick: () => { newRun(nextId, randomTownName()); go('town'); }, text: 'Next chapter: ' + CT.chapters.find(c => c.id === nextId).title }) : el('button', { type: 'button', class: 'btn primary big', onclick: () => { S.ui.fp = null; go('freeplay'); }, text: ST.freePlay.title }),
+      sc.id === 'free' ? el('button', { type: 'button', class: 'btn', onclick: () => { newRun('free', S.run.seed, S.run.preset); go('town'); }, text: ST.freePlay.replay }) : null, sc.n >= 2 ? el('button', { type: 'button', class: 'btn', onclick: () => { S.ui.tm = null; go('timemachine'); }, text: 'Try one change' }) : null, el('button', { type: 'button', class: 'btn ' + (nextId && isBuilt(nextId) ? '' : 'primary big'), onclick: () => go('home'), text: 'Save and stop' }), sc.id !== 'free' ? el('button', { type: 'button', class: 'btn', onclick: () => { newRun(sc.id, randomTownName()); go('town'); }, text: 'Replay chapter' }) : null, el('button', { type: 'button', class: 'btn ghost', onclick: () => go('scrapbook'), text: 'Scrapbook' }), el('button', { type: 'button', class: 'btn ghost', onclick: openPlan, text: 'My Plan' })));
 }
 
 /* ---- intros ---- */
@@ -1524,8 +1569,8 @@ function introScreen() { return el('main', { class: 'screen intro' }, art('plate
 function chapterIntroScreen() {
   const m = S.market, sc = m.scenario, s = S.draft, prev = CT.chapters.find(c => c.id === chapterIds()[chapterIds().indexOf(sc.id) - 1]), newNb = nbIds().filter(id => !(prev && prev.neighbors.includes(id)));
   const lines = (ST.chapterIntro[sc.id] || []).map(l => l.replace('{lo}', sc.lifeCost && sc.lifeCost.range ? sc.lifeCost.range[0] : '').replace('{hi}', sc.lifeCost && sc.lifeCost.range ? sc.lifeCost.range[1] : ''));
-  return el('main', { class: 'screen intro' }, el('p', { class: 'eyebrow', text: 'Chapter ' + sc.n + ' · ' + m.townName }), el('h2', { text: sc.title }),
-    lines.map(l => el('p', { text: l })),
+  return el('main', { class: 'screen intro' }, el('p', { class: 'eyebrow', text: (sc.id === 'free' ? 'Free play' : 'Chapter ' + sc.n) + ' \u00b7 ' + m.townName }), el('h2', { text: sc.id === 'free' ? m.townName : sc.title }),
+    lines.map(l => el('p', { text: l })), sc.id === 'free' && CT.presets[m.preset] ? el('p', { text: CT.presets[m.preset].name + ': ' + CT.presets[m.preset].says }) : null,
     el('div', { class: 'goal-chip' }, art('goal-' + s.goal.slug, 'goal-art', CT.goals[s.goal.slug]), el('div', { class: 'goal-text' }, el('strong', { text: 'Your goal: ' + CT.goals[s.goal.slug].toLowerCase() }), el('span', { class: 'muted', text: coins(s.goal.amount) + ' coins, in ' + Math.round(s.goal.due / 12) + ' years. You start with ' + coins(s.wallet) + ' coins.' }))),
     newNb.map(id => el('div', { class: 'keeper' }, art('neighbor-' + id + '-neutral', 'keeper-art', nbInfo(id).name), el('p', { class: 'bubble', text: ST.neighborIntro[id] }))),
     el('button', { type: 'button', class: 'btn primary big', onclick: () => { S.ui.intro = false; save(); arrive(); }, text: 'Start exploring' }));
@@ -1536,17 +1581,25 @@ function render() {
   const root = document.getElementById('app'); if (!root) return;
   document.documentElement.style.setProperty('--ts', String(S.options.textSize || 1));
   let view;
-  if (!S.run && !['settings', 'grownups', 'scrapbook'].includes(S.screen)) S.screen = 'home';
+  if (!S.run && !['settings', 'grownups', 'scrapbook', 'freeplay', 'debug'].includes(S.screen)) S.screen = 'home';
   if (S.run && S.screen === 'town' && !S.ui.intro && !S.draft.ended && hasRequired(S.draft)) S.screen = 'decision';
   if (S.run && S.screen === 'town' && S.ui.intro) view = S.run.scenarioId === 'ch1' ? introScreen() : chapterIntroScreen();
-  else view = ({ home: homeScreen, town: townScreen, plan: planScreen, decision: decisionScreen, show: showScreen, gazette: gazetteScreen, results: resultsScreen, settings: settingsScreen, grownups: grownupsScreen, scrapbook: scrapbookScreen, timemachine: timeMachineScreen })[S.screen]();
+  else view = ({ home: homeScreen, town: townScreen, plan: planScreen, decision: decisionScreen, show: showScreen, gazette: gazetteScreen, results: resultsScreen, settings: settingsScreen, grownups: grownupsScreen, scrapbook: scrapbookScreen, timemachine: timeMachineScreen, freeplay: freePlayScreen, debug: debugScreen })[S.screen]();
+  if (S.screen !== 'home') { const rb = readButton(); if (rb) view.prepend(el('div', { class: 'read-row' }, rb)); if (S.readOnly) view.prepend(readOnlyBanner()); }
   root.replaceChildren(view);
 }
 function boot() {
   loadSettings();
-  const had = loadRun();
   const params = new URLSearchParams(location.search);
+  if (params.has('debug')) S.ui.debug = true;
+  startTabLock();
+  const r = loadRun(); const had = r === 'ok'; S.badSave = r === 'bad';
+  if ('serviceWorker' in navigator && !window.SWS_EMBED && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').then(reg => { const arm = () => { if (reg.waiting && navigator.serviceWorker.controller) { S.ui.updateReady = reg; if (S.screen === 'home') render(); } }; arm(); reg.addEventListener('updatefound', () => { const w = reg.installing; if (w) w.addEventListener('statechange', arm); }); }).catch(() => {});
+  if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('controllerchange', () => { if (S.ui.updateReady) location.reload(); });
+  if (window.speechSynthesis) speechSynthesis.addEventListener('voiceschanged', () => { if (S.screen === 'settings') render(); });
   if (!had && params.get('seed')) newRun(isBuilt(params.get('chapter')) ? params.get('chapter') : 'ch1', E.normalizeTownName(params.get('seed')) || randomTownName());
+  if (S.ui.debug && params.has('debug')) { S.screen = 'debug'; render(); return loadArt().then(render); }
+  if (S.readOnly) { S.screen = S.run ? (S.draft.ended ? 'results' : 'town') : 'home'; render(); return loadArt().then(render); }
   if (S.run && S.draft.ended) S.screen = 'results'; else if (S.run) { S.screen = 'town'; if (!S.ui.intro) { arrive(); return loadArt().then(render); } }
   render();
   loadArt().then(render);
@@ -1590,7 +1643,118 @@ function timeMachineScreen() {
     S.ui.hint && S.ui.hint.text === ST.timeMachine.saved ? el('p', { class: 'muted', role: 'status', text: ST.timeMachine.saved }) : null);
 }
 
-globalThis.MS = { S, render, queue, undo, arrive, newRun, go, commitAndAdvance, finishChapter, BUILD };
+
+/* ---- M5: scrapbook record, free play, read-aloud, export and import, the two-tab lock, recovery, the debug panel ---- */
+function recordScrapbook(s, m) {
+  const sc = m.scenario, sum = E.summarizeRun(s, m), score = sum.score, y = Math.max(1, Math.ceil(s.t / 12));
+  const entry = { chapter: sc.id, n: sc.n, title: sc.title, town: m.townName, preset: m.preset, goal: { slug: s.goal.slug, status: s.goal.status }, strip: sum.strip.map(x => x.up ? 1 : 0), money: sum.money, score: score.total,
+    stamps: Object.fromEntries(score.stamps.map(st => [st.dim, st.status === 'credit' ? (st.passed === st.applicable ? 'full' : 'part') : st.status])),
+    neighbors: nbIds().map(id => ({ id, text: neighborYear(id, y).text, end: E.summarizeRun(nbLedgers()[id].state, m).netWorth })), months: s.t, when: new Date().toISOString().slice(0, 10) };
+  const i = S.progress.scrapbook.findIndex(p => p.chapter === sc.id && p.town === m.townName); if (i >= 0) S.progress.scrapbook[i] = entry; else S.progress.scrapbook.push(entry);
+}
+const freeUnlocked = () => S.progress.completedChapters.includes('ch6') || (CT.flags.freePlayAfterChapter3 && S.progress.completedChapters.includes('ch3')) || S.ui.debug === true;
+
+/* free play: presets and names */
+function freePlayScreen() {
+  const fp = S.ui.fp || (S.ui.fp = { preset: 'standard', name: randomTownName(), typed: '' });
+  const presets = Object.keys(CT.presets).map(k => el('label', { class: 'preset' + (fp.preset === k ? ' sel' : '') }, el('input', { type: 'radio', name: 'preset', value: k, checked: fp.preset === k ? true : null, onchange: () => { fp.preset = k; render(); } }), el('span', {}, el('strong', { text: CT.presets[k].name }), el('span', { class: 'muted', text: ' ' + CT.presets[k].says }))));
+  const typed = el('input', { type: 'text', id: 'town-name', class: 'num-in wide', maxlength: 40, autocomplete: 'off', value: fp.typed, 'aria-label': ST.freePlay.typed, oninput: e => { fp.typed = e.target.value; } });
+  const start = () => { const name = E.normalizeTownName(fp.typed) || fp.name; newRun('free', name, fp.preset); S.ui.fp = null; go('town'); };
+  return el('main', { class: 'screen freeplay' }, topbar(ST.freePlay.title, { label: '← Home', fn: () => go('home') }),
+    el('section', { class: 'card' }, el('h3', { text: ST.freePlay.presetLabel }), el('div', { class: 'presets' }, presets)),
+    el('section', { class: 'card' }, el('h3', { text: ST.freePlay.pick }), el('p', {}, el('strong', { text: fp.name }), el('span', { class: 'muted', text: ' (' + ST.freePlay.random.toLowerCase() + ')' }), ' ', el('button', { type: 'button', class: 'btn small', onclick: () => { fp.name = randomTownName(); render(); }, text: 'Another name' })),
+      el('label', { for: 'town-name', class: 'muted', text: ST.freePlay.typed }), typed, el('p', { class: 'muted small', text: ST.freePlay.nameHint })),
+    el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn primary big', id: 'free-start', onclick: start, text: ST.freePlay.start })));
+}
+
+/* read-aloud: local voices only (HANDOFF 11) */
+function localVoices() { try { if (!window.speechSynthesis) return []; return speechSynthesis.getVoices().filter(v => v.localService === true); } catch (e) { return []; } }
+function speak(text) { const vs = localVoices(); if (!vs.length || !text) return false; try { const u = new SpeechSynthesisUtterance(text.slice(0, 1500)); u.voice = vs.find(v => /^en/i.test(v.lang)) || vs[0]; speechSynthesis.cancel(); speechSynthesis.speak(u); return true; } catch (e) { return false; } }
+function readButton() { if (!S.options.readAloud || !localVoices().length) return null; return el('button', { type: 'button', class: 'btn small read', 'aria-label': ST.readAloud.read, onclick: () => { const main = document.querySelector('#app main'); speak(main ? main.innerText.replace(/\s+/g, ' ') : ''); }, text: '▶ ' + ST.readAloud.read }); }
+
+/* export and import (HANDOFF 11, shaped like the studio's shared backup) */
+const OWN_KEYS = [KEYS.save, KEYS.bak, KEYS.bad, KEYS.settings];
+function exportText() { return JSON.stringify({ app: 'mainstreet', kind: 'town-file', exported: new Date().toISOString(), engineVersion: E.VERSION.engine, contentVersion: E.VERSION.content, rubricVersion: E.VERSION.rubric, save: S.run ? serializeRun() : null, settings: { options: S.options, progress: S.progress } }, null, 1); }
+function download(name, text) { const a = document.createElement('a'); a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(text); a.download = name; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
+function cleanTree(v, depth) {
+  if (depth > 14) throw new Error('too deep');
+  if (v === null || typeof v === 'boolean') return v;
+  if (typeof v === 'number') { if (!Number.isFinite(v) || Math.abs(v) > 1e15) throw new Error('bad number'); return v; }
+  if (typeof v === 'string') { if (v.length > 400) throw new Error('long string'); return v; }
+  if (Array.isArray(v)) { if (v.length > 5000) throw new Error('long array'); return v.map(x => cleanTree(x, depth + 1)); }
+  if (typeof v === 'object') { const o = {}; for (const k of Object.keys(v)) { if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue; o[k] = cleanTree(v[k], depth + 1); } return o; }
+  throw new Error('bad value');
+}
+function importText(text) {
+  if (typeof text !== 'string' || text.length > 262144) return { ok: false, code: 'tooBig' };
+  let j; try { j = cleanTree(JSON.parse(text), 0); } catch (e) { return { ok: false, code: 'badFile' }; }
+  if (!j || j.app !== 'mainstreet' || j.kind !== 'town-file') return { ok: false, code: 'badFile' };
+  if (j.engineVersion !== E.VERSION.engine || j.contentVersion !== E.VERSION.content) return { ok: false, code: 'badVersion' };
+  if (j.save !== null && !validSave(j.save)) return { ok: false, code: 'badFile' };
+  if (j.save) { try { E.createMarket({ scenarioId: j.save.scenarioId, seed: j.save.seed, preset: j.save.preset !== 'standard' ? j.save.preset : undefined }); E.replayPending(j.save.checkpoint, j.save.pending, E.createMarket({ scenarioId: j.save.scenarioId, seed: j.save.seed, preset: j.save.preset !== 'standard' ? j.save.preset : undefined })); } catch (e) { return { ok: false, code: 'badFile' }; } }
+  S.ui.importPending = j; return { ok: true };
+}
+function applyImport() {
+  const j = S.ui.importPending; if (!j) return; S.ui.importPending = null;
+  storage(ls => { const prev = ls.getItem(KEYS.save); if (prev) ls.setItem(KEYS.bak, prev); if (j.save) ls.setItem(KEYS.save, JSON.stringify(j.save)); else ls.removeItem(KEYS.save); });
+  if (j.settings) { if (j.settings.options) Object.assign(S.options, j.settings.options); if (j.settings.progress) S.progress = Object.assign(S.progress, j.settings.progress); saveSettings(); }
+  S.run = null; S.market = null; S.draft = null; const r = loadRun(); S.ui.hint = null; S.ui.notice = ST.backup.done; go(r === 'ok' ? 'town' : 'home');
+}
+
+/* two-tab lock: ms:owner stamp every 5 s, stale after 20 s, BroadcastChannel on takeover (HANDOFF 11) */
+const TAB = { id: null, chan: null, timer: null };
+function ownerStamp() { return storage(ls => { try { return JSON.parse(ls.getItem('ms:owner') || 'null'); } catch (e) { return null; } }); }
+function claimOwner() { storage(ls => ls.setItem('ms:owner', JSON.stringify({ id: TAB.id, at: Date.now() }))); }
+function startTabLock() {
+  TAB.id = (() => { try { const k = sessionStorage.getItem('ms:tab'); if (k) return k; const id = randomId('t_'); sessionStorage.setItem('ms:tab', id); return id; } catch (e) { return randomId('t_'); } })();
+  try { TAB.chan = new BroadcastChannel('mainstreet'); TAB.chan.onmessage = e => { if (e.data && e.data.type === 'takeover' && e.data.id !== TAB.id) { S.readOnly = true; render(); } }; } catch (e) { TAB.chan = null; }
+  const o = ownerStamp(); if (o && o.id && o.id !== TAB.id && typeof o.at === 'number' && Date.now() - o.at < 20000) S.readOnly = true; else claimOwner();
+  TAB.timer = setInterval(() => { if (S.readOnly) return; const o = ownerStamp(); if (o && o.id && o.id !== TAB.id && typeof o.at === 'number' && Date.now() - o.at < 20000) { S.readOnly = true; render(); } else claimOwner(); }, 5000);
+}
+function takeOver() { S.readOnly = false; claimOwner(); try { if (TAB.chan) TAB.chan.postMessage({ type: 'takeover', id: TAB.id }); } catch (e) {} S.run = null; S.market = null; S.draft = null; loadRun(); S.screen = S.run ? (S.draft.ended ? 'results' : 'town') : 'home'; render(); }
+function readOnlyBanner() { if (!S.readOnly) return null; return el('div', { class: 'banner lock', role: 'alert' }, el('strong', { text: ST.tabLock.title }), el('p', { text: ST.tabLock.body }), el('button', { type: 'button', class: 'btn small', onclick: takeOver, text: ST.tabLock.take })); }
+
+/* recovery: a damaged save stays in ms:save:bad until the player chooses */
+function recoveryCard() {
+  if (!S.badSave) return null;
+  return el('section', { class: 'card recovery', role: 'alert' }, el('h3', { text: ST.recovery.title }), el('p', { text: ST.recovery.body }),
+    el('div', { class: 'opts' }, el('button', { type: 'button', class: 'btn', onclick: () => { const raw = storage(ls => ls.getItem(KEYS.bak)); if (raw) { storage(ls => ls.setItem(KEYS.save, raw)); S.run = null; const r = loadRun(); if (r === 'ok') { S.badSave = false; go('town'); return; } } S.ui.notice = 'The backup could not be read either.'; render(); }, text: ST.recovery.backup }),
+      el('button', { type: 'button', class: 'btn', onclick: () => { const raw = storage(ls => ls.getItem(KEYS.bad)) || storage(ls => ls.getItem(KEYS.save)) || ''; download('mainstreet-damaged-save.json', raw); }, text: ST.recovery.export }),
+      el('button', { type: 'button', class: 'btn', onclick: () => { if (!S.ui.resetArmed) { S.ui.resetArmed = true; render(); return; } S.ui.resetArmed = false; storage(ls => { ls.removeItem(KEYS.save); }); S.badSave = false; render(); }, text: S.ui.resetArmed ? 'Yes, start new' : ST.recovery.fresh })));
+}
+
+/* debug panel (?debug or a 3 s press on the title) */
+function debugJump(target) {
+  const m = S.market; let guard = 0;
+  while (S.draft.t < target && guard++ < 400) {
+    for (const q of S.draft.queue) if (q.required && !q.resolved) { if (q.id === 'E24') queue({ type: 'CHOOSE_BASKET', id: 'BASKET_A' }); else if (q.id === 'E20') queue({ type: 'FUND_COST' }); else if (q.id === 'E21') { if (!queue({ type: 'FUND_GOAL' }).ok) queue({ type: 'POSTPONE' }); } }
+    if (S.draft.t >= m.T) break;
+    let res; try { res = E.advance(S.draft, m, Math.min(target, E.nextStop(S.draft, m.scenario))); } catch (e) { break; }
+    S.run.checkpoint = res.state; S.run.pending = []; recomputeDraft();
+  }
+  S.ui.seenGazetteAt = S.draft.t; save();
+}
+function debugScreen() {
+  const d = S.ui.dbg || (S.ui.dbg = { chapter: S.run ? S.run.scenarioId : 'ch2', name: S.run ? S.run.seed : 'Maple Hollow 7', preset: S.run ? S.run.preset : 'standard', sims: null, perf: null });
+  const m = S.market, s = S.draft;
+  const row = (...k) => el('div', { class: 'dbg-row' }, k);
+  const chapterSel = el('select', { class: 'sel', 'aria-label': 'Chapter', onchange: e => { d.chapter = e.target.value; } }, CT.chapters.map(c => el('option', { value: c.id, selected: d.chapter === c.id ? true : null, text: c.id + ' ' + c.title })));
+  const presetSel = el('select', { class: 'sel', 'aria-label': 'Preset', onchange: e => { d.preset = e.target.value; } }, Object.keys(CT.presets).map(k => el('option', { value: k, selected: d.preset === k ? true : null, text: k })));
+  const nameIn = el('input', { type: 'text', class: 'num-in wide', value: d.name, 'aria-label': 'Seed or town name', oninput: e => { d.name = e.target.value; } });
+  const jumpIn = el('input', { type: 'number', class: 'num-in', min: 1, max: m ? m.T : 240, value: m ? Math.min(m.T, s.t + 12) : 12, 'aria-label': 'Jump to month' });
+  const perfBtn = el('button', { type: 'button', class: 'btn small', onclick: () => { const t0 = performance.now(); const mm = E.createMarket({ scenarioId: 'free', seed: 'Perf Check 1' }); const t1 = performance.now(); E.neighborLedgers(mm); const t2 = performance.now(); d.perf = 'market 240 months ' + (t1 - t0).toFixed(1) + ' ms, with four neighbors ' + (t2 - t0).toFixed(1) + ' ms'; render(); }, text: 'Time the engine' });
+  const simsBtn = el('button', { type: 'button', class: 'btn small', onclick: () => { const N = 1000, pol = ['ada', 'bo', 'cass', 'dev'], R = {}; pol.forEach(p => { R[p] = []; }); const t0 = performance.now(); for (let k = 0; k < N; k++) { const mm = E.createMarket({ scenarioId: d.chapter, seed: 'h|' + d.chapter + '|' + k, preset: d.preset !== 'standard' ? d.preset : undefined }); for (const p of pol) if (mm.scenario.neighbors.includes(p)) R[p].push(E.summarizeRun(E.runPolicy(mm, p).state, mm).netWorth / 100); } const q = (a, x) => { const sr = [...a].sort((u, v) => u - v); return sr.length ? sr[Math.floor(x * (sr.length - 1))].toFixed(0) : '-'; }; d.sims = pol.filter(p => R[p].length).map(p => p + ': p10 ' + q(R[p], .1) + ', p50 ' + q(R[p], .5) + ', p90 ' + q(R[p], .9)).join(' · ') + ' · ' + N + ' seeds in ' + ((performance.now() - t0) / 1000).toFixed(1) + ' s'; render(); }, text: 'Run 1,000 sims' });
+  const log = m ? el('table', { class: 'decoder dbg' }, el('tbody', {}, m.cards.map(c => { let real = ''; if (c.kind === 'shock' && c.forShop) { const i = m.scenario.assetIdx[c.forShop]; const p0 = m.prices[i][Math.max(0, c.t - 1)], p1 = m.prices[i][Math.min(m.T, c.t + c.dur - 1)]; real = ((c.assets[c.forShop] * c.mag) >= 0 ? 'suggested up' : 'suggested down') + ', price ' + pct(p1 / p0 - 1); } return el('tr', {}, el('td', { text: c.id }), el('td', { text: 'month ' + c.t }), el('td', { text: (c.forShop ? nameOf(c.forShop) + ' ' : '') + (c.cc ? coins(c.cc, { noAbout: true }) + ' coins ' : '') + real })); }))) : null;
+  const ribbon = m ? el('div', { class: 'ribbon', 'aria-label': 'Mood ribbon' }, Array.from(m.moods).slice(1).map((x, i) => el('i', { class: 'm' + x, title: 'month ' + (i + 1) + ' ' + x }))) : null;
+  const nbTable = m && m.scenario.neighbors.length ? el('table', { class: 'decoder dbg' }, el('tbody', {}, [el('tr', {}, el('td', { text: 'year' }), nbIds().map(id => el('td', { text: nbInfo(id).name }))), ...Array.from({ length: Math.floor(m.T / 12) + 1 }, (_, y) => el('tr', {}, el('td', { text: y }), nbIds().map(id => el('td', { text: coins(nbLedgers()[id].nw[y * 12]) }))))])) : null;
+  return el('main', { class: 'screen debug' }, topbar('Debug', { label: '← Home', fn: () => go('home') }),
+    el('section', { class: 'card' }, el('h3', { text: 'Start a run' }), row(chapterSel, presetSel), row(nameIn, el('button', { type: 'button', class: 'btn small', onclick: () => { newRun(d.chapter, E.normalizeTownName(d.name) || d.name, d.preset); S.ui.intro = false; go('town'); }, text: 'Start' })), el('p', { class: 'stamp', text: m ? m.id : 'no run' })),
+    m ? el('section', { class: 'card' }, el('h3', { text: 'This run' }), row(jumpIn, el('button', { type: 'button', class: 'btn small', onclick: () => { debugJump(+jumpIn.value); render(); }, text: 'Jump to month' }), el('button', { type: 'button', class: 'btn small', onclick: () => { S.options.showSpeed = S.options.showSpeed === 10 ? 1 : 10; saveSettings(); render(); }, text: 'Show speed ×' + (S.options.showSpeed === 10 ? '10 (on)' : '1') })), el('p', { class: 'muted', text: 'Month ' + s.t + ' of ' + m.T + ' · town ' + m.townName + ' · Dev picks ' + nameOf(m.devPick) + (m.closure ? ' · closure ' + nameOf(m.closure.id) + ' at month ' + m.closure.announceT : '') }), ribbon, el('h3', { text: 'Event log' }), log, nbTable ? el('h3', { text: 'Neighbor ledgers (coins at each year)' }) : null, nbTable) : null,
+    el('section', { class: 'card' }, el('h3', { text: 'Measure' }), row(perfBtn, simsBtn), d.perf ? el('p', { class: 'muted', text: d.perf }) : null, d.sims ? el('p', { class: 'muted', text: d.sims }) : null),
+    el('section', { class: 'card' }, el('h3', { text: 'Export' }), el('button', { type: 'button', class: 'btn small', onclick: () => download('mainstreet-' + (m ? m.townName.replace(/\s+/g, '-').toLowerCase() : 'town') + '.json', exportText()), text: 'Export JSON' })));
+}
+
+globalThis.MS = { S, render, queue, undo, arrive, newRun, go, commitAndAdvance, finishChapter, exportText, importText, applyImport, BUILD };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
 </script>

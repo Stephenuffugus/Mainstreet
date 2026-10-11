@@ -61,3 +61,21 @@ await (async () => {
   await b3.close();
 })();
 console.log('chapter 4 to 6 shots done');
+// M5: free play, scrapbook page, settings, debug
+await (async () => {
+  const b5 = await chromium.launch(); const p = await b5.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
+  const shot5 = n => p.screenshot({ path: OUT + n + '.png', fullPage: true });
+  await p.goto('file://' + resolve(ROOT, 'index.html'));
+  await p.evaluate(() => { MS.S.progress.completedChapters = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6']; MS.render(); });
+  await p.getByRole('button', { name: 'Free play' }).click(); await shot5('28-freeplay');
+  await p.getByRole('button', { name: 'Settings' }).catch?.(() => {});
+  await p.goto('file://' + resolve(ROOT, 'index.html')); await p.getByRole('button', { name: 'Settings' }).click(); await shot5('29-settings');
+  await p.goto('file://' + resolve(ROOT, 'index.html') + '?debug=1');
+  await p.evaluate(() => { MS.newRun('ch5', 'Clover Field 9'); MS.S.ui.intro = false; MS.go('debug'); }); await shot5('30-debug');
+  await p.goto('file://' + resolve(ROOT, 'index.html')); await p.evaluate(() => { MS.newRun('ch2', 'Pebble Creek 3'); MS.S.ui.intro = false; MS.go('town'); });
+  for (let i = 0; i < 3; i++) { await p.getByRole('button', { name: /^(Next year|Continue year)$/ }).click(); await p.locator('#go').click(); await p.getByRole('button', { name: 'Skip' }).click(); for (let k = 0; k < 6; k++) { if (await p.locator('.screen.town').count() || await p.locator('.screen.results').count()) break; if (await p.locator('.screen.gazette').count()) { await p.getByRole('button', { name: 'Continue' }).click(); continue; } if (await p.locator('.screen.decision').count()) { await p.getByRole('button', { name: /^Buy it/ }).click(); continue; } await p.waitForTimeout(100); } }
+  await p.locator('.deco').nth(0).click(); await p.getByRole('button', { name: 'I reached my goal on the day I planned.' }).click().catch(() => {});
+  await p.getByRole('button', { name: 'Scrapbook' }).click(); await shot5('31-scrapbook-page');
+  await b5.close();
+})();
+console.log('M5 shots done');
